@@ -435,6 +435,7 @@ class ST1_SimRuntime:
         cycle_time_ms = int(float(self.station.last_cycle_time_s) * 1000.0)
         done = int(self._done_pulse)
         return ready, busy, fault, done, cycle_time_ms, inventory_ok, any_arm_failed
+
 # End of user custom code region. Please don't edit beyond this point.
 class ST1_ComponentKitting:
 
@@ -479,6 +480,7 @@ class ST1_ComponentKitting:
         # Aggregated KPIs in VSI mainThread
         self.total_completed = 0
         self.total_cycle_time_ms = 0
+
 # End of user custom code region. Please don't edit beyond this point.
 
 
@@ -495,6 +497,7 @@ class ST1_ComponentKitting:
             self._prev_cmd_start = 0
             self._prev_cmd_stop = 0
             self._prev_cmd_reset = 0
+
 # End of user custom code region. Please don't edit beyond this point.
             self.updateInternalVariables()
 
@@ -506,7 +509,46 @@ class ST1_ComponentKitting:
 
                 # Start of user custom code region. Please apply edits only within these regions:  Inside the while loop
 
-                # Edge detect start/stop/reset (latch run state)
+                # REMOVED: Moved to "Before sending the packet" region to ensure proper execution order
+                # The edge detection and SimPy stepping must happen AFTER receiving the Ethernet packet
+                # This ensures fresh PLC inputs are processed immediately
+
+                # End of user custom code region. Please don't edit beyond this point.
+
+                self.updateInternalVariables()
+
+                if(vsiCommonPythonApi.isStopRequested()):
+                    raise Exception("stopRequested")
+
+                if(vsiEthernetPythonGateway.isTerminationOnGoing()):
+                    print("Termination is on going")
+                    break
+
+                if(vsiEthernetPythonGateway.isTerminated()):
+                    print("Application terminated")
+                    break
+
+                # CRITICAL FIX: Receive on configured port (6001) NOT on the connection handle
+                print(f"ST1 attempting to receive on PORT: {PLC_LineCoordinatorSocketPortNumber0}")
+                receivedData = vsiEthernetPythonGateway.recvEthernetPacket(PLC_LineCoordinatorSocketPortNumber0)
+                
+                # DEBUG: Instrument receive path
+                print(f"ST1 RX meta dest/src/len: {receivedData[0]}, {receivedData[1]}, {receivedData[3]}")
+                if receivedData[3] > 0:
+                    # Print first 16 bytes of payload as hex
+                    payload_bytes = receivedData[2]
+                    hex_bytes = ' '.join(f'{b:02x}' for b in payload_bytes[:min(16, len(payload_bytes))])
+                    print(f"ST1 RX first 16 bytes: {hex_bytes}")
+                
+                if(receivedData[3] != 0):
+                    self.decapsulateReceivedData(receivedData)
+
+                # Start of user custom code region. Please apply edits only within these regions:  Before sending the packet
+
+                # Process edge detection and SimPy stepping AFTER receiving the packet
+                # This ensures we use FRESH inputs from PLC, not stale data from previous cycle
+                
+                # Edge detect start/stop/reset (latch run state) using FRESH inputs
                 if self.mySignals.cmd_reset and not self._prev_cmd_reset:
                     self._run_latched = False
                     if self._sim is not None:
@@ -527,13 +569,13 @@ class ST1_ComponentKitting:
 
                 if self._sim is not None:
                     self._sim.set_enabled(self._run_latched)
-                    # recipe/batch context comes from PLC
+                    # recipe/batch context comes from PLC (FRESH data)
                     self._sim.set_context(self.mySignals.batch_id, self.mySignals.recipe_id)
 
                     self._sim.step(dt_s)
                     ready, busy, fault, done, cycle_time_ms, inventory_ok, any_arm_failed = self._sim.outputs()
 
-                    # Copy SimPy outputs into VSI signals (sent to PLC)
+                    # Copy SimPy outputs into VSI signals (sent to PLC in this SAME cycle)
                     self.mySignals.ready = int(ready)
                     self.mySignals.busy = int(busy)
                     self.mySignals.fault = int(fault)
@@ -555,32 +597,14 @@ class ST1_ComponentKitting:
                     if self.mySignals.done == 1:
                         self.total_completed += 1
                         self.total_cycle_time_ms += int(self.mySignals.cycle_time_ms)
-                # End of user custom code region. Please don't edit beyond this point.
 
-                self.updateInternalVariables()
-
-                if(vsiCommonPythonApi.isStopRequested()):
-                    raise Exception("stopRequested")
-
-                if(vsiEthernetPythonGateway.isTerminationOnGoing()):
-                    print("Termination is on going")
-                    break
-
-                if(vsiEthernetPythonGateway.isTerminated()):
-                    print("Application terminated")
-                    break
-
-                receivedData = vsiEthernetPythonGateway.recvEthernetPacket(self.clientPortNum[ST1_ComponentKitting0])
-                if(receivedData[3] != 0):
-                    self.decapsulateReceivedData(receivedData)
-
-                # Start of user custom code region. Please apply edits only within these regions:  Before sending the packet
                 # End of user custom code region. Please don't edit beyond this point.
 
                 #Send ethernet packet to PLC_LineCoordinator
                 self.sendEthernetPacketToPLC_LineCoordinator()
 
                 # Start of user custom code region. Please apply edits only within these regions:  After sending the packet
+
                 # End of user custom code region. Please don't edit beyond this point.
 
                 print("\n+=ST1_ComponentKitting+=")
@@ -664,6 +688,7 @@ class ST1_ComponentKitting:
     def establishTcpUdpConnection(self):
         if(self.clientPortNum[ST1_ComponentKitting0] == 0):
             self.clientPortNum[ST1_ComponentKitting0] = vsiEthernetPythonGateway.tcpConnect(bytes(PLC_LineCoordinatorIpAddress), PLC_LineCoordinatorSocketPortNumber0)
+            print(f"ST1 tcpConnect handle: {self.clientPortNum[ST1_ComponentKitting0]}")  # Keep for debugging
 
         if(self.clientPortNum[ST1_ComponentKitting0] == 0):
             print("Error: Failed to connect to port: PLC_LineCoordinator on TCP port: ")
@@ -681,18 +706,29 @@ class ST1_ComponentKitting:
         for i in range(self.receivedNumberOfBytes):
             self.receivedPayload[i] = receivedData[2][i]
 
-        if(self.receivedSrcPortNumber == PLC_LineCoordinatorSocketPortNumber0):
-            print("Received packet from PLC_LineCoordinator")
+        # DEBUG: Print what we received
+        print(f"ST1 decapsulate: destPort={self.receivedDestPortNumber}, srcPort={self.receivedSrcPortNumber}, len={self.receivedNumberOfBytes}")
+        
+        # FIX: Decode PLC command packets when we receive 9 bytes (regardless of source port)
+        # PLC sends: cmd_start (?), cmd_stop (?), cmd_reset (?), batch_id (L), recipe_id (H) = 9 bytes
+        if self.receivedNumberOfBytes == 9:
+            print("Received 9-byte packet from PLC (command packet)")
             receivedPayload = bytes(self.receivedPayload)
+            
+            # Decode the 9-byte command packet
             self.mySignals.cmd_start, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.cmd_stop, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.cmd_reset, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.batch_id, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.recipe_id, receivedPayload = self.unpackBytes('H', receivedPayload)
+            
+            print(f"ST1 decoded PLC command: cmd_start={self.mySignals.cmd_start}, cmd_stop={self.mySignals.cmd_stop}, "
+                  f"cmd_reset={self.mySignals.cmd_reset}, batch_id={self.mySignals.batch_id}, "
+                  f"recipe_id={self.mySignals.recipe_id}")
+        elif self.receivedNumberOfBytes > 0:
+            print(f"ST1 ignoring packet: wrong size ({self.receivedNumberOfBytes} bytes, expected 9)")
+        else:
+            print("ST1 received empty packet (len=0)")
 
 
     def sendEthernetPacketToPLC_LineCoordinator(self):
@@ -713,9 +749,12 @@ class ST1_ComponentKitting:
         bytesToSend += self.packBytes('?', self.mySignals.any_arm_failed)
 
         #Send ethernet packet to PLC_LineCoordinator
+        # Keep using port number 6001 for sending to match PLC's listening port
+        print(f"ST1 sending to PLC on port: {PLC_LineCoordinatorSocketPortNumber0}")
         vsiEthernetPythonGateway.sendEthernetPacket(PLC_LineCoordinatorSocketPortNumber0, bytes(bytesToSend))
 
         # Start of user custom code region. Please apply edits only within these regions:  Protocol's callback function
+
         # End of user custom code region. Please don't edit beyond this point.
 
 
@@ -791,6 +830,7 @@ def main():
     inputArgs.add_argument('--server-url', metavar='CO', default='localhost', help='server URL of the VSI TLM Fabric Server')
 
     # Start of user custom code region. Please apply edits only within these regions:  Main method
+
     # End of user custom code region. Please don't edit beyond this point.
 
     args = inputArgs.parse_args()
