@@ -130,71 +130,44 @@ ST6_PackagingDispatch5 = 5
 
 
 # Start of user custom code region. Please apply edits only within these regions:  Global Variables & Definitions
-# PLC coordination state machine for the 6-station line (S1..S6).
-# States:
-#   RESET_ALL    -> pulse reset on all stations for RESET_PULSE_TICKS
-#   STARTUP      -> start stations sequentially S1 -> ... -> S6 (wait for done edge per station)
-#   RUN          -> keep all stations running; increment batch_id when S6 completes
-#   FAULT_RESET  -> if any station faults, stop/reset all then restart STARTUP
+# PLC coordination state machine (Option A)
+# - Run stations strictly sequentially: S1 -> S2 -> S3 -> S4 -> S5 -> S6
+# - Only ONE station is allowed to run at any time; all others are held stopped.
+# - PLC advances to the next station ONLY when it receives a rising edge on Sx_done.
+# - If any station faults, PLC stops and issues a reset pulse to ALL stations, then restarts at S1.
 
-STATIONS = ["S1", "S2", "S3", "S4", "S5", "S6"]
 RESET_PULSE_TICKS = 3
 
-
-def _set_context(ms, st, batch_id, recipe_id):
-    setattr(ms, f"{st}_batch_id", int(batch_id))
-    setattr(ms, f"{st}_recipe_id", int(recipe_id))
-
-
-def _get(ms, st, field):
-    return getattr(ms, f"{st}_{field}")
-
-
-def _set_cmd(ms, st, start=None, stop=None, reset=None):
-    if start is not None:
-        setattr(ms, f"{st}_cmd_start", 1 if start else 0)
-    if stop is not None:
-        setattr(ms, f"{st}_cmd_stop", 1 if stop else 0)
-    if reset is not None:
-        setattr(ms, f"{st}_cmd_reset", 1 if reset else 0)
-
-
-def _stop_station(ms, st):
-    _set_cmd(ms, st, start=0, stop=1, reset=0)
-
-
-def _start_station(ms, st):
-    _set_cmd(ms, st, start=1, stop=0, reset=0)
-
-
-def _reset_station(ms, st):
-    _set_cmd(ms, st, start=0, stop=1, reset=1)
-
+def _any_fault(ms):
+    return bool(ms.S1_fault or ms.S2_fault or ms.S3_fault or ms.S4_fault or ms.S5_fault or ms.S6_fault)
 
 def _stop_all(ms):
-    for st in STATIONS:
-        _stop_station(ms, st)
+    # stop all stations (no reset)
+    ms.S1_cmd_start = 0; ms.S1_cmd_stop = 1; ms.S1_cmd_reset = 0
+    ms.S2_cmd_start = 0; ms.S2_cmd_stop = 1; ms.S2_cmd_reset = 0
+    ms.S3_cmd_start = 0; ms.S3_cmd_stop = 1; ms.S3_cmd_reset = 0
+    ms.S4_cmd_start = 0; ms.S4_cmd_stop = 1; ms.S4_cmd_reset = 0
+    ms.S5_cmd_start = 0; ms.S5_cmd_stop = 1; ms.S5_cmd_reset = 0
+    ms.S6_cmd_start = 0; ms.S6_cmd_stop = 1; ms.S6_cmd_reset = 0
 
+def _reset_all_outputs(ms):
+    # stop + reset all stations
+    ms.S1_cmd_start = 0; ms.S1_cmd_stop = 1; ms.S1_cmd_reset = 1
+    ms.S2_cmd_start = 0; ms.S2_cmd_stop = 1; ms.S2_cmd_reset = 1
+    ms.S3_cmd_start = 0; ms.S3_cmd_stop = 1; ms.S3_cmd_reset = 1
+    ms.S4_cmd_start = 0; ms.S4_cmd_stop = 1; ms.S4_cmd_reset = 1
+    ms.S5_cmd_start = 0; ms.S5_cmd_stop = 1; ms.S5_cmd_reset = 1
+    ms.S6_cmd_start = 0; ms.S6_cmd_stop = 1; ms.S6_cmd_reset = 1
 
-def _start_all(ms):
-    for st in STATIONS:
-        _start_station(ms, st)
+def _propagate_batch_recipe(ms, batch_id, recipe_id):
+    ms.S1_batch_id = batch_id; ms.S1_recipe_id = recipe_id
+    ms.S2_batch_id = batch_id; ms.S2_recipe_id = recipe_id
+    ms.S3_batch_id = batch_id; ms.S3_recipe_id = recipe_id
+    ms.S4_batch_id = batch_id; ms.S4_recipe_id = recipe_id
+    ms.S5_batch_id = batch_id; ms.S5_recipe_id = recipe_id
+    ms.S6_batch_id = batch_id; ms.S6_recipe_id = recipe_id
 
-
-def _reset_all(ms):
-    for st in STATIONS:
-        _reset_station(ms, st)
-
-
-def _any_fault(ms):
-    return any(_get(ms, st, "fault") for st in STATIONS)
-
-
-def _done_edge(ms, st, prev_done):
-    cur = 1 if _get(ms, st, "done") else 0
-    edge = 1 if (cur == 1 and prev_done.get(st, 0) == 0) else 0
-    prev_done[st] = cur
-    return edge
+# End of user custom code region. Please don't edit beyond this point.
 class PLC_LineCoordinator:
 
     def __init__(self, args):
@@ -218,27 +191,23 @@ class PLC_LineCoordinator:
         self.mySignals = MySignals()
 
         # Start of user custom code region. Please apply edits only within these regions:  Constructor
-        # coordinator internal state
+        # coordination vars
         self._batch_id = 1
         self._recipe_id = 1
 
-        # RESET_ALL -> STARTUP -> RUN (or FAULT_RESET)
-        self._state = "RESET_ALL"
+        # state
+        self._state = "RESETTING"
         self._reset_ticks = 0
-        self._startup_stage = 1
 
-        # rising-edge tracking for done pulses from stations
-        self._prev_done = {st: 0 for st in STATIONS}
-        
-        # Store actual connection handles for sending commands
-        self.station_handles = {
-            "S1": 0,  # Will be updated when we receive first packet from ST1
-            "S2": 0,
-            "S3": 0,
-            "S4": 0,
-            "S5": 0,
-            "S6": 0
-        }
+        # active station index (1..6)
+        self._active_idx = 1
+
+        # done edge tracking (1..6)
+        self._prev_done = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+
+        # latch to avoid advancing twice if a station holds done high
+        self._done_seen = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
+# End of user custom code region. Please don't edit beyond this point.
 
 
 
@@ -249,23 +218,19 @@ class PLC_LineCoordinator:
             vsiCommonPythonApi.waitForReset()
 
             # Start of user custom code region. Please apply edits only within these regions:  After Reset
-            # initialize outputs to a safe reset state
-            _reset_all(self.mySignals)
+            # initialize outputs: reset everyone for a few ticks
+            _reset_all_outputs(self.mySignals)
 
-            # set initial context
-            for st in STATIONS:
-                _set_context(self.mySignals, st, self._batch_id, self._recipe_id)
+            # propagate initial context
+            _propagate_batch_recipe(self.mySignals, self._batch_id, self._recipe_id)
 
-            # restart state machine
-            self._state = "RESET_ALL"
+            # init sequencing
+            self._state = "RESETTING"
             self._reset_ticks = 0
-            self._startup_stage = 1
-            self._prev_done = {st: 0 for st in STATIONS}
-            
-            # Reset station handles
-            for st in STATIONS:
-                self.station_handles[st] = 0
-                
+            self._active_idx = 1
+            self._prev_done = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+            self._done_seen = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
+# End of user custom code region. Please don't edit beyond this point.
             self.updateInternalVariables()
 
             if(vsiCommonPythonApi.isStopRequested()):
@@ -275,8 +240,7 @@ class PLC_LineCoordinator:
             while(vsiCommonPythonApi.getSimulationTimeInNs() < self.totalSimulationTime):
 
                 # Start of user custom code region. Please apply edits only within these regions:  Inside the while loop
-
-                # (no logic here)
+# (no PLC logic here; we act after receiving station packets, before sending commands)
 
 # End of user custom code region. Please don't edit beyond this point.
 
@@ -318,62 +282,72 @@ class PLC_LineCoordinator:
                     self.decapsulateReceivedData(receivedData)
 
                 # Start of user custom code region. Please apply edits only within these regions:  Before sending the packet
+                # --- PLC Option A sequencing (uses fresh received station inputs) ---
                 ms = self.mySignals
 
-                # keep context updated every cycle
-                for st in STATIONS:
-                    _set_context(ms, st, self._batch_id, self._recipe_id)
+                # Always propagate batch/recipe to all stations
+                _propagate_batch_recipe(ms, self._batch_id, self._recipe_id)
 
-                # done edges (one-shot pulses)
-                done_edges = {st: _done_edge(ms, st, self._prev_done) for st in STATIONS}
-
-                # if any station faults: stop/reset all then restart
-                if _any_fault(ms) and self._state != "FAULT_RESET":
-                    self._state = "FAULT_RESET"
+                # If any fault occurs, reset the entire line and restart from S1
+                if _any_fault(ms):
+                    self._state = "RESETTING"
                     self._reset_ticks = 0
-                    self._startup_stage = 1
+                    self._active_idx = 1
+                    self._prev_done = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+                    self._done_seen = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
 
-                if self._state in ("RESET_ALL", "FAULT_RESET"):
-                    _reset_all(ms)
+                if self._state == "RESETTING":
+                    _reset_all_outputs(ms)
                     self._reset_ticks += 1
 
-                    # after a short pulse, drop reset and move to startup sequencing
                     if self._reset_ticks >= RESET_PULSE_TICKS:
-                        for st in STATIONS:
-                            _set_cmd(ms, st, start=0, stop=1, reset=0)
-                        self._state = "STARTUP"
-                        self._startup_stage = 1
-
-                elif self._state == "STARTUP":
-                    # default: everything stopped, then bring stations up in order
-                    _stop_all(ms)
-
-                    # keep already-commissioned stations running
-                    for i in range(1, self._startup_stage):
-                        _start_station(ms, f"S{i}")
-
-                    cur = f"S{self._startup_stage}"
-
-                    # start current station when it reports ready (S1 starts immediately)
-                    if _get(ms, cur, "ready") or self._startup_stage == 1:
-                        _start_station(ms, cur)
-
-                    # advance when the current station finishes at least one cycle
-                    if done_edges.get(cur, 0):
-                        self._startup_stage += 1
-                        if self._startup_stage > 6:
-                            self._state = "RUN"
-
-                elif self._state == "RUN":
-                    _start_all(ms)
-
-                    # new batch when end-of-line completes
-                    if done_edges.get("S6", 0):
-                        self._batch_id += 1
+                        _stop_all(ms)  # clears reset=0 and holds stopped
+                        self._state = "RUNNING"
+                        self._active_idx = 1
+                        self._prev_done = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+                        self._done_seen = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
 
                 else:
-                    # safe fallback
+                    # RUNNING: allow only the active station to run, hold others stopped.
                     _stop_all(ms)
+
+                    k = int(self._active_idx)
+                    if k < 1:
+                        k = 1
+                    if k > 6:
+                        k = 6
+
+                    # allow station k to run
+                    setattr(ms, f"S{k}_cmd_stop", 0)
+                    setattr(ms, f"S{k}_cmd_reset", 0)
+
+                    # HOLD cmd_start until station actually goes busy (prevents missing a 1-tick pulse)
+                    busy_now = int(getattr(ms, f"S{k}_busy"))
+                    done_now = int(getattr(ms, f"S{k}_done"))
+
+                    if done_now == 0 and busy_now == 0:
+                        setattr(ms, f"S{k}_cmd_start", 1)
+                    else:
+                        setattr(ms, f"S{k}_cmd_start", 0)
+
+                    # done detect (pulse or level)
+                    prev_done = int(self._prev_done.get(k, 0))
+                    self._prev_done[k] = done_now
+                    done_rise = (done_now == 1 and prev_done == 0)
+
+                    if done_now == 1 and not self._done_seen.get(k, False):
+                        self._done_seen[k] = True
+                        done_rise = True
+                    if done_now == 0:
+                        self._done_seen[k] = False
+
+                    if done_rise:
+                        if k < 6:
+                            self._active_idx = k + 1
+                        else:
+                            self._batch_id += 1
+                            self._active_idx = 1
+                # End of user custom code region. Please don't edit beyond this point.
 
                 #Send ethernet packet to ST1_ComponentKitting
                 self.sendEthernetPacketToST1_ComponentKitting()
@@ -611,11 +585,6 @@ class PLC_LineCoordinator:
         if(self.clientPortNum[ST6_PackagingDispatch5] == 0):
             self.clientPortNum[ST6_PackagingDispatch5] = vsiEthernetPythonGateway.tcpListen(PLC_LineCoordinatorSocketPortNumber5)
 
-        # Print all listen handles for debugging
-        print(f"PLC handles: ST1={self.clientPortNum[ST1_ComponentKitting0]}, ST2={self.clientPortNum[ST2_FrameCoreAssembly1]}, "
-              f"ST3={self.clientPortNum[ST3_ElectronicsWiring2]}, ST4={self.clientPortNum[ST4_CalibrationTesting3]}, "
-              f"ST5={self.clientPortNum[ST5_QualityInspection4]}, ST6={self.clientPortNum[ST6_PackagingDispatch5]}")
-
         if(self.clientPortNum[ST1_ComponentKitting0] == 0):
             print("Error: Failed to listen on TCP port:")
             print(PLC_LineCoordinatorSocketPortNumber0)
@@ -656,20 +625,8 @@ class PLC_LineCoordinator:
         for i in range(self.receivedNumberOfBytes):
             self.receivedPayload[i] = receivedData[2][i]
 
-        # DEBUG: Print packet metadata
-        print(f"PLC RX meta dest/src/len: {self.receivedDestPortNumber}, {self.receivedSrcPortNumber}, {self.receivedNumberOfBytes}")
-
-        # Store the ST1 client handle when we receive a packet from ST1
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber0):
             print("Received packet from ST1_ComponentKitting")
-            
-            # Store ST1's client handle (source port) for sending commands back
-            # This is the key fix: when ST1 connects, its source port becomes the handle for sending back
-            st1_handle = self.receivedSrcPortNumber
-            if st1_handle != 0 and st1_handle != self.station_handles["S1"]:
-                print(f"  Storing ST1 handle: {st1_handle} (was {self.station_handles['S1']})")
-                self.station_handles["S1"] = st1_handle
-            
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S1_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
 
@@ -687,13 +644,6 @@ class PLC_LineCoordinator:
 
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber1):
             print("Received packet from ST2_FrameCoreAssembly")
-            
-            # Store ST2's client handle
-            st2_handle = self.receivedSrcPortNumber
-            if st2_handle != 0 and st2_handle != self.station_handles["S2"]:
-                print(f"  Storing ST2 handle: {st2_handle}")
-                self.station_handles["S2"] = st2_handle
-                
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S2_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
 
@@ -715,13 +665,6 @@ class PLC_LineCoordinator:
 
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber2):
             print("Received packet from ST3_ElectronicsWiring")
-            
-            # Store ST3's client handle
-            st3_handle = self.receivedSrcPortNumber
-            if st3_handle != 0 and st3_handle != self.station_handles["S3"]:
-                print(f"  Storing ST3 handle: {st3_handle}")
-                self.station_handles["S3"] = st3_handle
-                
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S3_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
 
@@ -739,13 +682,6 @@ class PLC_LineCoordinator:
 
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber3):
             print("Received packet from ST4_CalibrationTesting")
-            
-            # Store ST4's client handle
-            st4_handle = self.receivedSrcPortNumber
-            if st4_handle != 0 and st4_handle != self.station_handles["S4"]:
-                print(f"  Storing ST4 handle: {st4_handle}")
-                self.station_handles["S4"] = st4_handle
-                
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S4_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
 
@@ -763,13 +699,6 @@ class PLC_LineCoordinator:
 
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber4):
             print("Received packet from ST5_QualityInspection")
-            
-            # Store ST5's client handle
-            st5_handle = self.receivedSrcPortNumber
-            if st5_handle != 0 and st5_handle != self.station_handles["S5"]:
-                print(f"  Storing ST5 handle: {st5_handle}")
-                self.station_handles["S5"] = st5_handle
-                
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S5_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
 
@@ -789,13 +718,6 @@ class PLC_LineCoordinator:
 
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber5):
             print("Received packet from ST6_PackagingDispatch")
-            
-            # Store ST6's client handle
-            st6_handle = self.receivedSrcPortNumber
-            if st6_handle != 0 and st6_handle != self.station_handles["S6"]:
-                print(f"  Storing ST6 handle: {st6_handle}")
-                self.station_handles["S6"] = st6_handle
-                
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S6_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
 
@@ -828,20 +750,7 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S1_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S1_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S1_recipe_id)
-        
-        # FIXED: Use ST1's client handle (received from ST1 packet) for sending commands
-        # This is the key fix - no special case for ST1, use handle like other stations
-        handle = self.station_handles["S1"]
-        packet_len = len(bytesToSend)
-        
-        if handle == 0:
-            print(f"PLC TX ST1: SKIPPING - no handle yet (need to receive from ST1 first)")
-            return
-            
-        print(f"PLC TX ST1 via HANDLE: {handle}, size: {packet_len}")
-        
-        # Send using ST1's client handle (matching what ST1 receives on)
-        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
+        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST1_ComponentKitting0], bytes(bytesToSend))
 
     def sendEthernetPacketToST2_FrameCoreAssembly(self):
         bytesToSend = bytes()
@@ -850,15 +759,7 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S2_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S2_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S2_recipe_id)
-        
-        # Use ST2's client handle
-        handle = self.station_handles["S2"]
-        if handle == 0:
-            handle = self.clientPortNum[ST2_FrameCoreAssembly1]  # fallback to listen handle
-            
-        packet_len = len(bytesToSend)
-        print(f"PLC TX ST2 via HANDLE: {handle}, size: {packet_len}")
-        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
+        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST2_FrameCoreAssembly1], bytes(bytesToSend))
 
     def sendEthernetPacketToST3_ElectronicsWiring(self):
         bytesToSend = bytes()
@@ -867,15 +768,7 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S3_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S3_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S3_recipe_id)
-        
-        # Use ST3's client handle
-        handle = self.station_handles["S3"]
-        if handle == 0:
-            handle = self.clientPortNum[ST3_ElectronicsWiring2]  # fallback to listen handle
-            
-        packet_len = len(bytesToSend)
-        print(f"PLC TX ST3 via HANDLE: {handle}, size: {packet_len}")
-        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
+        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST3_ElectronicsWiring2], bytes(bytesToSend))
 
     def sendEthernetPacketToST4_CalibrationTesting(self):
         bytesToSend = bytes()
@@ -884,15 +777,7 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S4_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S4_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S4_recipe_id)
-        
-        # Use ST4's client handle
-        handle = self.station_handles["S4"]
-        if handle == 0:
-            handle = self.clientPortNum[ST4_CalibrationTesting3]  # fallback to listen handle
-            
-        packet_len = len(bytesToSend)
-        print(f"PLC TX ST4 via HANDLE: {handle}, size: {packet_len}")
-        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
+        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST4_CalibrationTesting3], bytes(bytesToSend))
 
     def sendEthernetPacketToST5_QualityInspection(self):
         bytesToSend = bytes()
@@ -901,15 +786,7 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S5_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S5_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S5_recipe_id)
-        
-        # Use ST5's client handle
-        handle = self.station_handles["S5"]
-        if handle == 0:
-            handle = self.clientPortNum[ST5_QualityInspection4]  # fallback to listen handle
-            
-        packet_len = len(bytesToSend)
-        print(f"PLC TX ST5 via HANDLE: {handle}, size: {packet_len}")
-        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
+        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST5_QualityInspection4], bytes(bytesToSend))
 
     def sendEthernetPacketToST6_PackagingDispatch(self):
         bytesToSend = bytes()
@@ -918,15 +795,7 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S6_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S6_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S6_recipe_id)
-        
-        # Use ST6's client handle
-        handle = self.station_handles["S6"]
-        if handle == 0:
-            handle = self.clientPortNum[ST6_PackagingDispatch5]  # fallback to listen handle
-            
-        packet_len = len(bytesToSend)
-        print(f"PLC TX ST6 via HANDLE: {handle}, size: {packet_len}")
-        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
+        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST6_PackagingDispatch5], bytes(bytesToSend))
 
         # Start of user custom code region. Please apply edits only within these regions:  Protocol's callback function
 
