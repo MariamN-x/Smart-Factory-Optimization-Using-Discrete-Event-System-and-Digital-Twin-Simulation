@@ -1,0 +1,1295 @@
+Script started on 2026-01-25 21:57:01+00:00 [TERM="xterm" TTY="/dev/pts/17" COLUMNS="80" LINES="24"]
+python3 .//src/ST6_PackagingDispatch/ST6_PackagingDispatch.py --domain="AF_UNIX" --server-url="localhost"
++=+ XLVIP-INFO: XlTlmMessageLayer::connectToServer():
++=+    Connecting clientId=':remoteSession6' to 'server@localhost' ...
++=+    Successfully connected 'client :remoteSession6' to 'server@localhost'
++=+    Negotiated socket connection configuration
++=+        Use socket manager thread=FALSE
++=+        Use TCP_NODELAY=TRUE
++=+        Use UDP=FALSE
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession6
++=+        conduitId=:timeServerConduit6
+           localClientConduitHandle=0x5df74840b2f8
+           remoteServerProxyConduitHandle=0x2c023f30
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession6
++=+        conduitId=:resetServerConduit6
+           localClientConduitHandle=0x5df748262498
+           remoteServerProxyConduitHandle=0x2c020510
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession6
++=+        conduitId=:txConfigPort6
+           localClientConduitHandle=0x5df7483bf1f0
+           remoteServerProxyConduitHandle=0x2c032b10
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession6
++=+        conduitId=:rxConfigPort6
+           localClientConduitHandle=0x5df748397050
+           remoteServerProxyConduitHandle=0x2c02eef0
++=+ INFO: ... successfully connected to TLM FabricServer !
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession6
++=+        conduitId=:txEtherFrameConduit6
+           localClientConduitHandle=0x5df7483c8bd0
+           remoteServerProxyConduitHandle=0x2c028140
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession6
++=+        conduitId=:rxEtherFrameConduit6
+           localClientConduitHandle=0x5df748235cb0
+           remoteServerProxyConduitHandle=0x2c02b7f0
+
++=ST6_PackagingDispatch+=
+  VSI time: 106310 ns
+  Inputs:
+	cmd_start = 0
+	cmd_stop = 0
+	cmd_reset = 0
+	batch_id = 0
+	recipe_id = 0
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 100106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = True
+	cmd_reset = True
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0
+	downtime_s = 0
+	availability = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 200106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 300106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 400106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 500106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 600106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 700106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 800106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 900106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 1000106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 1100106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 1200106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 1300106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 1400106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 1500106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 1600106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 1700106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 1800106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 1900106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 2000106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 2100106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 2200106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 2300106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 2400106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 2500106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 2600106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 2700106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 2800106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 2900106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 3000106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 3100106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 3200106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 3300106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 3400106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 3500106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 3600106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 3700106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 3800106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 3900106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 4000106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 4100106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 4200106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 4300106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 4400106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 4500106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 4600106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 4700106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 4800106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST6_PackagingDispatch+=
+  VSI time: 4900106210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	packages_completed = 0
+	arm_cycles = 0
+	total_repairs = 0
+	operational_time_s = 0.0
+	downtime_s = 0.0
+	availability = 0.0
+
+
+

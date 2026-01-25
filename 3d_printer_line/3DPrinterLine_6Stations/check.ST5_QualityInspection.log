@@ -1,0 +1,1145 @@
+Script started on 2026-01-25 21:57:01+00:00 [TERM="xterm" TTY="/dev/pts/15" COLUMNS="80" LINES="24"]
+python3 .//src/ST5_QualityInspection/ST5_QualityInspection.py --domain="AF_UNIX" --server-url="localhost"
++=+ XLVIP-INFO: XlTlmMessageLayer::connectToServer():
++=+    Connecting clientId=':remoteSession5' to 'server@localhost' ...
++=+    Successfully connected 'client :remoteSession5' to 'server@localhost'
++=+    Negotiated socket connection configuration
++=+        Use socket manager thread=FALSE
++=+        Use TCP_NODELAY=TRUE
++=+        Use UDP=FALSE
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession5
++=+        conduitId=:timeServerConduit5
+           localClientConduitHandle=0x55c794bae878
+           remoteServerProxyConduitHandle=0x2c00e660
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession5
++=+        conduitId=:resetServerConduit5
+           localClientConduitHandle=0x55c794b6bf18
+           remoteServerProxyConduitHandle=0x2c00ac40
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession5
++=+        conduitId=:txConfigPort5
+           localClientConduitHandle=0x55c7949d0690
+           remoteServerProxyConduitHandle=0x2c01caa0
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession5
++=+        conduitId=:rxConfigPort5
+           localClientConduitHandle=0x55c794c0db20
+           remoteServerProxyConduitHandle=0x2c018e80
++=+ INFO: ... successfully connected to TLM FabricServer !
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession5
++=+        conduitId=:txEtherFrameConduit5
+           localClientConduitHandle=0x55c794b1fec0
+           remoteServerProxyConduitHandle=0x2c0120d0
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession5
++=+        conduitId=:rxEtherFrameConduit5
+           localClientConduitHandle=0x55c794bcffb0
+           remoteServerProxyConduitHandle=0x2c015780
+
++=ST5_QualityInspection+=
+  VSI time: 106210 ns
+  Inputs:
+	cmd_start = 0
+	cmd_stop = 0
+	cmd_reset = 0
+	batch_id = 0
+	recipe_id = 0
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 100103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = True
+	cmd_reset = True
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 200103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 300103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 400103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 500103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 600103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 700103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 800103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 900103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 1000103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 1100103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 1200103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 1300103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 1400103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 1500103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 1600103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 1700103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 1800103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 1900103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 2000103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 2100103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 2200103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 2300103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 2400103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 2500103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 2600103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 2700103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 2800103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 2900103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 3000103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 3100103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 3200103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 3300103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 3400103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 3500103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 3600103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 3700103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 3800103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 3900103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 4000103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 4100103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 4200103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 4300103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 4400103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 4500103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 4600103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 4700103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 4800103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST5_QualityInspection+=
+  VSI time: 4900103700 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	accept = 0
+	reject = 0
+	last_accept = 0
+
+
+

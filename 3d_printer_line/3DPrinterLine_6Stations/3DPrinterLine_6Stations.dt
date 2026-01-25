@@ -1,0 +1,17 @@
+{
+	"vsiSystemBusEnabled": false,
+	"numberOfVps": 0,
+	"vsiClientsNumber": 7,
+	"vsiProcesses": {	
+		"0": {"executableName": "python3", "componentId": "0", "isRemote": 0, "componentName": "PLC_LineCoordinator", "isRecordable": false, "isRunnable": true, "componentType" : "python"},
+		"1": {"executableName": "python3", "componentId": "1", "isRemote": 0, "componentName": "ST1_ComponentKitting", "isRecordable": false, "isRunnable": true, "componentType" : "python"},
+		"2": {"executableName": "python3", "componentId": "2", "isRemote": 0, "componentName": "ST2_FrameCoreAssembly", "isRecordable": false, "isRunnable": true, "componentType" : "python"},
+		"3": {"executableName": "python3", "componentId": "3", "isRemote": 0, "componentName": "ST3_ElectronicsWiring", "isRecordable": false, "isRunnable": true, "componentType" : "python"},
+		"4": {"executableName": "python3", "componentId": "4", "isRemote": 0, "componentName": "ST4_CalibrationTesting", "isRecordable": false, "isRunnable": true, "componentType" : "python"},
+		"5": {"executableName": "python3", "componentId": "5", "isRemote": 0, "componentName": "ST5_QualityInspection", "isRecordable": false, "isRunnable": true, "componentType" : "python"},
+		"6": {"executableName": "python3", "componentId": "6", "isRemote": 0, "componentName": "ST6_PackagingDispatch", "isRecordable": false, "isRunnable": true, "componentType" : "python"}
+	},
+
+	"rtlExists":false,
+	"rtlPlatform":"osci"
+}

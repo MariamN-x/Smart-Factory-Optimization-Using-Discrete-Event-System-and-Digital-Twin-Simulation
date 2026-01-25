@@ -1,0 +1,340 @@
+-N
+0 PLC_LineCoordinator 1
+S1_cmd_start bool o 1
+S1_cmd_stop bool o 1
+S1_cmd_reset bool o 1
+S1_batch_id uint32_t o 1
+S1_recipe_id uint16_t o 1
+S1_ready bool i 1
+S1_busy bool i 1
+S1_fault bool i 1
+S1_done bool i 1
+S1_cycle_time_ms uint32_t i 1
+S1_inventory_ok bool i 1
+S1_any_arm_failed bool i 1
+S2_cmd_start bool o 1
+S2_cmd_stop bool o 1
+S2_cmd_reset bool o 1
+S2_batch_id uint32_t o 1
+S2_recipe_id uint16_t o 1
+S2_ready bool i 1
+S2_busy bool i 1
+S2_fault bool i 1
+S2_done bool i 1
+S2_cycle_time_ms uint32_t i 1
+S2_completed uint32_t i 1
+S2_scrapped uint32_t i 1
+S2_reworks uint32_t i 1
+S2_cycle_time_avg_s double i 1
+S3_cmd_start bool o 1
+S3_cmd_stop bool o 1
+S3_cmd_reset bool o 1
+S3_batch_id uint32_t o 1
+S3_recipe_id uint16_t o 1
+S3_ready bool i 1
+S3_busy bool i 1
+S3_fault bool i 1
+S3_done bool i 1
+S3_cycle_time_ms uint32_t i 1
+S3_strain_relief_ok bool i 1
+S3_continuity_ok bool i 1
+S4_cmd_start bool o 1
+S4_cmd_stop bool o 1
+S4_cmd_reset bool o 1
+S4_batch_id uint32_t o 1
+S4_recipe_id uint16_t o 1
+S4_ready bool i 1
+S4_busy bool i 1
+S4_fault bool i 1
+S4_done bool i 1
+S4_cycle_time_ms uint32_t i 1
+S4_total uint32_t i 1
+S4_completed uint32_t i 1
+S5_cmd_start bool o 1
+S5_cmd_stop bool o 1
+S5_cmd_reset bool o 1
+S5_batch_id uint32_t o 1
+S5_recipe_id uint16_t o 1
+S5_ready bool i 1
+S5_busy bool i 1
+S5_fault bool i 1
+S5_done bool i 1
+S5_cycle_time_ms uint32_t i 1
+S5_accept uint32_t i 1
+S5_reject uint32_t i 1
+S5_last_accept bool i 1
+S6_cmd_start bool o 1
+S6_cmd_stop bool o 1
+S6_cmd_reset bool o 1
+S6_batch_id uint32_t o 1
+S6_recipe_id uint16_t o 1
+S6_ready bool i 1
+S6_busy bool i 1
+S6_fault bool i 1
+S6_done bool i 1
+S6_cycle_time_ms uint32_t i 1
+S6_packages_completed uint32_t i 1
+S6_arm_cycles uint32_t i 1
+S6_total_repairs uint32_t i 1
+S6_operational_time_s double i 1
+S6_downtime_s double i 1
+S6_availability double i 1
+-N
+1 ST1_ComponentKitting 1
+cmd_start bool i 1
+cmd_stop bool i 1
+cmd_reset bool i 1
+batch_id uint32_t i 1
+recipe_id uint16_t i 1
+ready bool o 1
+busy bool o 1
+fault bool o 1
+done bool o 1
+cycle_time_ms uint32_t o 1
+inventory_ok bool o 1
+any_arm_failed bool o 1
+-N
+2 ST2_FrameCoreAssembly 1
+cmd_start bool i 1
+cmd_stop bool i 1
+cmd_reset bool i 1
+batch_id uint32_t i 1
+recipe_id uint16_t i 1
+ready bool o 1
+busy bool o 1
+fault bool o 1
+done bool o 1
+cycle_time_ms uint32_t o 1
+completed uint32_t o 1
+scrapped uint32_t o 1
+reworks uint32_t o 1
+cycle_time_avg_s double o 1
+-N
+3 ST3_ElectronicsWiring 1
+cmd_start bool i 1
+cmd_stop bool i 1
+cmd_reset bool i 1
+batch_id uint32_t i 1
+recipe_id uint16_t i 1
+ready bool o 1
+busy bool o 1
+fault bool o 1
+done bool o 1
+cycle_time_ms uint32_t o 1
+strain_relief_ok bool o 1
+continuity_ok bool o 1
+-N
+4 ST4_CalibrationTesting 1
+cmd_start bool i 1
+cmd_stop bool i 1
+cmd_reset bool i 1
+batch_id uint32_t i 1
+recipe_id uint16_t i 1
+ready bool o 1
+busy bool o 1
+fault bool o 1
+done bool o 1
+cycle_time_ms uint32_t o 1
+total uint32_t o 1
+completed uint32_t o 1
+-N
+5 ST5_QualityInspection 1
+cmd_start bool i 1
+cmd_stop bool i 1
+cmd_reset bool i 1
+batch_id uint32_t i 1
+recipe_id uint16_t i 1
+ready bool o 1
+busy bool o 1
+fault bool o 1
+done bool o 1
+cycle_time_ms uint32_t o 1
+accept uint32_t o 1
+reject uint32_t o 1
+last_accept bool o 1
+-N
+6 ST6_PackagingDispatch 1
+cmd_start bool i 1
+cmd_stop bool i 1
+cmd_reset bool i 1
+batch_id uint32_t i 1
+recipe_id uint16_t i 1
+ready bool o 1
+busy bool o 1
+fault bool o 1
+done bool o 1
+cycle_time_ms uint32_t o 1
+packages_completed uint32_t o 1
+arm_cycles uint32_t o 1
+total_repairs uint32_t o 1
+operational_time_s double o 1
+downtime_s double o 1
+availability double o 1
+-ETH
+0 02:00:00:00:00:01
+1 02:00:00:00:00:11
+2 02:00:00:00:00:12
+3 02:00:00:00:00:13
+4 02:00:00:00:00:14
+5 02:00:00:00:00:15
+6 02:00:00:00:00:16
+-C
+o 0 S1_cmd_start 1 cmd_start
+o 0 S1_cmd_stop 1 cmd_stop
+o 0 S1_cmd_reset 1 cmd_reset
+o 0 S1_batch_id 1 batch_id
+o 0 S1_recipe_id 1 recipe_id
+i 0 S1_ready 1 ready
+i 0 S1_busy 1 busy
+i 0 S1_fault 1 fault
+i 0 S1_done 1 done
+i 0 S1_cycle_time_ms 1 cycle_time_ms
+i 0 S1_inventory_ok 1 inventory_ok
+i 0 S1_any_arm_failed 1 any_arm_failed
+o 0 S2_cmd_start 2 cmd_start
+o 0 S2_cmd_stop 2 cmd_stop
+o 0 S2_cmd_reset 2 cmd_reset
+o 0 S2_batch_id 2 batch_id
+o 0 S2_recipe_id 2 recipe_id
+i 0 S2_ready 2 ready
+i 0 S2_busy 2 busy
+i 0 S2_fault 2 fault
+i 0 S2_done 2 done
+i 0 S2_cycle_time_ms 2 cycle_time_ms
+i 0 S2_completed 2 completed
+i 0 S2_scrapped 2 scrapped
+i 0 S2_reworks 2 reworks
+i 0 S2_cycle_time_avg_s 2 cycle_time_avg_s
+o 0 S3_cmd_start 3 cmd_start
+o 0 S3_cmd_stop 3 cmd_stop
+o 0 S3_cmd_reset 3 cmd_reset
+o 0 S3_batch_id 3 batch_id
+o 0 S3_recipe_id 3 recipe_id
+i 0 S3_ready 3 ready
+i 0 S3_busy 3 busy
+i 0 S3_fault 3 fault
+i 0 S3_done 3 done
+i 0 S3_cycle_time_ms 3 cycle_time_ms
+i 0 S3_strain_relief_ok 3 strain_relief_ok
+i 0 S3_continuity_ok 3 continuity_ok
+o 0 S4_cmd_start 4 cmd_start
+o 0 S4_cmd_stop 4 cmd_stop
+o 0 S4_cmd_reset 4 cmd_reset
+o 0 S4_batch_id 4 batch_id
+o 0 S4_recipe_id 4 recipe_id
+i 0 S4_ready 4 ready
+i 0 S4_busy 4 busy
+i 0 S4_fault 4 fault
+i 0 S4_done 4 done
+i 0 S4_cycle_time_ms 4 cycle_time_ms
+i 0 S4_total 4 total
+i 0 S4_completed 4 completed
+o 0 S5_cmd_start 5 cmd_start
+o 0 S5_cmd_stop 5 cmd_stop
+o 0 S5_cmd_reset 5 cmd_reset
+o 0 S5_batch_id 5 batch_id
+o 0 S5_recipe_id 5 recipe_id
+i 0 S5_ready 5 ready
+i 0 S5_busy 5 busy
+i 0 S5_fault 5 fault
+i 0 S5_done 5 done
+i 0 S5_cycle_time_ms 5 cycle_time_ms
+i 0 S5_accept 5 accept
+i 0 S5_reject 5 reject
+i 0 S5_last_accept 5 last_accept
+o 0 S6_cmd_start 6 cmd_start
+o 0 S6_cmd_stop 6 cmd_stop
+o 0 S6_cmd_reset 6 cmd_reset
+o 0 S6_batch_id 6 batch_id
+o 0 S6_recipe_id 6 recipe_id
+i 0 S6_ready 6 ready
+i 0 S6_busy 6 busy
+i 0 S6_fault 6 fault
+i 0 S6_done 6 done
+i 0 S6_cycle_time_ms 6 cycle_time_ms
+i 0 S6_packages_completed 6 packages_completed
+i 0 S6_arm_cycles 6 arm_cycles
+i 0 S6_total_repairs 6 total_repairs
+i 0 S6_operational_time_s 6 operational_time_s
+i 0 S6_downtime_s 6 downtime_s
+i 0 S6_availability 6 availability
+i 1 cmd_start 0 S1_cmd_start
+i 1 cmd_stop 0 S1_cmd_stop
+i 1 cmd_reset 0 S1_cmd_reset
+i 1 batch_id 0 S1_batch_id
+i 1 recipe_id 0 S1_recipe_id
+o 1 ready 0 S1_ready
+o 1 busy 0 S1_busy
+o 1 fault 0 S1_fault
+o 1 done 0 S1_done
+o 1 cycle_time_ms 0 S1_cycle_time_ms
+o 1 inventory_ok 0 S1_inventory_ok
+o 1 any_arm_failed 0 S1_any_arm_failed
+i 2 cmd_start 0 S2_cmd_start
+i 2 cmd_stop 0 S2_cmd_stop
+i 2 cmd_reset 0 S2_cmd_reset
+i 2 batch_id 0 S2_batch_id
+i 2 recipe_id 0 S2_recipe_id
+o 2 ready 0 S2_ready
+o 2 busy 0 S2_busy
+o 2 fault 0 S2_fault
+o 2 done 0 S2_done
+o 2 cycle_time_ms 0 S2_cycle_time_ms
+o 2 completed 0 S2_completed
+o 2 scrapped 0 S2_scrapped
+o 2 reworks 0 S2_reworks
+o 2 cycle_time_avg_s 0 S2_cycle_time_avg_s
+i 3 cmd_start 0 S3_cmd_start
+i 3 cmd_stop 0 S3_cmd_stop
+i 3 cmd_reset 0 S3_cmd_reset
+i 3 batch_id 0 S3_batch_id
+i 3 recipe_id 0 S3_recipe_id
+o 3 ready 0 S3_ready
+o 3 busy 0 S3_busy
+o 3 fault 0 S3_fault
+o 3 done 0 S3_done
+o 3 cycle_time_ms 0 S3_cycle_time_ms
+o 3 strain_relief_ok 0 S3_strain_relief_ok
+o 3 continuity_ok 0 S3_continuity_ok
+i 4 cmd_start 0 S4_cmd_start
+i 4 cmd_stop 0 S4_cmd_stop
+i 4 cmd_reset 0 S4_cmd_reset
+i 4 batch_id 0 S4_batch_id
+i 4 recipe_id 0 S4_recipe_id
+o 4 ready 0 S4_ready
+o 4 busy 0 S4_busy
+o 4 fault 0 S4_fault
+o 4 done 0 S4_done
+o 4 cycle_time_ms 0 S4_cycle_time_ms
+o 4 total 0 S4_total
+o 4 completed 0 S4_completed
+i 5 cmd_start 0 S5_cmd_start
+i 5 cmd_stop 0 S5_cmd_stop
+i 5 cmd_reset 0 S5_cmd_reset
+i 5 batch_id 0 S5_batch_id
+i 5 recipe_id 0 S5_recipe_id
+o 5 ready 0 S5_ready
+o 5 busy 0 S5_busy
+o 5 fault 0 S5_fault
+o 5 done 0 S5_done
+o 5 cycle_time_ms 0 S5_cycle_time_ms
+o 5 accept 0 S5_accept
+o 5 reject 0 S5_reject
+o 5 last_accept 0 S5_last_accept
+i 6 cmd_start 0 S6_cmd_start
+i 6 cmd_stop 0 S6_cmd_stop
+i 6 cmd_reset 0 S6_cmd_reset
+i 6 batch_id 0 S6_batch_id
+i 6 recipe_id 0 S6_recipe_id
+o 6 ready 0 S6_ready
+o 6 busy 0 S6_busy
+o 6 fault 0 S6_fault
+o 6 done 0 S6_done
+o 6 cycle_time_ms 0 S6_cycle_time_ms
+o 6 packages_completed 0 S6_packages_completed
+o 6 arm_cycles 0 S6_arm_cycles
+o 6 total_repairs 0 S6_total_repairs
+o 6 operational_time_s 0 S6_operational_time_s
+o 6 downtime_s 0 S6_downtime_s
+o 6 availability 0 S6_availability
+-END

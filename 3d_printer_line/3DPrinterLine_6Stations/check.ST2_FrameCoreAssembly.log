@@ -1,0 +1,1595 @@
+Script started on 2026-01-25 21:57:00+00:00 [TERM="xterm" TTY="/dev/pts/9" COLUMNS="80" LINES="24"]
+python3 .//src/ST2_FrameCoreAssembly/ST2_FrameCoreAssembly.py --domain="AF_UNIX" --server-url="localhost"
++=+ XLVIP-INFO: XlTlmMessageLayer::connectToServer():
++=+    Connecting clientId=':remoteSession2' to 'server@localhost' ...
++=+    Successfully connected 'client :remoteSession2' to 'server@localhost'
++=+    Negotiated socket connection configuration
++=+        Use socket manager thread=FALSE
++=+        Use TCP_NODELAY=TRUE
++=+        Use UDP=FALSE
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession2
++=+        conduitId=:timeServerConduit2
+           localClientConduitHandle=0x5cea7217f448
+           remoteServerProxyConduitHandle=0x2bfcb0c0
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession2
++=+        conduitId=:resetServerConduit2
+           localClientConduitHandle=0x5cea72111fb8
+           remoteServerProxyConduitHandle=0x2bfc76f0
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession2
++=+        conduitId=:txConfigPort2
+           localClientConduitHandle=0x5cea7222de60
+           remoteServerProxyConduitHandle=0x2bfda4c0
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession2
++=+        conduitId=:rxConfigPort2
+           localClientConduitHandle=0x5cea7227d7d0
+           remoteServerProxyConduitHandle=0x2bfd68a0
++=+ INFO: ... successfully connected to TLM FabricServer !
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession2
++=+        conduitId=:txEtherFrameConduit2
+           localClientConduitHandle=0x5cea720d7b30
+           remoteServerProxyConduitHandle=0x2bfcfb60
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession2
++=+        conduitId=:rxEtherFrameConduit2
+           localClientConduitHandle=0x5cea7229f1f0
+           remoteServerProxyConduitHandle=0x2bfd31d0
+ST2: SimPy runtime initialized with clean handshake
+ST2 tcpConnect handle: 53606
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 0, 6002, 0
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 100710 ns
+  Inputs:
+	cmd_start = 0
+	cmd_stop = 0
+	cmd_reset = 0
+	batch_id = 0
+	recipe_id = 0
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=True, cmd_reset=True, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 100100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = True
+	cmd_reset = True
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 200100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 300100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 400100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 500100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 600100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 700100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 800100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 900100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 1000100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 1100100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 1200100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 1300100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 1400100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 1500100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 1600100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 1700100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 1800100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 1900100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 2000100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 2100100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 2200100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 2300100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 2400100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 2500100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 2600100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 2700100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 2800100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 2900100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 3000100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 3100100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 3200100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 3300100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 3400100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 3500100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 3600100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 3700100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 3800100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 3900100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 4000100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 4100100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 4200100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 4300100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 4400100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 4500100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 4600100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 4700100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 4800100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+
+ST2 attempting to receive on PORT: 6002
+ST2 RX meta dest/src/len: 53606, 6002, 9
+ST2 decapsulate: destPort=53606, srcPort=6002, len=9
+Received 9-byte packet from PLC (command packet)
+ST2 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST2 sending to PLC on port: 6002
+
++=ST2_FrameCoreAssembly+=
+  VSI time: 4900100610 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 12000
+	completed = 0
+	scrapped = 0
+	reworks = 0
+	cycle_time_avg_s = 0.0
+  Internal state:
+	env_now = 0.000s
+	cycles_started = 0
+
+
+

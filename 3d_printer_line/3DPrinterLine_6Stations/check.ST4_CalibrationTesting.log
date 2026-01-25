@@ -1,0 +1,1095 @@
+Script started on 2026-01-25 21:57:01+00:00 [TERM="xterm" TTY="/dev/pts/13" COLUMNS="80" LINES="24"]
+python3 .//src/ST4_CalibrationTesting/ST4_CalibrationTesting.py --domain="AF_UNIX" --server-url="localhost"
++=+ XLVIP-INFO: XlTlmMessageLayer::connectToServer():
++=+    Connecting clientId=':remoteSession4' to 'server@localhost' ...
++=+    Successfully connected 'client :remoteSession4' to 'server@localhost'
++=+    Negotiated socket connection configuration
++=+        Use socket manager thread=FALSE
++=+        Use TCP_NODELAY=TRUE
++=+        Use UDP=FALSE
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession4
++=+        conduitId=:timeServerConduit4
+           localClientConduitHandle=0x5d9152589f78
+           remoteServerProxyConduitHandle=0x2bff7d10
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession4
++=+        conduitId=:resetServerConduit4
+           localClientConduitHandle=0x5d9152564228
+           remoteServerProxyConduitHandle=0x2bff4370
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession4
++=+        conduitId=:txConfigPort4
+           localClientConduitHandle=0x5d915240b4e0
+           remoteServerProxyConduitHandle=0x2c0071d0
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession4
++=+        conduitId=:rxConfigPort4
+           localClientConduitHandle=0x5d91525f4010
+           remoteServerProxyConduitHandle=0x2c0035b0
++=+ INFO: ... successfully connected to TLM FabricServer !
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession4
++=+        conduitId=:txEtherFrameConduit4
+           localClientConduitHandle=0x5d9152356f60
+           remoteServerProxyConduitHandle=0x2bffb7a0
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession4
++=+        conduitId=:rxEtherFrameConduit4
+           localClientConduitHandle=0x5d91525ab990
+           remoteServerProxyConduitHandle=0x2bfff6a0
+
++=ST4_CalibrationTesting+=
+  VSI time: 103110 ns
+  Inputs:
+	cmd_start = 0
+	cmd_stop = 0
+	cmd_reset = 0
+	batch_id = 0
+	recipe_id = 0
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 100103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = True
+	cmd_reset = True
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 200103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 300103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 400103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 500103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 600103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 700103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 800103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 900103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 1000103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 1100103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 1200103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 1300103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 1400103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 1500103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 1600103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 1700103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 1800103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 1900103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 2000103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 2100103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 2200103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 2300103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 2400103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 2500103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 2600103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 2700103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 2800103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 2900103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 3000103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 3100103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 3200103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 3300103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 3400103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 3500103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 3600103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 3700103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 3800103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 3900103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 4000103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 4100103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 4200103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 4300103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 4400103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 4500103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 4600103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 4700103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 4800103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST4_CalibrationTesting+=
+  VSI time: 4900103010 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	total = 0
+	completed = 0
+
+
+

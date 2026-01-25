@@ -1,0 +1,1095 @@
+Script started on 2026-01-25 21:57:00+00:00 [TERM="xterm" TTY="/dev/pts/11" COLUMNS="80" LINES="24"]
+python3 .//src/ST3_ElectronicsWiring/ST3_ElectronicsWiring.py --domain="AF_UNIX" --server-url="localhost"
++=+ XLVIP-INFO: XlTlmMessageLayer::connectToServer():
++=+    Connecting clientId=':remoteSession3' to 'server@localhost' ...
++=+    Successfully connected 'client :remoteSession3' to 'server@localhost'
++=+    Negotiated socket connection configuration
++=+        Use socket manager thread=FALSE
++=+        Use TCP_NODELAY=TRUE
++=+        Use UDP=FALSE
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession3
++=+        conduitId=:timeServerConduit3
+           localClientConduitHandle=0x5e18b5297f88
+           remoteServerProxyConduitHandle=0x2bfe2080
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession3
++=+        conduitId=:resetServerConduit3
+           localClientConduitHandle=0x5e18b52c0a08
+           remoteServerProxyConduitHandle=0x2bfddf30
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession3
++=+        conduitId=:txConfigPort3
+           localClientConduitHandle=0x5e18b5143a30
+           remoteServerProxyConduitHandle=0x2bff0900
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession3
++=+        conduitId=:rxConfigPort3
+           localClientConduitHandle=0x5e18b5307410
+           remoteServerProxyConduitHandle=0x2bfec8d0
++=+ INFO: ... successfully connected to TLM FabricServer !
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession3
++=+        conduitId=:txEtherFrameConduit3
+           localClientConduitHandle=0x5e18b5299a80
+           remoteServerProxyConduitHandle=0x2bfe5b20
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession3
++=+        conduitId=:rxEtherFrameConduit3
+           localClientConduitHandle=0x5e18b535d220
+           remoteServerProxyConduitHandle=0x2bfe91d0
+
++=ST3_ElectronicsWiring+=
+  VSI time: 103010 ns
+  Inputs:
+	cmd_start = 0
+	cmd_stop = 0
+	cmd_reset = 0
+	batch_id = 0
+	recipe_id = 0
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 100101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = True
+	cmd_reset = True
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 200101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 300101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 400101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 500101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 600101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 700101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 800101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 900101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 1000101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 1100101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 1200101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 1300101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 1400101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 1500101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 1600101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 1700101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 1800101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 1900101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 2000101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 2100101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 2200101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 2300101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 2400101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 2500101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 2600101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 2700101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 2800101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 2900101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 3000101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 3100101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 3200101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 3300101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 3400101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 3500101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 3600101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 3700101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 3800101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 3900101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 4000101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 4100101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 4200101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 4300101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 4400101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 4500101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 4600101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 4700101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 4800101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+
+Received packet from PLC_LineCoordinator
+
++=ST3_ElectronicsWiring+=
+  VSI time: 4900101410 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 1
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 0
+	strain_relief_ok = 0
+	continuity_ok = 0
+
+
+

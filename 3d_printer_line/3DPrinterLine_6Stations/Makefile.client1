@@ -1,0 +1,52 @@
+all: clean build sim
+
+TB = /src/ST1_ComponentKitting/ST1_ComponentKitting.py
+
+SOURCE_DIR = $(INNEXIS_VSI_LIBS)/pythonGateways
+BUILD_DIR = ./
+PYTHON_GATEWAYS_FILES = VsiCommonPythonApi.cxx setup.py
+
+PYTHON_GATEWAYS_FILES += VsiTcpUdpPythonGateway.cxx
+
+# Start of user custom code region. Please apply edits only within these regions:  Generic variables
+
+# End of user custom code region. Please don't edit beyond this point.
+
+#-----------------------------------------------------------------------------
+build: 
+# Start of user custom code region. Please apply edits only within these regions:  build target
+
+# End of user custom code region. Please don't edit beyond this point.
+
+	cp $(addprefix $(SOURCE_DIR)/, $(PYTHON_GATEWAYS_FILES)) $(BUILD_DIR)
+
+	python3 setup.py  --tcp-gateway build
+	rm -rf build
+#-----------------------------------------------------------------------------
+sim: 
+# Start of user custom code region. Please apply edits only within these regions:  sim target
+
+# End of user custom code region. Please don't edit beyond this point.
+
+	python3 ./$(TB) --domain="AF_UNIX" --server-url="localhost"
+#-----------------------------------------------------------------------------
+record: 
+	XL_TLM_ENABLE_IPC_RECORD=yes; export XL_TLM_ENABLE_IPC_RECORD;\
+	 .$(TB)\
+		--domain="AF_UNIX" --server-url="localhost" 
+
+#-----------------------------------------------------------------------------
+replay: 
+	 RemoteClientPlayer\
+		--domain="AF_UNIX" --server-url="localhost" \
+		--playbackFile=REC_:remoteSession1.dat \
+		--client-id=:remoteSession1 \
+		--port-num=50102
+
+#-----------------------------------------------------------------------------
+clean: 
+	\rm -rf check.ST1_ComponentKitting.log 
+
+# Start of user custom code region. Please apply edits only within these regions:  clean target
+
+# End of user custom code region. Please don't edit beyond this point.

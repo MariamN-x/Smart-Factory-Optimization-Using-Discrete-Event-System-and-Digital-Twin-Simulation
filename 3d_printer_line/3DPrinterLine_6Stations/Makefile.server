@@ -1,0 +1,93 @@
+all: clean compile build sim
+
+TSRCS = \
+	src/server/FabricServer.cxx 
+
+SRCS = \
+	SyscVpiTimeStub.cxx \
+	XlTlmEthSoftSw.cxx \
+
+XL_VIP = $(XL_VIP_HOME)/lib
+XL_VIP_OBJ = $(XL_VIP)/$(XL_BUILD_PLATFORM)/osci
+
+UVMC_LIB_OBJ = $(UVMC_HOME)/lib/osci/$(UVMC_BUILD_PLATFORM)
+VSI_LIB_OBJ = $(INNEXIS_VSI_LIBS)/$(XL_BUILD_PLATFORM)/osci/sysc_$(SYSTEMC_VER)
+VSI_LIB = $(VSI_LIB_OBJ)/libVsiSimCtrl.so
+
+CFLAGS = \
+	-Wno-unused-function -DSC_INCLUDE_DYNAMIC_PROCESSES
+
+include common.mk
+
+XlTlmEthSoftSw.cxx: $(XL_VIP_HOME)/lib/XlTlmEthSoftSw.cxx
+	cp -p $^ $@
+
+
+SyscVpiTimeStub.cxx: $(XL_VIP_HOME)/lib/SyscVpiTimeStub.cxx
+	cp -p $^ $@
+
+XL_VIP_LIBS += \
+	$(XL_VIP_OBJ)/XlEtherPacketSnooper.o \
+
+UVMC_LIB_SO += \
+	$(UVMC_LIB_OBJ)/uvmc.so \
+	$(UVMC_LIB_OBJ)/uvmc_stubs.so
+
+INCL += \
+	-Isrc/server \
+	-I$(SYSTEMC)/include \
+	-I$(SYSTEMC_TLM_HOME) \
+	-I$(SYSTEMC_TLM_HOME)/tlm_utils \
+	-I$(UVMC_HOME)/src/connect/sc \
+	-I$(XL_VIP)/lib_remote \
+	-I$(INNEXIS_VSI_HOME)/include \
+	-I$(VSI_ROUTE_PATH)/libs \
+	-I$(VSI_ROUTE_PATH)/libs/VSIRoute_Interface \
+
+LDFLAGS += \
+	-Wl,-E -L$(SYSTEMC)/$(SYSC_LIB) -lsystemc -lscv -lm -lpthread \
+
+
+TB = ./FabricServer
+
+# Start of user custom code region. Please apply edits only within these regions:  Generic variables
+
+# End of user custom code region. Please don't edit beyond this point.
+
+#-----------------------------------------------------------------------------
+compile: 
+# Start of user custom code region. Please apply edits only within these regions:  compile target
+
+# End of user custom code region. Please don't edit beyond this point.
+
+#-----------------------------------------------------------------------------
+build:  $(TB)
+
+$(TB): $(OBJS) $(TOBJS)  $(XL_VIP_LIBS) $(UVMC_LIB_SO) 
+
+# Start of user custom code region. Please apply edits only within these regions:  build target
+
+# End of user custom code region. Please don't edit beyond this point.
+
+	$(CXX) -o $@ $^  $(LDFLAGS) $(VSI_LIB)
+#-----------------------------------------------------------------------------
+sim: 
+# Start of user custom code region. Please apply edits only within these regions:  sim target
+
+# End of user custom code region. Please don't edit beyond this point.
+
+	./$(TB)\
+		--domain=AF_UNIX --cmdFile=$(VSISIM_CMD_FILE)
+#-----------------------------------------------------------------------------
+clean: 
+# Start of user custom code region. Please apply edits only within these regions:  clean target
+
+# End of user custom code region. Please don't edit beyond this point.
+
+	\rm -f $(TOBJS) $(OBJS) FabricServer
+	\rm -rf XlTlmEthSoftSw.cxx
+	\rm -f SyscVpiTimeStub.cxx
+	\rm -rf check.3DPrinterLine_6Stations.log 
+	\rm -rf check.3DPrinterLine_6Stations.stats 
+	\rm -f vsiInputFifo vsiOutputFifo vsiInterruptFifo
+	\rm -f dconn-*

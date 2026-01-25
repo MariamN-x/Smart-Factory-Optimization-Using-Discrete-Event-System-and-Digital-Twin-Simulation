@@ -1,0 +1,1600 @@
+Script started on 2026-01-25 21:57:00+00:00 [TERM="xterm" TTY="/dev/pts/7" COLUMNS="80" LINES="24"]
+python3 .//src/ST1_ComponentKitting/ST1_ComponentKitting.py --domain="AF_UNIX" --server-url="localhost"
++=+ XLVIP-INFO: XlTlmMessageLayer::connectToServer():
++=+    Connecting clientId=':remoteSession1' to 'server@localhost' ...
++=+    Successfully connected 'client :remoteSession1' to 'server@localhost'
++=+    Negotiated socket connection configuration
++=+        Use socket manager thread=FALSE
++=+        Use TCP_NODELAY=TRUE
++=+        Use UDP=FALSE
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession1
++=+        conduitId=:timeServerConduit1
+           localClientConduitHandle=0x5e7d684166b8
+           remoteServerProxyConduitHandle=0x2bfb5370
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession1
++=+        conduitId=:resetServerConduit1
+           localClientConduitHandle=0x5e7d6842e848
+           remoteServerProxyConduitHandle=0x2bfb1580
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession1
++=+        conduitId=:txConfigPort1
+           localClientConduitHandle=0x5e7d684010f0
+           remoteServerProxyConduitHandle=0x2bfc3c80
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession1
++=+        conduitId=:rxConfigPort1
+           localClientConduitHandle=0x5e7d682d7d30
+           remoteServerProxyConduitHandle=0x2bfc0060
++=+ INFO: ... successfully connected to TLM FabricServer !
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession1
++=+        conduitId=:txEtherFrameConduit1
+           localClientConduitHandle=0x5e7d683f7060
+           remoteServerProxyConduitHandle=0x2bfb8e90
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession1
++=+        conduitId=:rxEtherFrameConduit1
+           localClientConduitHandle=0x5e7d68485df0
+           remoteServerProxyConduitHandle=0x2bfbc950
+ST1: SimPy runtime initialized
+ST1 tcpConnect handle: 51076
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 0, 6001, 0
+  ST1_SimRuntime step: env.now=0.000s, dt_s=0.100000s, enabled=False, busy=False
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 100610 ns
+  Inputs:
+	cmd_start = 0
+	cmd_stop = 0
+	cmd_reset = 0
+	batch_id = 0
+	recipe_id = 0
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = False
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=True, cmd_reset=True, batch_id=1, recipe_id=1
+ST1: RESET command detected (rising edge)
+  ST1_SimRuntime: Full reset
+ST1: STOP command detected (rising edge)
+ST1: run_latched set to False
+  ST1_SimRuntime step: env.now=0.000s, dt_s=0.100000s, enabled=False, busy=False
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 100100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = True
+	cmd_reset = True
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 0
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = False
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=True, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+ST1: START command detected (rising edge)
+ST1: run_latched set to True
+  ST1_SimRuntime step: env.now=0.100s, dt_s=0.100000s, enabled=True, busy=False
+  SimpleKittingStation: Starting job at env.now=0.1
+  ST1_SimRuntime: Still running, progress: 0.200s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 200100210 ns
+  Inputs:
+	cmd_start = True
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=0.200s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 0.300s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 300100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=0.300s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 0.400s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 400100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=0.400s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 0.500s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 500100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=0.500s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 0.600s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 600100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=0.600s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 0.700s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 700100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=0.700s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 0.800s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 800100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=0.800s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 0.900s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 900100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=0.900s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 1.000s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 1000100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=1.000s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 1.100s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 1100100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=1.100s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 1.200s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 1200100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=1.200s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 1.300s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 1300100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=1.300s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 1.400s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 1400100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=1.400s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 1.500s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 1500100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=1.500s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 1.600s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 1600100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=1.600s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 1.700s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 1700100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=1.700s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 1.800s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 1800100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=1.800s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 1.900s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 1900100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=1.900s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 2.000s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 2000100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=2.000s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 2.100s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 2100100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=2.100s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 2.200s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 2200100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=2.200s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 2.300s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 2300100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=2.300s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 2.400s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 2400100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=2.400s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 2.500s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 2500100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=2.500s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 2.600s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 2600100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=2.600s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 2.700s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 2700100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=2.700s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 2.800s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 2800100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=2.800s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 2.900s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 2900100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=2.900s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 3.000s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 3000100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=3.000s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 3.100s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 3100100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=3.100s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 3.200s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 3200100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=3.200s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 3.300s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 3300100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=3.300s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 3.400s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 3400100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=3.400s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 3.500s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 3500100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=3.500s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 3.600s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 3600100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=3.600s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 3.700s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 3700100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=3.700s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 3.800s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 3800100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=3.800s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 3.900s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 3900100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=3.900s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 4.000s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 4000100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=4.000s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 4.100s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 4100100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=4.100s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 4.200s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 4200100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=4.200s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 4.300s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 4300100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=4.300s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 4.400s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 4400100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=4.400s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 4.500s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 4500100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=4.500s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 4.600s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 4600100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=4.600s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 4.700s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 4700100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=4.700s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 4.800s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 4800100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+
+ST1 attempting to receive on PORT: 6001
+ST1 RX meta dest/src/len: 51076, 6001, 9
+ST1 decapsulate: destPort=51076, srcPort=6001, len=9
+Received 9-byte packet from PLC (command packet)
+ST1 decoded PLC command: cmd_start=False, cmd_stop=False, cmd_reset=False, batch_id=1, recipe_id=1
+  ST1_SimRuntime step: env.now=4.800s, dt_s=0.100000s, enabled=True, busy=True
+  ST1_SimRuntime: Still running, progress: 4.900s
+ST1 sending to PLC on port: 6001
+
++=ST1_ComponentKitting+=
+  VSI time: 4900100210 ns
+  Inputs:
+	cmd_start = False
+	cmd_stop = False
+	cmd_reset = False
+	batch_id = 1
+	recipe_id = 1
+  Outputs:
+	ready = 0
+	busy = 1
+	fault = 0
+	done = 0
+	cycle_time_ms = 9597
+	inventory_ok = 1
+	any_arm_failed = 0
+  Internal state:
+	run_latched = True
+	total_completed = 0
+
+
+

@@ -1,0 +1,5291 @@
+Script started on 2026-01-25 21:57:00+00:00 [TERM="xterm" TTY="/dev/pts/5" COLUMNS="80" LINES="24"]
+python3 .//src/PLC_LineCoordinator/PLC_LineCoordinator.py --domain="AF_UNIX" --server-url="localhost"
++=+ XLVIP-INFO: XlTlmMessageLayer::connectToServer():
++=+    Connecting clientId=':remoteSession0' to 'server@localhost' ...
++=+    Successfully connected 'client :remoteSession0' to 'server@localhost'
++=+    Negotiated socket connection configuration
++=+        Use socket manager thread=FALSE
++=+        Use TCP_NODELAY=TRUE
++=+        Use UDP=FALSE
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession0
++=+        conduitId=:timeServerConduit0
+           localClientConduitHandle=0x61530e8131f8
+           remoteServerProxyConduitHandle=0x2bf9dd50
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession0
++=+        conduitId=:resetServerConduit0
+           localClientConduitHandle=0x61530e826cd8
+           remoteServerProxyConduitHandle=0x2bf99f20
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession0
++=+        conduitId=:txConfigPort0
+           localClientConduitHandle=0x61530ea82430
+           remoteServerProxyConduitHandle=0x2bfad6c0
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession0
++=+        conduitId=:rxConfigPort0
+           localClientConduitHandle=0x61530e7f2ea0
+           remoteServerProxyConduitHandle=0x2bfa9a20
++=+ INFO: ... successfully connected to TLM FabricServer !
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession0
++=+        conduitId=:txEtherFrameConduit0
+           localClientConduitHandle=0x61530e82fc70
+           remoteServerProxyConduitHandle=0x2bfa1fe0
++=+ XLVIP-INFO: XlTlmMessageLayer::connect():
++=+    Successfully connected this remote client conduit into the TLM fabric server:
++=+        clientId=:remoteSession0
++=+        conduitId=:rxEtherFrameConduit0
+           localClientConduitHandle=0x61530e857dd0
+           remoteServerProxyConduitHandle=0x2bfa5f80
+PLC handles: ST1=51076, ST2=53606, ST3=62657, ST4=64114, ST5=59321, ST6=53752
+PLC TX ST1: SKIPPING - no handle yet (need to receive from ST1 first)
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 106210 ns
+  Inputs:
+	S1_ready = 0
+	S1_busy = 0
+	S1_fault = 0
+	S1_done = 0
+	S1_cycle_time_ms = 0
+	S1_inventory_ok = 0
+	S1_any_arm_failed = 0
+	S2_ready = 0
+	S2_busy = 0
+	S2_fault = 0
+	S2_done = 0
+	S2_cycle_time_ms = 0
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0
+	S3_ready = 0
+	S3_busy = 0
+	S3_fault = 0
+	S3_done = 0
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = 0
+	S3_continuity_ok = 0
+	S4_ready = 0
+	S4_busy = 0
+	S4_fault = 0
+	S4_done = 0
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = 0
+	S5_busy = 0
+	S5_fault = 0
+	S5_done = 0
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = 0
+	S6_ready = 0
+	S6_busy = 0
+	S6_fault = 0
+	S6_done = 0
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0
+	S6_downtime_s = 0
+	S6_availability = 0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 1
+	S1_cmd_reset = 1
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 1
+	S2_cmd_reset = 1
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 1
+	S3_cmd_reset = 1
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 1
+	S4_cmd_reset = 1
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 1
+	S5_cmd_reset = 1
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 1
+	S6_cmd_reset = 1
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+  Storing ST1 handle: 51076 (was 0)
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+  Storing ST2 handle: 53606
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+  Storing ST3 handle: 62657
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+  Storing ST4 handle: 64114
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+  Storing ST5 handle: 59321
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+  Storing ST6 handle: 53752
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 100006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = False
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 1
+	S1_cmd_reset = 1
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 1
+	S2_cmd_reset = 1
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 1
+	S3_cmd_reset = 1
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 1
+	S4_cmd_reset = 1
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 1
+	S5_cmd_reset = 1
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 1
+	S6_cmd_reset = 1
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 200006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = False
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = False
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 1
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 300006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 400006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 500006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 600006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 700006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 800006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 900006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 1000006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 1100006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 1200006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 1300006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 1400006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 1500006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 1600006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 1700006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 1800006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 1900006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 2000006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 2100006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 2200006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 2300006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 2400006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 2500006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 2600006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 2700006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 2800006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 2900006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 3000006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 3100006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 3200006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 3300006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 3400006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 3500006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 3600006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 3700006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 3800006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 3900006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 4000006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 4100006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 4200006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 4300006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 4400006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 4500006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 4600006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 4700006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 4800006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
+PLC RX meta dest/src/len: 6001, 51076, 10
+Received packet from ST1_ComponentKitting
+PLC RX meta dest/src/len: 6002, 53606, 28
+Received packet from ST2_FrameCoreAssembly
+PLC RX meta dest/src/len: 6003, 62657, 10
+Received packet from ST3_ElectronicsWiring
+PLC RX meta dest/src/len: 6004, 64114, 16
+Received packet from ST4_CalibrationTesting
+PLC RX meta dest/src/len: 6005, 59321, 17
+Received packet from ST5_QualityInspection
+PLC RX meta dest/src/len: 6006, 53752, 44
+Received packet from ST6_PackagingDispatch
+PLC TX ST1 via HANDLE: 51076, size: 9
+PLC TX ST2 via HANDLE: 53606, size: 9
+PLC TX ST3 via HANDLE: 62657, size: 9
+PLC TX ST4 via HANDLE: 64114, size: 9
+PLC TX ST5 via HANDLE: 59321, size: 9
+PLC TX ST6 via HANDLE: 53752, size: 9
+
++=PLC_LineCoordinator+=
+  VSI time: 4900006210 ns
+  Inputs:
+	S1_ready = False
+	S1_busy = True
+	S1_fault = False
+	S1_done = False
+	S1_cycle_time_ms = 9597
+	S1_inventory_ok = True
+	S1_any_arm_failed = False
+	S2_ready = False
+	S2_busy = False
+	S2_fault = False
+	S2_done = False
+	S2_cycle_time_ms = 12000
+	S2_completed = 0
+	S2_scrapped = 0
+	S2_reworks = 0
+	S2_cycle_time_avg_s = 0.0
+	S3_ready = True
+	S3_busy = False
+	S3_fault = False
+	S3_done = False
+	S3_cycle_time_ms = 0
+	S3_strain_relief_ok = False
+	S3_continuity_ok = False
+	S4_ready = True
+	S4_busy = False
+	S4_fault = False
+	S4_done = False
+	S4_cycle_time_ms = 0
+	S4_total = 0
+	S4_completed = 0
+	S5_ready = False
+	S5_busy = False
+	S5_fault = False
+	S5_done = False
+	S5_cycle_time_ms = 0
+	S5_accept = 0
+	S5_reject = 0
+	S5_last_accept = False
+	S6_ready = True
+	S6_busy = False
+	S6_fault = False
+	S6_done = False
+	S6_cycle_time_ms = 0
+	S6_packages_completed = 0
+	S6_arm_cycles = 0
+	S6_total_repairs = 0
+	S6_operational_time_s = 0.0
+	S6_downtime_s = 0.0
+	S6_availability = 0.0
+  Outputs:
+	S1_cmd_start = 0
+	S1_cmd_stop = 0
+	S1_cmd_reset = 0
+	S1_batch_id = 1
+	S1_recipe_id = 1
+	S2_cmd_start = 0
+	S2_cmd_stop = 0
+	S2_cmd_reset = 0
+	S2_batch_id = 1
+	S2_recipe_id = 1
+	S3_cmd_start = 0
+	S3_cmd_stop = 0
+	S3_cmd_reset = 0
+	S3_batch_id = 1
+	S3_recipe_id = 1
+	S4_cmd_start = 0
+	S4_cmd_stop = 0
+	S4_cmd_reset = 0
+	S4_batch_id = 1
+	S4_recipe_id = 1
+	S5_cmd_start = 0
+	S5_cmd_stop = 0
+	S5_cmd_reset = 0
+	S5_batch_id = 1
+	S5_recipe_id = 1
+	S6_cmd_start = 0
+	S6_cmd_stop = 0
+	S6_cmd_reset = 0
+	S6_batch_id = 1
+	S6_recipe_id = 1
+
+
+
