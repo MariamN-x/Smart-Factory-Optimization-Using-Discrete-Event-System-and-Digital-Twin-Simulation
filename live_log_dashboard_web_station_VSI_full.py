@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Project KPI Dashboard (WebSockets) - FULL SINGLE FILE
-- Auto search recursively for any file that has "logs" in its path + endswith .txt/.log
+- Auto search recursively for any file that has "log" in its path + endswith .txt/.log
 - Real-time tail (does not lock file; writer can append)
 - Left column keeps "ALL" and shows stations as: Station 1 .. Station 6 (from filename first)
 - Click station -> right side shows ONLY that station dashboard
@@ -46,7 +46,7 @@ RAW_LINES_PER_FILE_FALLBACK = 260
 # -------------------------
 # Station name normalization (IMPORTANT FIX)
 # Priority:
-#   1) filename: ST1_logs.txt -> Station 1, ST2_logs.txt -> Station 2
+#   1) filename: ST1_log.txt -> Station 1, ST2_log.txt -> Station 2
 #   2) header: +=ST4_Test+= -> Station 4
 # -------------------------
 FIRST_NUM_RE = re.compile(r"(\d+)")
@@ -490,7 +490,7 @@ class StatsStore:
                 "utilization": round(util, 3),
                 "inputs": st.inputs,
                 "outputs": st.outputs,
-                "logs": lines,
+                "log": lines,
                 "kpis": {
                     "rx_packets": st.rx_packets,
                     "cycles_done": st.cycles_done,
@@ -1116,7 +1116,7 @@ function renderStationRight(it){
   const k = it.kpis || {};
   const inputs = it.inputs || {};
   const outputs = it.outputs || {};
-  const logs = (it.logs || []).join("\n");
+  const log = (it.log || []).join("\n");
   const utilPct = Math.round((it.utilization||0)*100);
 
   body.innerHTML = `
@@ -1146,16 +1146,16 @@ function renderStationRight(it){
       <pre id="preOutputs"></pre>
     </div>
 
-    <div class="sub" style="margin:10px 0 6px;">Live logs</div>
-    <pre id="preLogs" style="max-height: 360px;"></pre>
+    <div class="sub" style="margin:10px 0 6px;">Live log</div>
+    <pre id="prelog" style="max-height: 360px;"></pre>
   `;
 
   document.getElementById("preInputs").textContent = "Inputs:\n" + fmt(inputs);
   document.getElementById("preOutputs").textContent = "Outputs:\n" + fmt(outputs);
 
-  const preLogs = document.getElementById("preLogs");
-  preLogs.textContent = logs || "(no lines yet)";
-  setTimeout(()=>{ preLogs.scrollTop = preLogs.scrollHeight; }, 0);
+  const prelog = document.getElementById("prelog");
+  prelog.textContent = log || "(no lines yet)";
+  setTimeout(()=>{ prelog.scrollTop = prelog.scrollHeight; }, 0);
 
   const hist = it.cycle_time_ms_hist || [];
   drawLine(document.getElementById("lineCycle"), hist.slice(-120));
@@ -1258,14 +1258,14 @@ async def broadcaster(app: web.Application):
 # -------------------------
 # Auto file discovery
 # -------------------------
-def _auto_find_logs_recursive() -> List[str]:
+def _auto_find_log_recursive() -> List[str]:
     root = os.getcwd()
     found: List[str] = []
     for dp, _dirs, fnames in os.walk(root):
         for fn in fnames:
             full = os.path.join(dp, fn)
             low = full.lower()
-            if "logs" not in low:
+            if "log" not in low:
                 continue
             if not (fn.lower().endswith(".log") or fn.lower().endswith(".txt")):
                 continue
@@ -1276,13 +1276,13 @@ def _auto_find_logs_recursive() -> List[str]:
 def build_file_list(args) -> List[str]:
     files: List[str] = []
 
-    if args.logs:
-        files.extend(args.logs)
+    if args.log:
+        files.extend(args.log)
     if args.glob:
         files.extend(glob.glob(args.glob))
 
     if not files:
-        files.extend(_auto_find_logs_recursive())
+        files.extend(_auto_find_log_recursive())
 
     if not files:
         pwd = os.getcwd()
@@ -1304,10 +1304,10 @@ def build_file_list(args) -> List[str]:
 # -------------------------
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--logs", nargs="*",
+    ap.add_argument("--log", nargs="*",
                     help="Explicit log file paths (optional).")
     ap.add_argument("--glob", default=None,
-                    help='Glob pattern, e.g. "logs/*.txt" (optional).')
+                    help='Glob pattern, e.g. "log/*.txt" (optional).')
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=8787)
     ap.add_argument("--from-start", action="store_true",
@@ -1319,7 +1319,7 @@ def main():
     files = build_file_list(args)
     if not files:
         print("No log files found.")
-        print('Tip: put your files under a folder that includes "logs" in its name/path, ex: ./logs/ST1_logs.txt')
+        print('Tip: put your files under a folder that includes "log" in its name/path, ex: ./log/ST1_log.txt')
         return
 
     engine = Engine(files, from_start=args.from_start)
