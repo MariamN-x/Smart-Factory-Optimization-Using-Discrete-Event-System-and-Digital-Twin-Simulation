@@ -44,71 +44,100 @@ ST1_ComponentKitting0 = 0
 
 # Start of user custom code region. Please apply edits only within these regions:  Global Variables & Definitions
 
-# --- Station 1 (Component Kitting) SimPy model ---
-# Simplified to run one cycle per PLC start command
-# Uses a fixed cycle time observed from logs: 9597ms = 9.597s
-
+# --- Station 1 (Component Kitting) FIXED handshake model ---
 import simpy
 import random
-import math
-from collections import deque
 
-
-# =====================
-# SIMPLIFIED STATION 1 MODEL
-# =====================
-class SimpleKittingStation:
+class FixedKittingStation:
     """
-    Simplified station that runs one kitting cycle per start command.
-    - Starts on rising edge of cmd_start
-    - Runs for fixed cycle time (9.597s)
-    - Pulses done for 1 tick when complete
-    - Returns to idle state
+    Fixed station with proper handshake that keeps start_latched during entire cycle.
     """
     def __init__(self, env: simpy.Environment):
         self.env = env
-        self.state = "IDLE"  # IDLE / RUNNING / COMPLETE
-        self._busy = False
-        self._done_pulse = False
-        self._job_proc = None
-        self._cycle_time_s = 9.597  # Observed from logs: 9597ms = 9.597s
+        self.state = "IDLE"
+        self._cycle_proc = None  # Active SimPy process handle
+        self._nominal_cycle_time_s = 9.597  # Target/nominal
         
-    def start_job(self):
-        """Start a new kitting cycle if not already running"""
-        if self._job_proc is None and not self._busy:
-            print(f"  SimpleKittingStation: Starting job at env.now={self.env.now}")
-            self.state = "RUNNING"
-            self._busy = True
-            self._done_pulse = False
-            self._job_proc = self.env.process(self._kit_cycle())
-            return True
-        return False
+        # State variables
+        self._busy = False
+        self._fault = False
+        self._done_pulse = False
+        
+        # Cycle timing
+        self._cycle_start_s = 0
+        self._cycle_end_s = 0
+        self._actual_cycle_time_ms = 0
+        self._cycle_count = 0
+        self._cycle_time_sum_ms = 0
+        
+        # KPIs
+        self.completed_cycles = 0
+        
+    def start_cycle(self, start_time_s: float):
+        """Start a new kitting cycle - ONLY called on cmd_start rising edge"""
+        if self._cycle_proc is not None or self._busy:
+            print(f"  WARNING: FixedKittingStation.start_cycle called but already busy!")
+            return False
+            
+        print(f"  FixedKittingStation: Starting job at env.now={self.env.now}")
+        self.state = "RUNNING"
+        self._busy = True
+        self._done_pulse = False
+        self._cycle_start_s = start_time_s
+        self._actual_cycle_time_ms = 0  # Clear until completion
+        self._cycle_proc = self.env.process(self._kit_cycle())
+        return True
     
     def _kit_cycle(self):
         """Run a single kitting cycle"""
-        yield self.env.timeout(self._cycle_time_s)
-        print(f"  SimpleKittingStation: Job completed at env.now={self.env.now}")
-        self._busy = False
-        self._done_pulse = True
-        self.state = "COMPLETE"
-        self._job_proc = None
+        try:
+            yield self.env.timeout(self._nominal_cycle_time_s)
+            
+            # Cycle completed successfully
+            self._cycle_end_s = self.env.now
+            actual_time_s = self._cycle_end_s - self._cycle_start_s
+            self._actual_cycle_time_ms = int(actual_time_s * 1000)
+            
+            # Update running average
+            self._cycle_count += 1
+            self._cycle_time_sum_ms += self._actual_cycle_time_ms
+            self.completed_cycles += 1
+            
+            print(f"  FixedKittingStation: Job completed at env.now={self.env.now}, "
+                  f"actual_time={self._actual_cycle_time_ms}ms")
+            
+            self._busy = False
+            self._done_pulse = True  # Pulse for one iteration
+            self.state = "COMPLETE"
+            
+        except simpy.Interrupt:
+            # Cycle was stopped
+            print("  FixedKittingStation: Cycle interrupted by stop command")
+            self._busy = False
+            self._done_pulse = False
+            self.state = "IDLE"
+        finally:
+            self._cycle_proc = None
         
-    def stop_job(self):
+    def stop_cycle(self):
         """Stop any running job"""
-        if self._job_proc is not None:
-            self._job_proc.interrupt()
-            self._job_proc = None
+        if self._cycle_proc is not None:
+            self._cycle_proc.interrupt()
         self._busy = False
         self._done_pulse = False
         self.state = "IDLE"
         
     def reset(self):
         """Full reset"""
-        self.stop_job()
+        self.stop_cycle()
         self.state = "IDLE"
         self._busy = False
         self._done_pulse = False
-        self._job_proc = None
+        self._cycle_proc = None
+        self._actual_cycle_time_ms = 9597  # Reset to nominal
+        self._cycle_count = 0
+        self._cycle_time_sum_ms = 0
+        self.completed_cycles = 0
         
     def is_busy(self):
         return self._busy
@@ -121,116 +150,149 @@ class SimpleKittingStation:
         was_set = self._done_pulse
         self._done_pulse = False
         return was_set
+        
+    def get_cycle_time_ms(self):
+        return self._actual_cycle_time_ms if self._actual_cycle_time_ms > 0 else 9597
+        
+    def get_avg_cycle_time_ms(self):
+        if self._cycle_count > 0:
+            return int(self._cycle_time_sum_ms / self._cycle_count)
+        return 9597
+        
+    def has_active_proc(self):
+        """Check if there's an active SimPy process"""
+        return self._cycle_proc is not None
 
 
-# =====================
-# VSI <-> SimPy Wrapper (SIMPLIFIED)
-# =====================
+# VSI <-> SimPy Wrapper (FIXED - keeps start_latched during cycle)
 class ST1_SimRuntime:
     def __init__(self):
         self.env = simpy.Environment()
-        self.station = SimpleKittingStation(self.env)
+        self.station = FixedKittingStation(self.env)
         
-        self.enabled = False
-        self._run_latched = False
-        self._prev_enabled = False
-        
-        # Track done pulse for exactly 1 tick
-        self._done_pulse_for_output = False
-        self._done_was_set_previous_tick = False
+        # Handshake state - CLEAR on init
+        self._start_latched = False  # Set on cmd_start rising edge, cleared on cycle completion
+        self._prev_cmd_start = 0
+        self._prev_cmd_stop = 0
+        self._prev_cmd_reset = 0
         
         # Context from PLC
         self.batch_id = 0
         self.recipe_id = 0
         
-        # Cycle time tracking
-        self._cycle_time_ms = 9597  # Fixed from logs
+        # Debug tracking
+        self._last_start_edge = False
+        self._last_step_dt = 0.0
         
     def reset(self):
+        """Full reset - NO auto-start processes"""
         self.env = simpy.Environment()
-        self.station = SimpleKittingStation(self.env)
-        self.enabled = False
-        self._run_latched = False
-        self._prev_enabled = False
-        self._done_pulse_for_output = False
-        self._done_was_set_previous_tick = False
-        print("  ST1_SimRuntime: Full reset")
-        
-    def set_enabled(self, enabled: bool):
-        self.enabled = bool(enabled)
+        self.station = FixedKittingStation(self.env)
+        self._start_latched = False
+        self._prev_cmd_start = 0
+        self._prev_cmd_stop = 0
+        self._prev_cmd_reset = 0
+        print("  ST1_SimRuntime: Full reset - NO auto-start")
         
     def set_context(self, batch_id: int, recipe_id: int):
         self.batch_id = int(batch_id)
         self.recipe_id = int(recipe_id)
         
-    def step(self, dt_s: float):
-        if dt_s is None or dt_s <= 0:
+    def update_handshake(self, cmd_start: int, cmd_stop: int, cmd_reset: int):
+        """Process PLC commands and update internal state"""
+        # Reset has highest priority
+        if cmd_reset and not self._prev_cmd_reset:
+            print("  ST1_SimRuntime: RESET command (rising edge)")
+            self.reset()
+            self._prev_cmd_reset = 1
             return
             
-        # DEBUG: Print current time and state
-        print(f"  ST1_SimRuntime step: env.now={self.env.now:.3f}s, dt_s={dt_s:.6f}s, enabled={self.enabled}, busy={self.station.is_busy()}")
+        self._prev_cmd_reset = int(cmd_reset)
         
-        # Handle edge detection for starting jobs
-        # Start job on rising edge of enabled (when run_latched becomes true)
-        if self.enabled and not self.station.is_busy():
-            # Only start if we're enabled and not already running
-            self.station.start_job()
+        # Rising edge detection for start
+        start_edge = (cmd_start == 1 and self._prev_cmd_start == 0)
+        self._last_start_edge = start_edge
         
-        # Stop job if disabled
-        if not self.enabled and self.station.is_busy():
-            self.station.stop_job()
+        # Stop command (rising edge) - immediate stop
+        if cmd_stop and not self._prev_cmd_stop:
+            print("  ST1_SimRuntime: STOP command (rising edge)")
+            self._start_latched = False  # Clear start latch on stop
+            self.station.stop_cycle()
             
-        # Advance simulation time
-        target_time = self.env.now + float(dt_s)
-        self.env.run(until=target_time)
+        self._prev_cmd_stop = int(cmd_stop)
         
-        # Handle done pulse timing
-        # If station just set done pulse, we need to output it for 1 tick
-        station_done = self.station.get_done_pulse()
-        
-        # Set output done pulse if station says it's done AND we haven't output it yet
-        if station_done and not self._done_was_set_previous_tick:
-            self._done_pulse_for_output = True
-            self._done_was_set_previous_tick = True
-            print(f"  ST1_SimRuntime: Setting done pulse for output at env.now={self.env.now:.3f}s")
-        elif not station_done:
-            # Clear tracking if station is no longer in done state
-            self._done_was_set_previous_tick = False
+        # Start logic: ONLY on rising edge AND station idle AND no fault
+        if start_edge:
+            if not self.station.is_busy() and not self.station._fault:
+                print("  ST1_SimRuntime: START rising edge, station idle - starting cycle")
+                self._start_latched = True  # Set and KEEP until cycle completes
+                self.station.start_cycle(self.env.now)
+            else:
+                print(f"  ST1_SimRuntime: START rising edge but station busy={self.station.is_busy()}, fault={self.station._fault} - ignoring")
+                
+        # *** CRITICAL FIX: DO NOT clear start_latched when cmd_start drops ***
+        # PLC pulses start, but we keep start_latched=True for entire cycle
+        # Commenting out the problematic code:
+        # if cmd_start == 0 and self._prev_cmd_start == 1:
+        #     print("  ST1_SimRuntime: cmd_start dropped to 0, clearing start_latch")
+        #     self._start_latched = False
             
-        # DEBUG: Print state after step
-        if self.station.is_busy():
-            print(f"  ST1_SimRuntime: Still running, progress: {self.env.now:.3f}s")
+        self._prev_cmd_start = int(cmd_start)
+        
+        # Safety check: if station is busy but start_latched is False, fix it
+        if self.station.is_busy() and not self._start_latched:
+            print("  ERROR: ST1_SimRuntime: station busy but start_latched=False! Fixing...")
+            self._start_latched = True
+            
+        # Safety check: if station has active process but busy flag is False, fix it
+        if self.station.has_active_proc() and not self.station.is_busy():
+            print("  ERROR: ST1_SimRuntime: active process but busy=False! Fixing...")
+            self.station._busy = True
+        
+    def step(self, dt_s: float):
+        """Advance simulation ONLY when necessary"""
+        self._last_step_dt = dt_s
+        
+        # Step SimPy ONLY if busy==True OR start_latched==True
+        should_step = self.station.is_busy() or self._start_latched
+        
+        print(f"  ST1_SimRuntime step: env.now={self.env.now:.3f}s, dt_s={dt_s:.6f}s, "
+              f"start_latched={self._start_latched}, busy={self.station.is_busy()}, "
+              f"has_proc={self.station.has_active_proc()}, should_step={should_step}")
+        
+        # DO NOT step if stop command is active and we're not in a cycle
+        if self._prev_cmd_stop and not self.station.is_busy():
+            print(f"  ST1_SimRuntime: NOT stepping - stop command active and not busy")
+            return
+            
+        # Only step if we should step
+        if should_step and dt_s > 0:
+            target_time = self.env.now + float(dt_s)
+            self.env.run(until=target_time)
+            print(f"  ST1_SimRuntime: Stepped to env.now={self.env.now:.3f}s")
+            
+            # Check for cycle completion and clear start_latched
+            if self.station.get_done_pulse():
+                print("  ST1_SimRuntime: Cycle completed, clearing start_latched")
+                self._start_latched = False
         
     def outputs(self):
-        # Map internal state to VSI signals
+        # Get station state
         busy = 1 if self.station.is_busy() else 0
-        fault = 0  # No faults in simplified model
-        inventory_ok = 1  # Always OK in simplified model
-        any_arm_failed = 0  # No failures in simplified model
+        fault = 0  # No faults in this model
+        inventory_ok = 1
+        any_arm_failed = 0
         
-        # Ready = not busy AND not fault AND enabled (PLC wants to see ready=1 when idle)
-        ready = 1 if (not busy and not fault and self.enabled) else 0
+        # Ready = not busy AND not fault (independent of start latch)
+        ready = 1 if (not busy and not fault) else 0
         
-        # Done pulse for exactly 1 tick
-        done = 1 if self._done_pulse_for_output else 0
+        # Done pulse for exactly ONE iteration after completion
+        done = 1 if self.station.get_done_pulse() else 0
         
-        # Clear done pulse after reading (for next tick)
-        self._done_pulse_for_output = False
-        
-        # Fixed cycle time from logs
-        cycle_time_ms = self._cycle_time_ms
+        # Real cycle time (0 if cycle hasn't completed yet)
+        cycle_time_ms = self.station.get_cycle_time_ms()
         
         return ready, busy, fault, done, cycle_time_ms, inventory_ok, any_arm_failed
-        
-    def result_snapshot(self):
-        return {
-            "completed_count": 0,
-            "last_cycle_time_ms": self._cycle_time_ms,
-            "inventory_state": "READY",
-            "arm_state": "IDLE" if not self.station.is_busy() else "RUNNING",
-            "batch_id": self.batch_id,
-            "recipe_id": self.recipe_id,
-        }
 
 # End of user custom code region. Please don't edit beyond this point.
 class ST1_ComponentKitting:
@@ -258,24 +320,8 @@ class ST1_ComponentKitting:
         # Start of user custom code region. Please apply edits only within these regions:  Constructor
 
         self._sim = None
-        self._run_latched = False
-        self._prev_cmd_start = 0
-        self._prev_cmd_stop = 0
-        self._prev_cmd_reset = 0
-
-        # Latest SimPy snapshot copied into VSI mainThread (debug / KPIs)
-        self.last_result = {
-            "completed_count": 0,
-            "last_cycle_time_ms": 0,
-            "inventory_state": "",
-            "arm_state": "",
-            "batch_id": 0,
-            "recipe_id": 0,
-        }
-
-        # Aggregated KPIs in VSI mainThread
+        self._prev_done = 0  # For tracking done transitions
         self.total_completed = 0
-        self.total_cycle_time_ms = 0
 
 # End of user custom code region. Please don't edit beyond this point.
 
@@ -289,11 +335,9 @@ class ST1_ComponentKitting:
 
             # Start of user custom code region. Please apply edits only within these regions:  After Reset
             self._sim = ST1_SimRuntime()
-            self._run_latched = False
-            self._prev_cmd_start = 0
-            self._prev_cmd_stop = 0
-            self._prev_cmd_reset = 0
-            print("ST1: SimPy runtime initialized")
+            self._prev_done = 0
+            self.total_completed = 0
+            print("ST1: Fixed SimPy runtime initialized - NO auto-start")
 
 # End of user custom code region. Please don't edit beyond this point.
             self.updateInternalVariables()
@@ -303,14 +347,6 @@ class ST1_ComponentKitting:
             self.establishTcpUdpConnection()
             nextExpectedTime = vsiCommonPythonApi.getSimulationTimeInNs()
             while(vsiCommonPythonApi.getSimulationTimeInNs() < self.totalSimulationTime):
-
-                # Start of user custom code region. Please apply edits only within these regions:  Inside the while loop
-
-                # REMOVED: Moved to "Before sending the packet" region to ensure proper execution order
-                # The edge detection and SimPy stepping must happen AFTER receiving the Ethernet packet
-                # This ensures fresh PLC inputs are processed immediately
-
-                # End of user custom code region. Please don't edit beyond this point.
 
                 self.updateInternalVariables()
 
@@ -329,55 +365,31 @@ class ST1_ComponentKitting:
                 print(f"ST1 attempting to receive on PORT: {PLC_LineCoordinatorSocketPortNumber0}")
                 receivedData = vsiEthernetPythonGateway.recvEthernetPacket(PLC_LineCoordinatorSocketPortNumber0)
                 
-                # DEBUG: Instrument receive path
-                print(f"ST1 RX meta dest/src/len: {receivedData[0]}, {receivedData[1]}, {receivedData[3]}")
-                
                 if(receivedData[3] != 0):
                     self.decapsulateReceivedData(receivedData)
 
                 # Start of user custom code region. Please apply edits only within these regions:  Before sending the packet
 
-                # Process edge detection and SimPy stepping AFTER receiving the packet
-                # This ensures we use FRESH inputs from PLC, not stale data from previous cycle
-                
-                # Edge detect start/stop/reset (latch run state) using FRESH inputs
-                if self.mySignals.cmd_reset and not self._prev_cmd_reset:
-                    print("ST1: RESET command detected (rising edge)")
-                    self._run_latched = False
-                    if self._sim is not None:
-                        self._sim.reset()
-
-                if self.mySignals.cmd_start and not self._prev_cmd_start:
-                    print("ST1: START command detected (rising edge)")
-                    self._run_latched = True
-                    print(f"ST1: run_latched set to True")
-
-                if self.mySignals.cmd_stop and not self._prev_cmd_stop:
-                    print("ST1: STOP command detected (rising edge)")
-                    self._run_latched = False
-                    print(f"ST1: run_latched set to False")
-
-                self._prev_cmd_start = int(self.mySignals.cmd_start)
-                self._prev_cmd_stop = int(self.mySignals.cmd_stop)
-                self._prev_cmd_reset = int(self.mySignals.cmd_reset)
-
-                # Step SimPy using VSI simulationStep (ns -> s)
-                dt_s = float(self.simulationStep) / 1e9 if self.simulationStep else 0.0
-
+                # Process handshake and simulation stepping AFTER receiving the packet
                 if self._sim is not None:
-                    # Set enabled state based on latched run state
-                    self._sim.set_enabled(self._run_latched)
-                    
-                    # Set recipe/batch context from PLC (FRESH data)
+                    # Update context
                     self._sim.set_context(self.mySignals.batch_id, self.mySignals.recipe_id)
-
-                    # Advance SimPy simulation by dt_s
+                    
+                    # Process PLC commands and update handshake state
+                    self._sim.update_handshake(
+                        self.mySignals.cmd_start,
+                        self.mySignals.cmd_stop,
+                        self.mySignals.cmd_reset
+                    )
+                    
+                    # Advance simulation time ONLY when appropriate
+                    dt_s = float(self.simulationStep) / 1e9 if self.simulationStep else 0.0
                     self._sim.step(dt_s)
                     
                     # Get outputs from SimPy
                     ready, busy, fault, done, cycle_time_ms, inventory_ok, any_arm_failed = self._sim.outputs()
 
-                    # Copy SimPy outputs into VSI signals (sent to PLC in this SAME cycle)
+                    # Copy SimPy outputs into VSI signals
                     self.mySignals.ready = int(ready)
                     self.mySignals.busy = int(busy)
                     self.mySignals.fault = int(fault)
@@ -385,30 +397,19 @@ class ST1_ComponentKitting:
                     self.mySignals.cycle_time_ms = int(cycle_time_ms)
                     self.mySignals.inventory_ok = int(inventory_ok)
                     self.mySignals.any_arm_failed = int(any_arm_failed)
-
-                    # Always capture latest SimPy snapshot into mainThread variables
-                    snap = self._sim.result_snapshot()
-                    self.last_result["completed_count"] = int(snap.get("completed_count", 0))
-                    self.last_result["last_cycle_time_ms"] = int(snap.get("last_cycle_time_ms", 0))
-                    self.last_result["inventory_state"] = str(snap.get("inventory_state", ""))
-                    self.last_result["arm_state"] = str(snap.get("arm_state", ""))
-                    self.last_result["batch_id"] = int(self.mySignals.batch_id)
-                    self.last_result["recipe_id"] = int(self.mySignals.recipe_id)
-
-                    # Count completions
-                    if self.mySignals.done == 1:
+                    
+                    # Track completions
+                    if done and not self._prev_done:
                         self.total_completed += 1
-                        self.total_cycle_time_ms += int(self.mySignals.cycle_time_ms)
-                        print(f"ST1: Kitting cycle completed! Total completions: {self.total_completed}")
+                        print(f"ST1: Cycle completed! cycle_time={cycle_time_ms}ms, total={self.total_completed}")
+
+                # Update previous done state
+                self._prev_done = int(self.mySignals.done)
 
                 # End of user custom code region. Please don't edit beyond this point.
 
                 #Send ethernet packet to PLC_LineCoordinator
                 self.sendEthernetPacketToPLC_LineCoordinator()
-
-                # Start of user custom code region. Please apply edits only within these regions:  After sending the packet
-
-                # End of user custom code region. Please don't edit beyond this point.
 
                 print("\n+=ST1_ComponentKitting+=")
                 print("  VSI time:", end = " ")
@@ -440,12 +441,9 @@ class ST1_ComponentKitting:
                 print(self.mySignals.inventory_ok)
                 print("\tany_arm_failed =", end = " ")
                 print(self.mySignals.any_arm_failed)
-                
-                # Debug output
-                print("  Internal state:")
-                print(f"\trun_latched = {self._run_latched}")
-                print(f"\ttotal_completed = {self.total_completed}")
-
+                print(f"  Internal: total_completed={self.total_completed}")
+                if self._sim is not None:
+                    print(f"  SimState: start_latched={self._sim._start_latched}")
                 print("\n\n")
 
                 self.updateInternalVariables()
@@ -464,25 +462,15 @@ class ST1_ComponentKitting:
 
                 vsiCommonPythonApi.advanceSimulation(nextExpectedTime - vsiCommonPythonApi.getSimulationTimeInNs())
 
-            # Print summary captured in mainThread
-            avg_ms = (self.total_cycle_time_ms / float(self.total_completed)) if self.total_completed > 0 else 0.0
-            print("=== ST1 SUMMARY (mainThread) ===")
-            print("total_completed =", self.total_completed)
-            print("avg_cycle_time_ms =", avg_ms)
-
             if(vsiCommonPythonApi.getSimulationTimeInNs() < self.totalSimulationTime):
                 vsiEthernetPythonGateway.terminate()
         except Exception as e:
             if str(e) == "stopRequested":
                 print("Terminate signal has been received from one of the VSI clients")
-                # Advance time with a step that is equal to "simulationStep + 1" so that all other clients
-                # receive the terminate packet before terminating this client
                 vsiCommonPythonApi.advanceSimulation(self.simulationStep + 1)
             else:
                 print(f"An error occurred: {str(e)}")
         except:
-            # Advance time with a step that is equal to "simulationStep + 1" so that all other clients
-            # receive the terminate packet before terminating this client
             vsiCommonPythonApi.advanceSimulation(self.simulationStep + 1)
 
 
@@ -490,7 +478,6 @@ class ST1_ComponentKitting:
     def establishTcpUdpConnection(self):
         if(self.clientPortNum[ST1_ComponentKitting0] == 0):
             self.clientPortNum[ST1_ComponentKitting0] = vsiEthernetPythonGateway.tcpConnect(bytes(PLC_LineCoordinatorIpAddress), PLC_LineCoordinatorSocketPortNumber0)
-            print(f"ST1 tcpConnect handle: {self.clientPortNum[ST1_ComponentKitting0]}")  # Keep for debugging
 
         if(self.clientPortNum[ST1_ComponentKitting0] == 0):
             print("Error: Failed to connect to port: PLC_LineCoordinator on TCP port: ")
@@ -508,15 +495,12 @@ class ST1_ComponentKitting:
         for i in range(self.receivedNumberOfBytes):
             self.receivedPayload[i] = receivedData[2][i]
 
-        # DEBUG: Print what we received
         print(f"ST1 decapsulate: destPort={self.receivedDestPortNumber}, srcPort={self.receivedSrcPortNumber}, len={self.receivedNumberOfBytes}")
         
-        # Decode PLC command packets when we receive 9 bytes
         if self.receivedNumberOfBytes == 9:
             print("Received 9-byte packet from PLC (command packet)")
             receivedPayload = bytes(self.receivedPayload)
             
-            # Decode the 9-byte command packet
             self.mySignals.cmd_start, receivedPayload = self.unpackBytes('?', receivedPayload)
             self.mySignals.cmd_stop, receivedPayload = self.unpackBytes('?', receivedPayload)
             self.mySignals.cmd_reset, receivedPayload = self.unpackBytes('?', receivedPayload)
@@ -549,13 +533,8 @@ class ST1_ComponentKitting:
 
         bytesToSend += self.packBytes('?', self.mySignals.any_arm_failed)
 
-        #Send ethernet packet to PLC_LineCoordinator
         print(f"ST1 sending to PLC on port: {PLC_LineCoordinatorSocketPortNumber0}")
         vsiEthernetPythonGateway.sendEthernetPacket(PLC_LineCoordinatorSocketPortNumber0, bytes(bytesToSend))
-
-        # Start of user custom code region. Please apply edits only within these regions:  Protocol's callback function
-
-        # End of user custom code region. Please don't edit beyond this point.
 
 
 
@@ -628,10 +607,6 @@ def main():
     inputArgs = argparse.ArgumentParser(" ")
     inputArgs.add_argument('--domain', metavar='D', default='AF_UNIX', help='Socket domain for connection with the VSI TLM fabric server')
     inputArgs.add_argument('--server-url', metavar='CO', default='localhost', help='server URL of the VSI TLM Fabric Server')
-
-    # Start of user custom code region. Please apply edits only within these regions:  Main method
-
-    # End of user custom code region. Please don't edit beyond this point.
 
     args = inputArgs.parse_args()
 
