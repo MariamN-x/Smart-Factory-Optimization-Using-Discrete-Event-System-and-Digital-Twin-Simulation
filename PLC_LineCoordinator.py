@@ -130,44 +130,65 @@ ST6_PackagingDispatch5 = 5
 
 
 # Start of user custom code region. Please apply edits only within these regions:  Global Variables & Definitions
-# PLC coordination state machine (Option A)
-# - Run stations strictly sequentially: S1 -> S2 -> S3 -> S4 -> S5 -> S6
-# - Only ONE station is allowed to run at any time; all others are held stopped.
-# - PLC advances to the next station ONLY when it receives a rising edge on Sx_done.
-# - If any station faults, PLC stops and issues a reset pulse to ALL stations, then restarts at S1.
+# PLC coordination state machine for the 6-station line (S1..S6).
 
+STATIONS = ["S1", "S2", "S3", "S4", "S5", "S6"]
 RESET_PULSE_TICKS = 3
 
-def _any_fault(ms):
-    return bool(ms.S1_fault or ms.S2_fault or ms.S3_fault or ms.S4_fault or ms.S5_fault or ms.S6_fault)
+# Buffer constants
+BUF_MAX = 2  # Increased buffer size for better pipeline flow
+
+
+def _set_context(ms, st, batch_id, recipe_id):
+    setattr(ms, f"{st}_batch_id", int(batch_id))
+    setattr(ms, f"{st}_recipe_id", int(recipe_id))
+
+
+def _get(ms, st, field):
+    return getattr(ms, f"{st}_{field}")
+
+
+def _set_cmd(ms, st, start=None, stop=None, reset=None):
+    if start is not None:
+        setattr(ms, f"{st}_cmd_start", 1 if start else 0)
+    if stop is not None:
+        setattr(ms, f"{st}_cmd_stop", 1 if stop else 0)
+    if reset is not None:
+        setattr(ms, f"{st}_cmd_reset", 1 if reset else 0)
+
+
+def _stop_station(ms, st):
+    _set_cmd(ms, st, start=0, stop=1, reset=0)
+
+
+def _start_station(ms, st):
+    _set_cmd(ms, st, start=1, stop=0, reset=0)
+
+
+def _reset_station(ms, st):
+    _set_cmd(ms, st, start=0, stop=1, reset=1)
+
 
 def _stop_all(ms):
-    # stop all stations (no reset)
-    ms.S1_cmd_start = 0; ms.S1_cmd_stop = 1; ms.S1_cmd_reset = 0
-    ms.S2_cmd_start = 0; ms.S2_cmd_stop = 1; ms.S2_cmd_reset = 0
-    ms.S3_cmd_start = 0; ms.S3_cmd_stop = 1; ms.S3_cmd_reset = 0
-    ms.S4_cmd_start = 0; ms.S4_cmd_stop = 1; ms.S4_cmd_reset = 0
-    ms.S5_cmd_start = 0; ms.S5_cmd_stop = 1; ms.S5_cmd_reset = 0
-    ms.S6_cmd_start = 0; ms.S6_cmd_stop = 1; ms.S6_cmd_reset = 0
+    for st in STATIONS:
+        _stop_station(ms, st)
 
-def _reset_all_outputs(ms):
-    # stop + reset all stations
-    ms.S1_cmd_start = 0; ms.S1_cmd_stop = 1; ms.S1_cmd_reset = 1
-    ms.S2_cmd_start = 0; ms.S2_cmd_stop = 1; ms.S2_cmd_reset = 1
-    ms.S3_cmd_start = 0; ms.S3_cmd_stop = 1; ms.S3_cmd_reset = 1
-    ms.S4_cmd_start = 0; ms.S4_cmd_stop = 1; ms.S4_cmd_reset = 1
-    ms.S5_cmd_start = 0; ms.S5_cmd_stop = 1; ms.S5_cmd_reset = 1
-    ms.S6_cmd_start = 0; ms.S6_cmd_stop = 1; ms.S6_cmd_reset = 1
 
-def _propagate_batch_recipe(ms, batch_id, recipe_id):
-    ms.S1_batch_id = batch_id; ms.S1_recipe_id = recipe_id
-    ms.S2_batch_id = batch_id; ms.S2_recipe_id = recipe_id
-    ms.S3_batch_id = batch_id; ms.S3_recipe_id = recipe_id
-    ms.S4_batch_id = batch_id; ms.S4_recipe_id = recipe_id
-    ms.S5_batch_id = batch_id; ms.S5_recipe_id = recipe_id
-    ms.S6_batch_id = batch_id; ms.S6_recipe_id = recipe_id
+def _start_all(ms):
+    for st in STATIONS:
+        _start_station(ms, st)
 
-# End of user custom code region. Please don't edit beyond this point.
+
+def _reset_all(ms):
+    for st in STATIONS:
+        _reset_station(ms, st)
+
+
+def _any_fault(ms):
+    return any(_get(ms, st, "fault") for st in STATIONS)
+# End of user custom code region.
+
+
 class PLC_LineCoordinator:
 
     def __init__(self, args):
@@ -191,24 +212,64 @@ class PLC_LineCoordinator:
         self.mySignals = MySignals()
 
         # Start of user custom code region. Please apply edits only within these regions:  Constructor
-        # coordination vars
+        # coordinator internal state
         self._batch_id = 1
         self._recipe_id = 1
 
-        # state
-        self._state = "RESETTING"
+        # State machine
+        self._state = "RESET_ALL"
         self._reset_ticks = 0
+        self._run_enable = True  # Master enable for line
 
-        # active station index (1..6)
-        self._active_idx = 1
+        # Previous done states for edge detection
+        self._prev_done = {
+            "S1": False, "S2": False, "S3": False, 
+            "S4": False, "S5": False, "S6": False
+        }
+        
+        # DONE LATCHES (Critical fix)
+        self._done_latched = {
+            "S1": False, "S2": False, "S3": False,
+            "S4": False, "S5": False, "S6": False
+        }
+        
+        # Start pulse sent flags (ensure one-shot)
+        self._start_sent = {
+            "S1": False, "S2": False, "S3": False,
+            "S4": False, "S5": False, "S6": False
+        }
 
-        # done edge tracking (1..6)
-        self._prev_done = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+        # pipeline buffers
+        self._buffers = {
+            "S1_to_S2": 0,
+            "S2_to_S3": 0,
+            "S3_to_S4": 0,
+            "S4_to_S5": 0,
+            "S5_to_S6": 0,
+        }
+        
+        self.finished = 0  # Completed packages from S6
 
-        # latch to avoid advancing twice if a station holds done high
-        self._done_seen = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
-# End of user custom code region. Please don't edit beyond this point.
+        # KPI totals for ST5
+        self._s5_accept_total = 0
+        self._s5_reject_total = 0
 
+        # Store actual connection handles for sending commands
+        self.station_handles = {
+            "S1": 0,
+            "S2": 0,
+            "S3": 0,
+            "S4": 0,
+            "S5": 0,
+            "S6": 0
+        }
+        
+        # Debug counters and timers
+        self._scan_count = 0
+        self._sim_time_s = 0.0
+        self._debug_override_active = False
+        self._debug_override_done = False
+        # End of user custom code region.
 
 
     def mainThread(self):
@@ -218,19 +279,52 @@ class PLC_LineCoordinator:
             vsiCommonPythonApi.waitForReset()
 
             # Start of user custom code region. Please apply edits only within these regions:  After Reset
-            # initialize outputs: reset everyone for a few ticks
-            _reset_all_outputs(self.mySignals)
+            # Initialize pipeline controller state
+            self._batch_id = 1
+            self._recipe_id = 1
 
-            # propagate initial context
-            _propagate_batch_recipe(self.mySignals, self._batch_id, self._recipe_id)
-
-            # init sequencing
-            self._state = "RESETTING"
+            # State machine
+            self._state = "RESET_ALL"
             self._reset_ticks = 0
-            self._active_idx = 1
-            self._prev_done = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
-            self._done_seen = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
-# End of user custom code region. Please don't edit beyond this point.
+            self._run_enable = True
+
+            # Virtual buffers (tokens) between stations
+            self._buffers = {
+                "S1_to_S2": 0,
+                "S2_to_S3": 0,
+                "S3_to_S4": 0,
+                "S4_to_S5": 0,
+                "S5_to_S6": 0,
+            }
+            self.finished = 0
+
+            # Edge trackers
+            self._prev_done = {st: False for st in STATIONS}
+            self._done_latched = {st: False for st in STATIONS}
+            self._start_sent = {st: False for st in STATIONS}
+            self._scan_count = 0
+            self._sim_time_s = 0.0
+            self._debug_override_active = False
+            self._debug_override_done = False
+
+            # KPI counters
+            self._s5_accept_total = 0
+            self._s5_reject_total = 0
+
+            # Pulse reset on all stations at sim start
+            _reset_all(self.mySignals)
+
+            # Initial context
+            for st in STATIONS:
+                _set_context(self.mySignals, st, self._batch_id, self._recipe_id)
+
+            # Reset station handles (learned from RX packets)
+            for st in STATIONS:
+                self.station_handles[st] = 0
+                
+            print("PLC: Initialized with full 6-station state machine")
+            print("PLC: Pipeline flow: S1 -> S2 -> S3 -> S4 -> S5 -> S6 -> FINISH")
+            # End of user custom code region.
             self.updateInternalVariables()
 
             if(vsiCommonPythonApi.isStopRequested()):
@@ -239,10 +333,6 @@ class PLC_LineCoordinator:
             nextExpectedTime = vsiCommonPythonApi.getSimulationTimeInNs()
             while(vsiCommonPythonApi.getSimulationTimeInNs() < self.totalSimulationTime):
 
-                # Start of user custom code region. Please apply edits only within these regions:  Inside the while loop
-# (no PLC logic here; we act after receiving station packets, before sending commands)
-
-# End of user custom code region. Please don't edit beyond this point.
 
                 self.updateInternalVariables()
 
@@ -282,73 +372,428 @@ class PLC_LineCoordinator:
                     self.decapsulateReceivedData(receivedData)
 
                 # Start of user custom code region. Please apply edits only within these regions:  Before sending the packet
-                # --- PLC Option A sequencing (uses fresh received station inputs) ---
                 ms = self.mySignals
+                self._scan_count += 1
+                self._sim_time_s = vsiCommonPythonApi.getSimulationTimeInNs() / 1e9
 
-                # Always propagate batch/recipe to all stations
-                _propagate_batch_recipe(ms, self._batch_id, self._recipe_id)
+                # 1) PRINT PLC STATE EVERY SCAN
+                print(f"\n=== PLC SCAN {self._scan_count} ===")
+                print(f"PLC state={self._state} step={self.simulationStep}ns run_enable={self._run_enable}")
+                print(f"Sim time: {self._sim_time_s:.3f}s")
 
-                # If any fault occurs, reset the entire line and restart from S1
-                if _any_fault(ms):
-                    self._state = "RESETTING"
+                # Keep station context updated
+                for st in STATIONS:
+                    _set_context(ms, st, self._batch_id, self._recipe_id)
+
+                # ---- FAULT handling ----
+                if _any_fault(ms) and self._state != "FAULT_RESET":
+                    print("PLC: Fault detected, entering FAULT_RESET state")
+                    self._state = "FAULT_RESET"
                     self._reset_ticks = 0
-                    self._active_idx = 1
-                    self._prev_done = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
-                    self._done_seen = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
 
-                if self._state == "RESETTING":
-                    _reset_all_outputs(ms)
+                # ---- RESET_ALL / FAULT_RESET ----
+                if self._state in ("RESET_ALL", "FAULT_RESET"):
+                    _reset_all(ms)
                     self._reset_ticks += 1
+                    print(f"PLC: In {self._state} state, tick {self._reset_ticks}/{RESET_PULSE_TICKS}")
+
+                    # Clear pipeline state while resetting
+                    for k in self._buffers:
+                        self._buffers[k] = 0
+                    self.finished = 0
+                    self._done_latched = {st: False for st in STATIONS}
+                    self._prev_done = {st: False for st in STATIONS}
+                    self._start_sent = {st: False for st in STATIONS}
 
                     if self._reset_ticks >= RESET_PULSE_TICKS:
-                        _stop_all(ms)  # clears reset=0 and holds stopped
-                        self._state = "RUNNING"
-                        self._active_idx = 1
-                        self._prev_done = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
-                        self._done_seen = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
+                        # Deassert reset/stop when entering RUN
+                        for st in STATIONS:
+                            _set_cmd(ms, st, start=0, stop=0, reset=0)
+                        self._state = "WAIT_ALL_READY"
+                        print("PLC: Entering WAIT_ALL_READY state")
 
-                else:
-                    # RUNNING: allow only the active station to run, hold others stopped.
-                    _stop_all(ms)
-
-                    k = int(self._active_idx)
-                    if k < 1:
-                        k = 1
-                    if k > 6:
-                        k = 6
-
-                    # allow station k to run
-                    setattr(ms, f"S{k}_cmd_stop", 0)
-                    setattr(ms, f"S{k}_cmd_reset", 0)
-
-                    # HOLD cmd_start until station actually goes busy (prevents missing a 1-tick pulse)
-                    busy_now = int(getattr(ms, f"S{k}_busy"))
-                    done_now = int(getattr(ms, f"S{k}_done"))
-
-                    if done_now == 0 and busy_now == 0:
-                        setattr(ms, f"S{k}_cmd_start", 1)
+                # ---- WAIT_ALL_READY: Wait for all stations to be ready ----
+                elif self._state == "WAIT_ALL_READY":
+                    # Check if all stations are ready (not busy, no fault)
+                    all_ready = True
+                    for st in STATIONS:  # Check ALL 6 stations
+                        ready = _get(ms, st, "ready")
+                        busy = _get(ms, st, "busy")
+                        fault = _get(ms, st, "fault")
+                        if not ready or busy or fault:
+                            all_ready = False
+                            print(f"  {st}: ready={ready}, busy={busy}, fault={fault} (NOT READY)")
+                    
+                    if all_ready:
+                        print("PLC: All 6 stations ready, moving to START_S1")
+                        self._state = "START_S1"
                     else:
-                        setattr(ms, f"S{k}_cmd_start", 0)
+                        print("PLC: Waiting for stations to be ready...")
 
-                    # done detect (pulse or level)
-                    prev_done = int(self._prev_done.get(k, 0))
-                    self._prev_done[k] = done_now
-                    done_rise = (done_now == 1 and prev_done == 0)
-
-                    if done_now == 1 and not self._done_seen.get(k, False):
-                        self._done_seen[k] = True
-                        done_rise = True
-                    if done_now == 0:
-                        self._done_seen[k] = False
-
-                    if done_rise:
-                        if k < 6:
-                            self._active_idx = k + 1
+                # ---- START_S1: Send start pulse to S1 ----
+                elif self._state == "START_S1":
+                    # Clear all start commands first
+                    for st in STATIONS:
+                        _set_cmd(ms, st, start=0, stop=0, reset=0)
+                    
+                    # Check if S1 is ready to start
+                    s1_ready = _get(ms, "S1", "ready")
+                    s1_busy = _get(ms, "S1", "busy")
+                    s1_fault = _get(ms, "S1", "fault")
+                    
+                    print(f"  S1 start check: ready={s1_ready}, busy={s1_busy}, fault={s1_fault}")
+                    
+                    if (s1_ready and not s1_busy and not s1_fault):
+                        if not self._start_sent["S1"]:
+                            print("PLC: START pulse -> S1")
+                            _set_cmd(ms, "S1", start=1, stop=0, reset=0)
+                            self._start_sent["S1"] = True
+                            self._state = "WAIT_S1_DONE"
                         else:
-                            self._batch_id += 1
-                            self._active_idx = 1
-                # End of user custom code region. Please don't edit beyond this point.
+                            print("PLC: S1 start already sent, waiting...")
+                    else:
+                        print(f"PLC: S1 not ready to start")
 
+                # ---- WAIT_S1_DONE: Wait for S1 to complete ----
+                elif self._state == "WAIT_S1_DONE":
+                    # Latch S1 done
+                    s1_done = _get(ms, "S1", "done")
+                    if s1_done and not self._done_latched["S1"]:
+                        print("PLC: S1 done seen (raw) -> latching")
+                        self._done_latched["S1"] = True
+                    
+                    # If S1 done is latched and S1 is no longer busy, advance
+                    s1_busy = _get(ms, "S1", "busy")
+                    s1_ready = _get(ms, "S1", "ready")
+                    
+                    if (self._done_latched["S1"] and not s1_busy and s1_ready):
+                        print("PLC: S1 done latched -> advancing to START_S2")
+                        self._done_latched["S1"] = False
+                        self._start_sent["S1"] = False
+                        self._state = "START_S2"
+                        
+                        # Buffer S1->S2
+                        self._buffers["S1_to_S2"] = min(self._buffers["S1_to_S2"] + 1, BUF_MAX)
+                        print(f"PLC: Incremented S1_to_S2 buffer to {self._buffers['S1_to_S2']}")
+                    else:
+                        print(f"  WAIT_S1_DONE: done_latched={self._done_latched['S1']}, busy={s1_busy}, ready={s1_ready}")
+
+                # ---- START_S2: Send start pulse to S2 ----
+                elif self._state == "START_S2":
+                    # Clear all start commands
+                    for st in STATIONS:
+                        _set_cmd(ms, st, start=0, stop=0, reset=0)
+                    
+                    # Check if S2 is ready and has work from S1
+                    s2_ready = _get(ms, "S2", "ready")
+                    s2_busy = _get(ms, "S2", "busy")
+                    s2_fault = _get(ms, "S2", "fault")
+                    
+                    print(f"  S2 start check: ready={s2_ready}, busy={s2_busy}, fault={s2_fault}, buffer={self._buffers['S1_to_S2']}")
+                    
+                    if (s2_ready and not s2_busy and not s2_fault and self._buffers["S1_to_S2"] > 0):
+                        if not self._start_sent["S2"]:
+                            print("PLC: START pulse -> S2")
+                            _set_cmd(ms, "S2", start=1, stop=0, reset=0)
+                            self._start_sent["S2"] = True
+                            self._state = "WAIT_S2_DONE"
+                            
+                            # Consume buffer
+                            self._buffers["S1_to_S2"] = max(0, self._buffers["S1_to_S2"] - 1)
+                            print(f"PLC: Consumed S1_to_S2 buffer, now {self._buffers['S1_to_S2']}")
+                        else:
+                            print("PLC: S2 start already sent, waiting...")
+                    else:
+                        print(f"PLC: S2 not ready to start")
+
+                # ---- WAIT_S2_DONE: Wait for S2 to complete ----
+                elif self._state == "WAIT_S2_DONE":
+                    # Latch S2 done
+                    s2_done = _get(ms, "S2", "done")
+                    if s2_done and not self._done_latched["S2"]:
+                        print("PLC: S2 done seen (raw) -> latching")
+                        self._done_latched["S2"] = True
+                    
+                    # If S2 done is latched and S2 is no longer busy, advance
+                    s2_busy = _get(ms, "S2", "busy")
+                    s2_ready = _get(ms, "S2", "ready")
+                    
+                    if (self._done_latched["S2"] and not s2_busy and s2_ready):
+                        print("PLC: S2 done latched -> advancing to START_S3")
+                        self._done_latched["S2"] = False
+                        self._start_sent["S2"] = False
+                        self._state = "START_S3"
+                        
+                        # Buffer S2->S3
+                        self._buffers["S2_to_S3"] = min(self._buffers["S2_to_S3"] + 1, BUF_MAX)
+                        print(f"PLC: Incremented S2_to_S3 buffer to {self._buffers['S2_to_S3']}")
+                    else:
+                        print(f"  WAIT_S2_DONE: done_latched={self._done_latched['S2']}, busy={s2_busy}, ready={s2_ready}")
+
+                # ---- START_S3: Send start pulse to S3 ----
+                elif self._state == "START_S3":
+                    # Clear all start commands
+                    for st in STATIONS:
+                        _set_cmd(ms, st, start=0, stop=0, reset=0)
+                    
+                    # Check if S3 is ready and has work from S2
+                    s3_ready = _get(ms, "S3", "ready")
+                    s3_busy = _get(ms, "S3", "busy")
+                    s3_fault = _get(ms, "S3", "fault")
+                    
+                    print(f"  S3 start check: ready={s3_ready}, busy={s3_busy}, fault={s3_fault}, buffer={self._buffers['S2_to_S3']}")
+                    
+                    if (s3_ready and not s3_busy and not s3_fault and self._buffers["S2_to_S3"] > 0):
+                        if not self._start_sent["S3"]:
+                            print("PLC: START pulse -> S3")
+                            _set_cmd(ms, "S3", start=1, stop=0, reset=0)
+                            self._start_sent["S3"] = True
+                            self._state = "WAIT_S3_DONE"
+                            
+                            # Consume buffer
+                            self._buffers["S2_to_S3"] = max(0, self._buffers["S2_to_S3"] - 1)
+                            print(f"PLC: Consumed S2_to_S3 buffer, now {self._buffers['S2_to_S3']}")
+                        else:
+                            print("PLC: S3 start already sent, waiting...")
+                    else:
+                        print(f"PLC: S3 not ready to start")
+
+                # ---- WAIT_S3_DONE: Wait for S3 to complete ----
+                elif self._state == "WAIT_S3_DONE":
+                    # Latch S3 done
+                    s3_done = _get(ms, "S3", "done")
+                    if s3_done and not self._done_latched["S3"]:
+                        print("PLC: S3 done seen (raw) -> latching")
+                        self._done_latched["S3"] = True
+                    
+                    # If S3 done is latched and S3 is no longer busy, advance
+                    s3_busy = _get(ms, "S3", "busy")
+                    s3_ready = _get(ms, "S3", "ready")
+                    
+                    if (self._done_latched["S3"] and not s3_busy and s3_ready):
+                        print("PLC: S3 done latched -> advancing to START_S4")
+                        self._done_latched["S3"] = False
+                        self._start_sent["S3"] = False
+                        self._state = "START_S4"
+                        
+                        # Buffer S3->S4
+                        self._buffers["S3_to_S4"] = min(self._buffers["S3_to_S4"] + 1, BUF_MAX)
+                        print(f"PLC: Incremented S3_to_S4 buffer to {self._buffers['S3_to_S4']}")
+                    else:
+                        print(f"  WAIT_S3_DONE: done_latched={self._done_latched['S3']}, busy={s3_busy}, ready={s3_ready}")
+
+                # ---- START_S4: Send start pulse to S4 ----
+                elif self._state == "START_S4":
+                    # Clear all start commands
+                    for st in STATIONS:
+                        _set_cmd(ms, st, start=0, stop=0, reset=0)
+                    
+                    # Check if S4 is ready and has work from S3
+                    s4_ready = _get(ms, "S4", "ready")
+                    s4_busy = _get(ms, "S4", "busy")
+                    s4_fault = _get(ms, "S4", "fault")
+                    
+                    print(f"  S4 start check: ready={s4_ready}, busy={s4_busy}, fault={s4_fault}, buffer={self._buffers['S3_to_S4']}")
+                    
+                    if (s4_ready and not s4_busy and not s4_fault and self._buffers["S3_to_S4"] > 0):
+                        if not self._start_sent["S4"]:
+                            print("PLC: START pulse -> S4")
+                            _set_cmd(ms, "S4", start=1, stop=0, reset=0)
+                            self._start_sent["S4"] = True
+                            self._state = "WAIT_S4_DONE"
+                            
+                            # Consume buffer
+                            self._buffers["S3_to_S4"] = max(0, self._buffers["S3_to_S4"] - 1)
+                            print(f"PLC: Consumed S3_to_S4 buffer, now {self._buffers['S3_to_S4']}")
+                        else:
+                            print("PLC: S4 start already sent, waiting...")
+                    else:
+                        print(f"PLC: S4 not ready to start")
+
+                # ---- WAIT_S4_DONE: Wait for S4 to complete ----
+                elif self._state == "WAIT_S4_DONE":
+                    # Latch S4 done
+                    s4_done = _get(ms, "S4", "done")
+                    if s4_done and not self._done_latched["S4"]:
+                        print("PLC: S4 done seen (raw) -> latching")
+                        self._done_latched["S4"] = True
+                    
+                    # If S4 done is latched and S4 is no longer busy, advance
+                    s4_busy = _get(ms, "S4", "busy")
+                    s4_ready = _get(ms, "S4", "ready")
+                    
+                    if (self._done_latched["S4"] and not s4_busy and s4_ready):
+                        print("PLC: S4 done latched -> advancing to START_S5")
+                        self._done_latched["S4"] = False
+                        self._start_sent["S4"] = False
+                        self._state = "START_S5"
+                        
+                        # Buffer S4->S5
+                        self._buffers["S4_to_S5"] = min(self._buffers["S4_to_S5"] + 1, BUF_MAX)
+                        print(f"PLC: Incremented S4_to_S5 buffer to {self._buffers['S4_to_S5']}")
+                    else:
+                        print(f"  WAIT_S4_DONE: done_latched={self._done_latched['S4']}, busy={s4_busy}, ready={s4_ready}")
+
+                # ---- START_S5: Send start pulse to S5 ----
+                elif self._state == "START_S5":
+                    # Clear all start commands
+                    for st in STATIONS:
+                        _set_cmd(ms, st, start=0, stop=0, reset=0)
+                    
+                    # Check if S5 is ready and has work from S4
+                    s5_ready = _get(ms, "S5", "ready")
+                    s5_busy = _get(ms, "S5", "busy")
+                    s5_fault = _get(ms, "S5", "fault")
+                    
+                    print(f"  S5 start check: ready={s5_ready}, busy={s5_busy}, fault={s5_fault}, buffer={self._buffers['S4_to_S5']}")
+                    
+                    if (s5_ready and not s5_busy and not s5_fault and self._buffers["S4_to_S5"] > 0):
+                        if not self._start_sent["S5"]:
+                            print("PLC: START pulse -> S5")
+                            _set_cmd(ms, "S5", start=1, stop=0, reset=0)
+                            self._start_sent["S5"] = True
+                            self._state = "WAIT_S5_DONE"
+                            
+                            # Consume buffer
+                            self._buffers["S4_to_S5"] = max(0, self._buffers["S4_to_S5"] - 1)
+                            print(f"PLC: Consumed S4_to_S5 buffer, now {self._buffers['S4_to_S5']}")
+                        else:
+                            print("PLC: S5 start already sent, waiting...")
+                    else:
+                        print(f"PLC: S5 not ready to start")
+
+                # ---- WAIT_S5_DONE: Wait for S5 to complete ----
+                elif self._state == "WAIT_S5_DONE":
+                    # Latch S5 done
+                    s5_done = _get(ms, "S5", "done")
+                    if s5_done and not self._done_latched["S5"]:
+                        print("PLC: S5 done seen (raw) -> latching")
+                        self._done_latched["S5"] = True
+                    
+                    # If S5 done is latched and S5 is no longer busy, advance
+                    s5_busy = _get(ms, "S5", "busy")
+                    s5_ready = _get(ms, "S5", "ready")
+                    
+                    if (self._done_latched["S5"] and not s5_busy and s5_ready):
+                        print("PLC: S5 done latched -> advancing to START_S6")
+                        self._done_latched["S5"] = False
+                        self._start_sent["S5"] = False
+                        self._state = "START_S6"
+                        
+                        # Buffer S5->S6
+                        self._buffers["S5_to_S6"] = min(self._buffers["S5_to_S6"] + 1, BUF_MAX)
+                        print(f"PLC: Incremented S5_to_S6 buffer to {self._buffers['S5_to_S6']}")
+                    else:
+                        print(f"  WAIT_S5_DONE: done_latched={self._done_latched['S5']}, busy={s5_busy}, ready={s5_ready}")
+
+                # ---- START_S6: Send start pulse to S6 ----
+                elif self._state == "START_S6":
+                    # Clear all start commands
+                    for st in STATIONS:
+                        _set_cmd(ms, st, start=0, stop=0, reset=0)
+                    
+                    # Check if S6 is ready and has work from S5
+                    s6_ready = _get(ms, "S6", "ready")
+                    s6_busy = _get(ms, "S6", "busy")
+                    s6_fault = _get(ms, "S6", "fault")
+                    
+                    print(f"  S6 start check: ready={s6_ready}, busy={s6_busy}, fault={s6_fault}, buffer={self._buffers['S5_to_S6']}")
+                    
+                    if (s6_ready and not s6_busy and not s6_fault and self._buffers["S5_to_S6"] > 0):
+                        if not self._start_sent["S6"]:
+                            print("PLC: START pulse -> S6")
+                            _set_cmd(ms, "S6", start=1, stop=0, reset=0)
+                            self._start_sent["S6"] = True
+                            self._state = "WAIT_S6_DONE"
+                            
+                            # Consume buffer
+                            self._buffers["S5_to_S6"] = max(0, self._buffers["S5_to_S6"] - 1)
+                            print(f"PLC: Consumed S5_to_S6 buffer, now {self._buffers['S5_to_S6']}")
+                        else:
+                            print("PLC: S6 start already sent, waiting...")
+                    else:
+                        print(f"PLC: S6 not ready to start")
+
+                # ---- WAIT_S6_DONE: Wait for S6 to complete ----
+                elif self._state == "WAIT_S6_DONE":
+                    # Latch S6 done
+                    s6_done = _get(ms, "S6", "done")
+                    if s6_done and not self._done_latched["S6"]:
+                        print("PLC: S6 done seen (raw) -> latching")
+                        self._done_latched["S6"] = True
+                    
+                    # If S6 done is latched and S6 is no longer busy, cycle complete
+                    s6_busy = _get(ms, "S6", "busy")
+                    s6_ready = _get(ms, "S6", "ready")
+                    
+                    if (self._done_latched["S6"] and not s6_busy and s6_ready):
+                        print("PLC: S6 done latched -> FULL CYCLE COMPLETE")
+                        self._done_latched["S6"] = False
+                        self._start_sent["S6"] = False
+                        
+                        # Increment batch and finished count
+                        self._batch_id += 1
+                        self.finished += 1
+                        
+                        # Update KPI totals from S5
+                        self._s5_accept_total += _get(ms, "S5", "accept")
+                        self._s5_reject_total += _get(ms, "S5", "reject")
+                        
+                        print(f"PLC: Batch {self._batch_id-1} complete, finished products: {self.finished}")
+                        print(f"PLC: S5 Accept/Reject totals: {self._s5_accept_total}/{self._s5_reject_total}")
+                        
+                        # Go back to START_S1 for next unit
+                        self._state = "START_S1"
+                        print("PLC: Restarting pipeline with next unit")
+                    else:
+                        print(f"  WAIT_S6_DONE: done_latched={self._done_latched['S6']}, busy={s6_busy}, ready={s6_ready}")
+                
+                # ---- TEMP DEBUG OVERRIDE for stuck stations (10 seconds) ----
+                # If we've been stuck in a state for too long, force progression
+                if (self._sim_time_s > 10.0 and  # Wait 10 seconds after simulation starts
+                    not self._debug_override_done and
+                    self._state not in ["RESET_ALL", "FAULT_RESET", "WAIT_ALL_READY", "WAIT_S6_DONE"]):
+                    
+                    current_station = self._state.replace("START_", "").replace("WAIT_", "").replace("_DONE", "")
+                    if current_station in STATIONS:
+                        idx = STATIONS.index(current_station)
+                        if idx < 5:  # Not S6
+                            next_station = STATIONS[idx + 1]
+                            ready = _get(ms, next_station, "ready")
+                            busy = _get(ms, next_station, "busy")
+                            fault = _get(ms, next_station, "fault")
+                            
+                            if ready and not busy and not fault:
+                                print(f"DEBUG: forcing progression to {next_station} after 10s")
+                                # Clear all commands first
+                                for st in STATIONS:
+                                    _set_cmd(ms, st, start=0, stop=0, reset=0)
+                                # Send start to next station
+                                _set_cmd(ms, next_station, start=1, stop=0, reset=0)
+                                self._start_sent[next_station] = True
+                                self._state = f"WAIT_{next_station}_DONE"
+                                print(f"DEBUG: {next_station} cmd_start=1 sent via override")
+                
+                # Update DONE LATCHES (safety catch)
+                for st in STATIONS:
+                    if _get(ms, st, "done"):
+                        if not self._done_latched[st]:
+                            print(f"PLC: Safety latch for {st} done")
+                            self._done_latched[st] = True
+                
+                # Update previous states for edge detection
+                for st in STATIONS:
+                    self._prev_done[st] = (_get(ms, st, "done") == 1)
+
+                # 2) PRINT WHAT PLC IS TRANSMITTING
+                print("TX commands:")
+                for st in STATIONS:
+                    start = getattr(self.mySignals, f"{st}_cmd_start")
+                    reset = getattr(self.mySignals, f"{st}_cmd_reset")
+                    stop = getattr(self.mySignals, f"{st}_cmd_stop")
+                    print(f"  TX {st} start={start} reset={reset} stop={stop}")
+
+                # End of user custom code region.
                 #Send ethernet packet to ST1_ComponentKitting
                 self.sendEthernetPacketToST1_ComponentKitting()
 
@@ -535,6 +980,14 @@ class PLC_LineCoordinator:
                 print(self.mySignals.S6_batch_id)
                 print("\tS6_recipe_id =", end = " ")
                 print(self.mySignals.S6_recipe_id)
+                print(f"  PLC State: {self._state}")
+                print(f"  Done latches: S1={self._done_latched['S1']}, S2={self._done_latched['S2']}, S3={self._done_latched['S3']}, "
+                      f"S4={self._done_latched['S4']}, S5={self._done_latched['S5']}, S6={self._done_latched['S6']}")
+                print(f"  Start sent: S1={self._start_sent['S1']}, S2={self._start_sent['S2']}, S3={self._start_sent['S3']}, "
+                      f"S4={self._start_sent['S4']}, S5={self._start_sent['S5']}, S6={self._start_sent['S6']}")
+                print(f"  Buffers: S1->S2={self._buffers['S1_to_S2']}, S2->S3={self._buffers['S2_to_S3']}, "
+                      f"S3->S4={self._buffers['S3_to_S4']}, S4->S5={self._buffers['S4_to_S5']}, S5->S6={self._buffers['S5_to_S6']}")
+                print(f"  Finished products: {self.finished}")
                 print("\n\n")
 
                 self.updateInternalVariables()
@@ -585,6 +1038,11 @@ class PLC_LineCoordinator:
         if(self.clientPortNum[ST6_PackagingDispatch5] == 0):
             self.clientPortNum[ST6_PackagingDispatch5] = vsiEthernetPythonGateway.tcpListen(PLC_LineCoordinatorSocketPortNumber5)
 
+        # Print all listen handles for debugging
+        print(f"PLC handles: ST1={self.clientPortNum[ST1_ComponentKitting0]}, ST2={self.clientPortNum[ST2_FrameCoreAssembly1]}, "
+              f"ST3={self.clientPortNum[ST3_ElectronicsWiring2]}, ST4={self.clientPortNum[ST4_CalibrationTesting3]}, "
+              f"ST5={self.clientPortNum[ST5_QualityInspection4]}, ST6={self.clientPortNum[ST6_PackagingDispatch5]}")
+
         if(self.clientPortNum[ST1_ComponentKitting0] == 0):
             print("Error: Failed to listen on TCP port:")
             print(PLC_LineCoordinatorSocketPortNumber0)
@@ -625,132 +1083,130 @@ class PLC_LineCoordinator:
         for i in range(self.receivedNumberOfBytes):
             self.receivedPayload[i] = receivedData[2][i]
 
+        # DEBUG: Print packet metadata
+        print(f"PLC RX meta dest/src/len: {self.receivedDestPortNumber}, {self.receivedSrcPortNumber}, {self.receivedNumberOfBytes}")
+
+        # Store the ST1 client handle when we receive a packet from ST1
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber0):
             print("Received packet from ST1_ComponentKitting")
+            
+            st1_handle = self.receivedSrcPortNumber
+            if st1_handle != 0 and st1_handle != self.station_handles["S1"]:
+                print(f"  Storing ST1 handle: {st1_handle} (was {self.station_handles['S1']})")
+                self.station_handles["S1"] = st1_handle
+            
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S1_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S1_busy, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S1_fault, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S1_done, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S1_cycle_time_ms, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S1_inventory_ok, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S1_any_arm_failed, receivedPayload = self.unpackBytes('?', receivedPayload)
 
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber1):
             print("Received packet from ST2_FrameCoreAssembly")
+            st2_handle = self.receivedSrcPortNumber
+            if st2_handle != 0 and st2_handle != self.station_handles["S2"]:
+                print(f"  Storing ST2 handle: {st2_handle}")
+                self.station_handles["S2"] = st2_handle
+                
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S2_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S2_busy, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S2_fault, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S2_done, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S2_cycle_time_ms, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S2_completed, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S2_scrapped, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S2_reworks, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S2_cycle_time_avg_s, receivedPayload = self.unpackBytes('d', receivedPayload)
 
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber2):
             print("Received packet from ST3_ElectronicsWiring")
+            st3_handle = self.receivedSrcPortNumber
+            if st3_handle != 0 and st3_handle != self.station_handles["S3"]:
+                print(f"  Storing ST3 handle: {st3_handle}")
+                self.station_handles["S3"] = st3_handle
+                
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S3_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S3_busy, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S3_fault, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S3_done, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S3_cycle_time_ms, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S3_strain_relief_ok, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S3_continuity_ok, receivedPayload = self.unpackBytes('?', receivedPayload)
 
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber3):
             print("Received packet from ST4_CalibrationTesting")
+            st4_handle = self.receivedSrcPortNumber
+            if st4_handle != 0 and st4_handle != self.station_handles["S4"]:
+                print(f"  Storing ST4 handle: {st4_handle}")
+                self.station_handles["S4"] = st4_handle
+                
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S4_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S4_busy, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S4_fault, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S4_done, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S4_cycle_time_ms, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S4_total, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S4_completed, receivedPayload = self.unpackBytes('L', receivedPayload)
 
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber4):
             print("Received packet from ST5_QualityInspection")
+            st5_handle = self.receivedSrcPortNumber
+            if st5_handle != 0 and st5_handle != self.station_handles["S5"]:
+                print(f"  Storing ST5 handle: {st5_handle}")
+                self.station_handles["S5"] = st5_handle
+                
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S5_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S5_busy, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S5_fault, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S5_done, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S5_cycle_time_ms, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S5_accept, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S5_reject, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S5_last_accept, receivedPayload = self.unpackBytes('?', receivedPayload)
 
         if(self.receivedDestPortNumber == PLC_LineCoordinatorSocketPortNumber5):
             print("Received packet from ST6_PackagingDispatch")
+            st6_handle = self.receivedSrcPortNumber
+            if st6_handle != 0 and st6_handle != self.station_handles["S6"]:
+                print(f"  Storing ST6 handle: {st6_handle}")
+                self.station_handles["S6"] = st6_handle
+                
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.S6_ready, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S6_busy, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S6_fault, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S6_done, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.S6_cycle_time_ms, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S6_packages_completed, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S6_arm_cycles, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S6_total_repairs, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.S6_operational_time_s, receivedPayload = self.unpackBytes('d', receivedPayload)
-
             self.mySignals.S6_downtime_s, receivedPayload = self.unpackBytes('d', receivedPayload)
-
             self.mySignals.S6_availability, receivedPayload = self.unpackBytes('d', receivedPayload)
-
 
     def sendEthernetPacketToST1_ComponentKitting(self):
         bytesToSend = bytes()
-
         bytesToSend += self.packBytes('?', self.mySignals.S1_cmd_start)
         bytesToSend += self.packBytes('?', self.mySignals.S1_cmd_stop)
         bytesToSend += self.packBytes('?', self.mySignals.S1_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S1_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S1_recipe_id)
-        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST1_ComponentKitting0], bytes(bytesToSend))
+        
+        handle = self.station_handles["S1"]
+        packet_len = len(bytesToSend)
+        
+        if handle == 0:
+            print(f"PLC TX ST1: SKIPPING - no handle yet (need to receive from ST1 first)")
+            return
+            
+        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
 
     def sendEthernetPacketToST2_FrameCoreAssembly(self):
         bytesToSend = bytes()
@@ -759,7 +1215,11 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S2_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S2_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S2_recipe_id)
-        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST2_FrameCoreAssembly1], bytes(bytesToSend))
+        handle = self.station_handles["S2"]
+        if handle == 0:
+            handle = self.clientPortNum[ST2_FrameCoreAssembly1]
+        packet_len = len(bytesToSend)
+        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
 
     def sendEthernetPacketToST3_ElectronicsWiring(self):
         bytesToSend = bytes()
@@ -768,7 +1228,11 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S3_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S3_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S3_recipe_id)
-        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST3_ElectronicsWiring2], bytes(bytesToSend))
+        handle = self.station_handles["S3"]
+        if handle == 0:
+            handle = self.clientPortNum[ST3_ElectronicsWiring2]
+        packet_len = len(bytesToSend)
+        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
 
     def sendEthernetPacketToST4_CalibrationTesting(self):
         bytesToSend = bytes()
@@ -777,7 +1241,11 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S4_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S4_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S4_recipe_id)
-        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST4_CalibrationTesting3], bytes(bytesToSend))
+        handle = self.station_handles["S4"]
+        if handle == 0:
+            handle = self.clientPortNum[ST4_CalibrationTesting3]
+        packet_len = len(bytesToSend)
+        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
 
     def sendEthernetPacketToST5_QualityInspection(self):
         bytesToSend = bytes()
@@ -786,7 +1254,11 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S5_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S5_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S5_recipe_id)
-        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST5_QualityInspection4], bytes(bytesToSend))
+        handle = self.station_handles["S5"]
+        if handle == 0:
+            handle = self.clientPortNum[ST5_QualityInspection4]
+        packet_len = len(bytesToSend)
+        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
 
     def sendEthernetPacketToST6_PackagingDispatch(self):
         bytesToSend = bytes()
@@ -795,11 +1267,11 @@ class PLC_LineCoordinator:
         bytesToSend += self.packBytes('?', self.mySignals.S6_cmd_reset)
         bytesToSend += self.packBytes('L', self.mySignals.S6_batch_id)
         bytesToSend += self.packBytes('H', self.mySignals.S6_recipe_id)
-        vsiEthernetPythonGateway.sendEthernetPacket(self.clientPortNum[ST6_PackagingDispatch5], bytes(bytesToSend))
-
-        # Start of user custom code region. Please apply edits only within these regions:  Protocol's callback function
-
-        # End of user custom code region. Please don't edit beyond this point.
+        handle = self.station_handles["S6"]
+        if handle == 0:
+            handle = self.clientPortNum[ST6_PackagingDispatch5]
+        packet_len = len(bytesToSend)
+        vsiEthernetPythonGateway.sendEthernetPacket(handle, bytes(bytesToSend))
 
 
 
@@ -821,8 +1293,6 @@ class PLC_LineCoordinator:
                 return struct.pack(f'={len(signal)}s', signal)
             else:
                 return struct.pack(f'={signalType}', signal)
-
-
 
     def unpackBytes(self, signalType, packedBytes, signal = ""):
         if isinstance(signal, list):
@@ -872,10 +1342,6 @@ def main():
     inputArgs = argparse.ArgumentParser(" ")
     inputArgs.add_argument('--domain', metavar='D', default='AF_UNIX', help='Socket domain for connection with the VSI TLM fabric server')
     inputArgs.add_argument('--server-url', metavar='CO', default='localhost', help='server URL of the VSI TLM Fabric Server')
-
-    # Start of user custom code region. Please apply edits only within these regions:  Main method
-
-    # End of user custom code region. Please don't edit beyond this point.
 
     args = inputArgs.parse_args()
 
