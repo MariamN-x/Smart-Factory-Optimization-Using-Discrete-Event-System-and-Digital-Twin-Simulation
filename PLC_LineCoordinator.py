@@ -269,6 +269,14 @@ class PLC_LineCoordinator:
         self._sim_time_s = 0.0
         self._debug_override_active = False
         self._debug_override_done = False
+        
+        # Timeout counters for stuck stations
+        self._s1_wait_counter = 0
+        self._s2_wait_counter = 0
+        self._s3_wait_counter = 0
+        self._s4_wait_counter = 0
+        self._s5_wait_counter = 0
+        self._s6_wait_counter = 0
         # End of user custom code region.
 
 
@@ -310,6 +318,14 @@ class PLC_LineCoordinator:
             # KPI counters
             self._s5_accept_total = 0
             self._s5_reject_total = 0
+            
+            # Timeout counters
+            self._s1_wait_counter = 0
+            self._s2_wait_counter = 0
+            self._s3_wait_counter = 0
+            self._s4_wait_counter = 0
+            self._s5_wait_counter = 0
+            self._s6_wait_counter = 0
 
             # Pulse reset on all stations at sim start
             _reset_all(self.mySignals)
@@ -404,6 +420,13 @@ class PLC_LineCoordinator:
                     self._done_latched = {st: False for st in STATIONS}
                     self._prev_done = {st: False for st in STATIONS}
                     self._start_sent = {st: False for st in STATIONS}
+                    # Reset timeout counters
+                    self._s1_wait_counter = 0
+                    self._s2_wait_counter = 0
+                    self._s3_wait_counter = 0
+                    self._s4_wait_counter = 0
+                    self._s5_wait_counter = 0
+                    self._s6_wait_counter = 0
 
                     if self._reset_ticks >= RESET_PULSE_TICKS:
                         # Deassert reset/stop when entering RUN
@@ -456,6 +479,9 @@ class PLC_LineCoordinator:
 
                 # ---- WAIT_S1_DONE: Wait for S1 to complete ----
                 elif self._state == "WAIT_S1_DONE":
+                    # CRITICAL FIX: Clear S1 start command - it should be a ONE-SHOT pulse
+                    _set_cmd(ms, "S1", start=0, stop=0, reset=0)
+                    
                     # Latch S1 done
                     s1_done = _get(ms, "S1", "done")
                     if s1_done and not self._done_latched["S1"]:
@@ -466,17 +492,30 @@ class PLC_LineCoordinator:
                     s1_busy = _get(ms, "S1", "busy")
                     s1_ready = _get(ms, "S1", "ready")
                     
+                    # Timeout counter
+                    self._s1_wait_counter += 1
+                    
                     if (self._done_latched["S1"] and not s1_busy and s1_ready):
                         print("PLC: S1 done latched -> advancing to START_S2")
                         self._done_latched["S1"] = False
                         self._start_sent["S1"] = False
                         self._state = "START_S2"
+                        self._s1_wait_counter = 0
                         
                         # Buffer S1->S2
                         self._buffers["S1_to_S2"] = min(self._buffers["S1_to_S2"] + 1, BUF_MAX)
                         print(f"PLC: Incremented S1_to_S2 buffer to {self._buffers['S1_to_S2']}")
+                    elif self._s1_wait_counter > 15:  #~10 seconds for S1
+                        print(f"PLC: TIMEOUT - S1 stuck for {self._s1_wait_counter} scans, forcing advance")
+                        self._done_latched["S1"] = False
+                        self._start_sent["S1"] = False
+                        self._state = "START_S2"
+                        self._s1_wait_counter = 0
+                        # Assume work was done
+                        self._buffers["S1_to_S2"] = min(self._buffers["S1_to_S2"] + 1, BUF_MAX)
+                        print(f"PLC: Forced S1_to_S2 buffer to {self._buffers['S1_to_S2']}")
                     else:
-                        print(f"  WAIT_S1_DONE: done_latched={self._done_latched['S1']}, busy={s1_busy}, ready={s1_ready}")
+                        print(f"  WAIT_S1_DONE: done_latched={self._done_latched['S1']}, busy={s1_busy}, ready={s1_ready}, timeout={self._s1_wait_counter}/30")
 
                 # ---- START_S2: Send start pulse to S2 ----
                 elif self._state == "START_S2":
@@ -508,6 +547,9 @@ class PLC_LineCoordinator:
 
                 # ---- WAIT_S2_DONE: Wait for S2 to complete ----
                 elif self._state == "WAIT_S2_DONE":
+                    # CRITICAL FIX: Clear S2 start command - it should be a ONE-SHOT pulse
+                    _set_cmd(ms, "S2", start=0, stop=0, reset=0)
+                    
                     # Latch S2 done
                     s2_done = _get(ms, "S2", "done")
                     if s2_done and not self._done_latched["S2"]:
@@ -518,17 +560,29 @@ class PLC_LineCoordinator:
                     s2_busy = _get(ms, "S2", "busy")
                     s2_ready = _get(ms, "S2", "ready")
                     
+                    # Timeout counter
+                    self._s2_wait_counter += 1
+                    
                     if (self._done_latched["S2"] and not s2_busy and s2_ready):
                         print("PLC: S2 done latched -> advancing to START_S3")
                         self._done_latched["S2"] = False
                         self._start_sent["S2"] = False
                         self._state = "START_S3"
+                        self._s2_wait_counter = 0
                         
                         # Buffer S2->S3
                         self._buffers["S2_to_S3"] = min(self._buffers["S2_to_S3"] + 1, BUF_MAX)
                         print(f"PLC: Incremented S2_to_S3 buffer to {self._buffers['S2_to_S3']}")
+                    elif self._s2_wait_counter > 15:  # 13 sec
+                        print(f"PLC: TIMEOUT - S2 stuck for {self._s2_wait_counter} scans, forcing advance")
+                        self._done_latched["S2"] = False
+                        self._start_sent["S2"] = False
+                        self._state = "START_S3"
+                        self._s2_wait_counter = 0
+                        self._buffers["S2_to_S3"] = min(self._buffers["S2_to_S3"] + 1, BUF_MAX)
+                        print(f"PLC: Forced S2_to_S3 buffer to {self._buffers['S2_to_S3']}")
                     else:
-                        print(f"  WAIT_S2_DONE: done_latched={self._done_latched['S2']}, busy={s2_busy}, ready={s2_ready}")
+                        print(f"  WAIT_S2_DONE: done_latched={self._done_latched['S2']}, busy={s2_busy}, ready={s2_ready}, timeout={self._s2_wait_counter}/30")
 
                 # ---- START_S3: Send start pulse to S3 ----
                 elif self._state == "START_S3":
@@ -560,6 +614,9 @@ class PLC_LineCoordinator:
 
                 # ---- WAIT_S3_DONE: Wait for S3 to complete ----
                 elif self._state == "WAIT_S3_DONE":
+                    # CRITICAL FIX: Clear S3 start command - it should be a ONE-SHOT pulse
+                    _set_cmd(ms, "S3", start=0, stop=0, reset=0)
+                    
                     # Latch S3 done
                     s3_done = _get(ms, "S3", "done")
                     if s3_done and not self._done_latched["S3"]:
@@ -570,17 +627,29 @@ class PLC_LineCoordinator:
                     s3_busy = _get(ms, "S3", "busy")
                     s3_ready = _get(ms, "S3", "ready")
                     
+                    # Timeout counter
+                    self._s3_wait_counter += 1
+                    
                     if (self._done_latched["S3"] and not s3_busy and s3_ready):
                         print("PLC: S3 done latched -> advancing to START_S4")
                         self._done_latched["S3"] = False
                         self._start_sent["S3"] = False
                         self._state = "START_S4"
+                        self._s3_wait_counter = 0
                         
                         # Buffer S3->S4
                         self._buffers["S3_to_S4"] = min(self._buffers["S3_to_S4"] + 1, BUF_MAX)
                         print(f"PLC: Incremented S3_to_S4 buffer to {self._buffers['S3_to_S4']}")
+                    elif self._s3_wait_counter > 15:  # Timeout
+                        print(f"PLC: TIMEOUT - S3 stuck for {self._s3_wait_counter} scans, forcing advance")
+                        self._done_latched["S3"] = False
+                        self._start_sent["S3"] = False
+                        self._state = "START_S4"
+                        self._s3_wait_counter = 0
+                        self._buffers["S3_to_S4"] = min(self._buffers["S3_to_S4"] + 1, BUF_MAX)
+                        print(f"PLC: Forced S3_to_S4 buffer to {self._buffers['S3_to_S4']}")
                     else:
-                        print(f"  WAIT_S3_DONE: done_latched={self._done_latched['S3']}, busy={s3_busy}, ready={s3_ready}")
+                        print(f"  WAIT_S3_DONE: done_latched={self._done_latched['S3']}, busy={s3_busy}, ready={s3_ready}, timeout={self._s3_wait_counter}/30")
 
                 # ---- START_S4: Send start pulse to S4 ----
                 elif self._state == "START_S4":
@@ -612,6 +681,9 @@ class PLC_LineCoordinator:
 
                 # ---- WAIT_S4_DONE: Wait for S4 to complete ----
                 elif self._state == "WAIT_S4_DONE":
+                    # CRITICAL FIX: Clear S4 start command - it should be a ONE-SHOT pulse
+                    _set_cmd(ms, "S4", start=0, stop=0, reset=0)
+                    
                     # Latch S4 done
                     s4_done = _get(ms, "S4", "done")
                     if s4_done and not self._done_latched["S4"]:
@@ -622,17 +694,29 @@ class PLC_LineCoordinator:
                     s4_busy = _get(ms, "S4", "busy")
                     s4_ready = _get(ms, "S4", "ready")
                     
+                    # Timeout counter
+                    self._s4_wait_counter += 1
+                    
                     if (self._done_latched["S4"] and not s4_busy and s4_ready):
                         print("PLC: S4 done latched -> advancing to START_S5")
                         self._done_latched["S4"] = False
                         self._start_sent["S4"] = False
                         self._state = "START_S5"
+                        self._s4_wait_counter = 0
                         
                         # Buffer S4->S5
                         self._buffers["S4_to_S5"] = min(self._buffers["S4_to_S5"] + 1, BUF_MAX)
                         print(f"PLC: Incremented S4_to_S5 buffer to {self._buffers['S4_to_S5']}")
+                    elif self._s4_wait_counter > 30:  # Timeout
+                        print(f"PLC: TIMEOUT - S4 stuck for {self._s4_wait_counter} scans, forcing advance")
+                        self._done_latched["S4"] = False
+                        self._start_sent["S4"] = False
+                        self._state = "START_S5"
+                        self._s4_wait_counter = 0
+                        # self._buffers["S4_to_S5"] = min(self._buffers["S4_to_S5"] + 1, BUF_MAX)
+                        print(f"PLC: Forced S4_to_S5 buffer to {self._buffers['S4_to_S5']}")
                     else:
-                        print(f"  WAIT_S4_DONE: done_latched={self._done_latched['S4']}, busy={s4_busy}, ready={s4_ready}")
+                        print(f"  WAIT_S4_DONE: done_latched={self._done_latched['S4']}, busy={s4_busy}, ready={s4_ready}, timeout={self._s4_wait_counter}/30")
 
                 # ---- START_S5: Send start pulse to S5 ----
                 elif self._state == "START_S5":
@@ -664,6 +748,9 @@ class PLC_LineCoordinator:
 
                 # ---- WAIT_S5_DONE: Wait for S5 to complete ----
                 elif self._state == "WAIT_S5_DONE":
+                    # CRITICAL FIX: Clear S5 start command - it should be a ONE-SHOT pulse
+                    _set_cmd(ms, "S5", start=0, stop=0, reset=0)
+                    
                     # Latch S5 done
                     s5_done = _get(ms, "S5", "done")
                     if s5_done and not self._done_latched["S5"]:
@@ -674,17 +761,29 @@ class PLC_LineCoordinator:
                     s5_busy = _get(ms, "S5", "busy")
                     s5_ready = _get(ms, "S5", "ready")
                     
+                    # Timeout counter
+                    self._s5_wait_counter += 1
+                    
                     if (self._done_latched["S5"] and not s5_busy and s5_ready):
                         print("PLC: S5 done latched -> advancing to START_S6")
                         self._done_latched["S5"] = False
                         self._start_sent["S5"] = False
                         self._state = "START_S6"
+                        self._s5_wait_counter = 0
                         
                         # Buffer S5->S6
                         self._buffers["S5_to_S6"] = min(self._buffers["S5_to_S6"] + 1, BUF_MAX)
                         print(f"PLC: Incremented S5_to_S6 buffer to {self._buffers['S5_to_S6']}")
+                    elif self._s5_wait_counter > 30:  # Timeout
+                        print(f"PLC: TIMEOUT - S5 stuck for {self._s5_wait_counter} scans, forcing advance")
+                        self._done_latched["S5"] = False
+                        self._start_sent["S5"] = False
+                        self._state = "START_S6"
+                        self._s5_wait_counter = 0
+                        self._buffers["S5_to_S6"] = min(self._buffers["S5_to_S6"] + 1, BUF_MAX)
+                        print(f"PLC: Forced S5_to_S6 buffer to {self._buffers['S5_to_S6']}")
                     else:
-                        print(f"  WAIT_S5_DONE: done_latched={self._done_latched['S5']}, busy={s5_busy}, ready={s5_ready}")
+                        print(f"  WAIT_S5_DONE: done_latched={self._done_latched['S5']}, busy={s5_busy}, ready={s5_ready}, timeout={self._s5_wait_counter}/30")
 
                 # ---- START_S6: Send start pulse to S6 ----
                 elif self._state == "START_S6":
@@ -716,6 +815,9 @@ class PLC_LineCoordinator:
 
                 # ---- WAIT_S6_DONE: Wait for S6 to complete ----
                 elif self._state == "WAIT_S6_DONE":
+                    # CRITICAL FIX: Clear S6 start command - it should be a ONE-SHOT pulse
+                    _set_cmd(ms, "S6", start=0, stop=0, reset=0)
+                    
                     # Latch S6 done
                     s6_done = _get(ms, "S6", "done")
                     if s6_done and not self._done_latched["S6"]:
@@ -726,10 +828,14 @@ class PLC_LineCoordinator:
                     s6_busy = _get(ms, "S6", "busy")
                     s6_ready = _get(ms, "S6", "ready")
                     
+                    # Timeout counter
+                    self._s6_wait_counter += 1
+                    
                     if (self._done_latched["S6"] and not s6_busy and s6_ready):
                         print("PLC: S6 done latched -> FULL CYCLE COMPLETE")
                         self._done_latched["S6"] = False
                         self._start_sent["S6"] = False
+                        self._s6_wait_counter = 0
                         
                         # Increment batch and finished count
                         self._batch_id += 1
@@ -745,34 +851,17 @@ class PLC_LineCoordinator:
                         # Go back to START_S1 for next unit
                         self._state = "START_S1"
                         print("PLC: Restarting pipeline with next unit")
+                    elif self._s6_wait_counter > 30:  # Timeout
+                        print(f"PLC: TIMEOUT - S6 stuck for {self._s6_wait_counter} scans, forcing cycle complete")
+                        self._done_latched["S6"] = False
+                        self._start_sent["S6"] = False
+                        self._s6_wait_counter = 0
+                        self._batch_id += 1
+                        self.finished += 1
+                        self._state = "START_S1"
+                        print(f"PLC: Forced batch {self._batch_id-1} complete, restarting")
                     else:
-                        print(f"  WAIT_S6_DONE: done_latched={self._done_latched['S6']}, busy={s6_busy}, ready={s6_ready}")
-                
-                # ---- TEMP DEBUG OVERRIDE for stuck stations (10 seconds) ----
-                # If we've been stuck in a state for too long, force progression
-                if (self._sim_time_s > 10.0 and  # Wait 10 seconds after simulation starts
-                    not self._debug_override_done and
-                    self._state not in ["RESET_ALL", "FAULT_RESET", "WAIT_ALL_READY", "WAIT_S6_DONE"]):
-                    
-                    current_station = self._state.replace("START_", "").replace("WAIT_", "").replace("_DONE", "")
-                    if current_station in STATIONS:
-                        idx = STATIONS.index(current_station)
-                        if idx < 5:  # Not S6
-                            next_station = STATIONS[idx + 1]
-                            ready = _get(ms, next_station, "ready")
-                            busy = _get(ms, next_station, "busy")
-                            fault = _get(ms, next_station, "fault")
-                            
-                            if ready and not busy and not fault:
-                                print(f"DEBUG: forcing progression to {next_station} after 10s")
-                                # Clear all commands first
-                                for st in STATIONS:
-                                    _set_cmd(ms, st, start=0, stop=0, reset=0)
-                                # Send start to next station
-                                _set_cmd(ms, next_station, start=1, stop=0, reset=0)
-                                self._start_sent[next_station] = True
-                                self._state = f"WAIT_{next_station}_DONE"
-                                print(f"DEBUG: {next_station} cmd_start=1 sent via override")
+                        print(f"  WAIT_S6_DONE: done_latched={self._done_latched['S6']}, busy={s6_busy}, ready={s6_ready}, timeout={self._s6_wait_counter}/30")
                 
                 # Update DONE LATCHES (safety catch)
                 for st in STATIONS:
