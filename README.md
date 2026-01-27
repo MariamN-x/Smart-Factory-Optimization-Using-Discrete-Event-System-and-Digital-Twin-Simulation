@@ -151,4 +151,3 @@ Optimization is handled internally by the PLC.
 
 ---
 
-if you want a **one-paragraph examiner summary**, i can write that too.
