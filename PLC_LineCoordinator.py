@@ -277,6 +277,14 @@ class PLC_LineCoordinator:
         self._s4_wait_counter = 0
         self._s5_wait_counter = 0
         self._s6_wait_counter = 0
+        
+        # Previous busy states for edge detection
+        self._prev_S1_busy = 0
+        self._prev_S2_busy = 0
+        self._prev_S3_busy = 0
+        self._prev_S4_busy = 0
+        self._prev_S5_busy = 0
+        self._prev_S6_busy = 0
         # End of user custom code region.
 
 
@@ -326,6 +334,14 @@ class PLC_LineCoordinator:
             self._s4_wait_counter = 0
             self._s5_wait_counter = 0
             self._s6_wait_counter = 0
+            
+            # Previous busy states
+            self._prev_S1_busy = 0
+            self._prev_S2_busy = 0
+            self._prev_S3_busy = 0
+            self._prev_S4_busy = 0
+            self._prev_S5_busy = 0
+            self._prev_S6_busy = 0
 
             # Pulse reset on all stations at sim start
             _reset_all(self.mySignals)
@@ -396,6 +412,10 @@ class PLC_LineCoordinator:
                 print(f"\n=== PLC SCAN {self._scan_count} ===")
                 print(f"PLC state={self._state} step={self.simulationStep}ns run_enable={self._run_enable}")
                 print(f"Sim time: {self._sim_time_s:.3f}s")
+                print(f"Buffers: S1->S2={self._buffers['S1_to_S2']}, S2->S3={self._buffers['S2_to_S3']}, "
+                      f"S3->S4={self._buffers['S3_to_S4']}, S4->S5={self._buffers['S4_to_S5']}, S5->S6={self._buffers['S5_to_S6']}")
+                print(f"Start sent: S1={self._start_sent['S1']}, S2={self._start_sent['S2']}, S3={self._start_sent['S3']}, "
+                      f"S4={self._start_sent['S4']}, S5={self._start_sent['S5']}, S6={self._start_sent['S6']}")
 
                 # Keep station context updated
                 for st in STATIONS:
@@ -420,6 +440,15 @@ class PLC_LineCoordinator:
                     self._done_latched = {st: False for st in STATIONS}
                     self._prev_done = {st: False for st in STATIONS}
                     self._start_sent = {st: False for st in STATIONS}
+                    
+                    # Clear busy edge tracking
+                    self._prev_S1_busy = 0
+                    self._prev_S2_busy = 0
+                    self._prev_S3_busy = 0
+                    self._prev_S4_busy = 0
+                    self._prev_S5_busy = 0
+                    self._prev_S6_busy = 0
+                    
                     # Reset timeout counters
                     self._s1_wait_counter = 0
                     self._s2_wait_counter = 0
@@ -450,6 +479,14 @@ class PLC_LineCoordinator:
                     if all_ready:
                         print("PLC: All 6 stations ready, moving to START_S1")
                         self._state = "START_S1"
+                        
+                        # Initialize previous busy states
+                        self._prev_S1_busy = _get(ms, "S1", "busy")
+                        self._prev_S2_busy = _get(ms, "S2", "busy")
+                        self._prev_S3_busy = _get(ms, "S3", "busy")
+                        self._prev_S4_busy = _get(ms, "S4", "busy")
+                        self._prev_S5_busy = _get(ms, "S5", "busy")
+                        self._prev_S6_busy = _get(ms, "S6", "busy")
                     else:
                         print("PLC: Waiting for stations to be ready...")
 
@@ -459,14 +496,19 @@ class PLC_LineCoordinator:
                     for st in STATIONS:
                         _set_cmd(ms, st, start=0, stop=0, reset=0)
                     
-                    # Check if S1 is ready to start
+                    # Check current S1 state
                     s1_ready = _get(ms, "S1", "ready")
                     s1_busy = _get(ms, "S1", "busy")
                     s1_fault = _get(ms, "S1", "fault")
                     
                     print(f"  S1 start check: ready={s1_ready}, busy={s1_busy}, fault={s1_fault}")
                     
-                    if (s1_ready and not s1_busy and not s1_fault):
+                    # FIX: Check if S1 is already busy (station started autonomously)
+                    if s1_busy and not self._start_sent["S1"]:
+                        print("PLC: S1 already busy in START_S1 -> forcing WAIT")
+                        self._start_sent["S1"] = True
+                        self._state = "WAIT_S1_DONE"
+                    elif (s1_ready and not s1_busy and not s1_fault):
                         if not self._start_sent["S1"]:
                             print("PLC: START pulse -> S1")
                             _set_cmd(ms, "S1", start=1, stop=0, reset=0)
@@ -484,19 +526,33 @@ class PLC_LineCoordinator:
                     
                     # Latch S1 done
                     s1_done = _get(ms, "S1", "done")
-                    if s1_done and not self._done_latched["S1"]:
-                        print("PLC: S1 done seen (raw) -> latching")
-                        self._done_latched["S1"] = True
-                    
-                    # If S1 done is latched and S1 is no longer busy, advance
                     s1_busy = _get(ms, "S1", "busy")
                     s1_ready = _get(ms, "S1", "ready")
+                    s1_fault = _get(ms, "S1", "fault")
+                    
+                    # Detect busy edges
+                    s1_busy_rise = (not self._prev_S1_busy) and s1_busy
+                    s1_busy_fall = self._prev_S1_busy and (not s1_busy)
+                    
+                    if s1_done and not self._done_latched["S1"]:
+                        print("PLC: S1 DONE detected (raw) -> latching")
+                        self._done_latched["S1"] = True
+                    
+                    # BACKUP COMPLETION: If start was sent, busy falls, station is ready and no fault
+                    backup_complete = (self._start_sent["S1"] and s1_busy_fall and 
+                                      s1_ready and not s1_fault)
                     
                     # Timeout counter
                     self._s1_wait_counter += 1
                     
-                    if (self._done_latched["S1"] and not s1_busy and s1_ready):
-                        print("PLC: S1 done latched -> advancing to START_S2")
+                    completion_condition = (self._done_latched["S1"] or backup_complete)
+                    
+                    if completion_condition and s1_ready and not s1_busy and not s1_fault:
+                        if backup_complete:
+                            print("PLC: S1 BUSY_FALL completion detected")
+                        else:
+                            print("PLC: S1 done latched -> advancing to START_S2")
+                        
                         self._done_latched["S1"] = False
                         self._start_sent["S1"] = False
                         self._state = "START_S2"
@@ -515,7 +571,11 @@ class PLC_LineCoordinator:
                         self._buffers["S1_to_S2"] = min(self._buffers["S1_to_S2"] + 1, BUF_MAX)
                         print(f"PLC: Forced S1_to_S2 buffer to {self._buffers['S1_to_S2']}")
                     else:
-                        print(f"  WAIT_S1_DONE: done_latched={self._done_latched['S1']}, busy={s1_busy}, ready={s1_ready}, timeout={self._s1_wait_counter}/30")
+                        print(f"  WAIT_S1_DONE: done_latched={self._done_latched['S1']}, busy={s1_busy}, ready={s1_ready}, "
+                              f"busy_fall={s1_busy_fall}, start_sent={self._start_sent['S1']}, timeout={self._s1_wait_counter}/15")
+                    
+                    # Update previous busy state
+                    self._prev_S1_busy = s1_busy
 
                 # ---- START_S2: Send start pulse to S2 ----
                 elif self._state == "START_S2":
@@ -530,7 +590,12 @@ class PLC_LineCoordinator:
                     
                     print(f"  S2 start check: ready={s2_ready}, busy={s2_busy}, fault={s2_fault}, buffer={self._buffers['S1_to_S2']}")
                     
-                    if (s2_ready and not s2_busy and not s2_fault and self._buffers["S1_to_S2"] > 0):
+                    # FIX: Check if S2 is already busy (station started autonomously)
+                    if s2_busy and not self._start_sent["S2"]:
+                        print("PLC: S2 already busy in START_S2 -> forcing WAIT")
+                        self._start_sent["S2"] = True
+                        self._state = "WAIT_S2_DONE"
+                    elif (s2_ready and not s2_busy and not s2_fault and self._buffers["S1_to_S2"] > 0):
                         if not self._start_sent["S2"]:
                             print("PLC: START pulse -> S2")
                             _set_cmd(ms, "S2", start=1, stop=0, reset=0)
@@ -552,19 +617,33 @@ class PLC_LineCoordinator:
                     
                     # Latch S2 done
                     s2_done = _get(ms, "S2", "done")
-                    if s2_done and not self._done_latched["S2"]:
-                        print("PLC: S2 done seen (raw) -> latching")
-                        self._done_latched["S2"] = True
-                    
-                    # If S2 done is latched and S2 is no longer busy, advance
                     s2_busy = _get(ms, "S2", "busy")
                     s2_ready = _get(ms, "S2", "ready")
+                    s2_fault = _get(ms, "S2", "fault")
+                    
+                    # Detect busy edges
+                    s2_busy_rise = (not self._prev_S2_busy) and s2_busy
+                    s2_busy_fall = self._prev_S2_busy and (not s2_busy)
+                    
+                    if s2_done and not self._done_latched["S2"]:
+                        print("PLC: S2 DONE detected (raw) -> latching")
+                        self._done_latched["S2"] = True
+                    
+                    # BACKUP COMPLETION: If start was sent, busy falls, station is ready and no fault
+                    backup_complete = (self._start_sent["S2"] and s2_busy_fall and 
+                                      s2_ready and not s2_fault)
                     
                     # Timeout counter
                     self._s2_wait_counter += 1
                     
-                    if (self._done_latched["S2"] and not s2_busy and s2_ready):
-                        print("PLC: S2 done latched -> advancing to START_S3")
+                    completion_condition = (self._done_latched["S2"] or backup_complete)
+                    
+                    if completion_condition and s2_ready and not s2_busy and not s2_fault:
+                        if backup_complete:
+                            print("PLC: S2 BUSY_FALL completion detected")
+                        else:
+                            print("PLC: S2 done latched -> advancing to START_S3")
+                        
                         self._done_latched["S2"] = False
                         self._start_sent["S2"] = False
                         self._state = "START_S3"
@@ -582,7 +661,11 @@ class PLC_LineCoordinator:
                         self._buffers["S2_to_S3"] = min(self._buffers["S2_to_S3"] + 1, BUF_MAX)
                         print(f"PLC: Forced S2_to_S3 buffer to {self._buffers['S2_to_S3']}")
                     else:
-                        print(f"  WAIT_S2_DONE: done_latched={self._done_latched['S2']}, busy={s2_busy}, ready={s2_ready}, timeout={self._s2_wait_counter}/30")
+                        print(f"  WAIT_S2_DONE: done_latched={self._done_latched['S2']}, busy={s2_busy}, ready={s2_ready}, "
+                              f"busy_fall={s2_busy_fall}, start_sent={self._start_sent['S2']}, timeout={self._s2_wait_counter}/15")
+                    
+                    # Update previous busy state
+                    self._prev_S2_busy = s2_busy
 
                 # ---- START_S3: Send start pulse to S3 ----
                 elif self._state == "START_S3":
@@ -597,7 +680,12 @@ class PLC_LineCoordinator:
                     
                     print(f"  S3 start check: ready={s3_ready}, busy={s3_busy}, fault={s3_fault}, buffer={self._buffers['S2_to_S3']}")
                     
-                    if (s3_ready and not s3_busy and not s3_fault and self._buffers["S2_to_S3"] > 0):
+                    # FIX: Check if S3 is already busy (station started autonomously)
+                    if s3_busy and not self._start_sent["S3"]:
+                        print("PLC: S3 already busy in START_S3 -> forcing WAIT")
+                        self._start_sent["S3"] = True
+                        self._state = "WAIT_S3_DONE"
+                    elif (s3_ready and not s3_busy and not s3_fault and self._buffers["S2_to_S3"] > 0):
                         if not self._start_sent["S3"]:
                             print("PLC: START pulse -> S3")
                             _set_cmd(ms, "S3", start=1, stop=0, reset=0)
@@ -619,19 +707,33 @@ class PLC_LineCoordinator:
                     
                     # Latch S3 done
                     s3_done = _get(ms, "S3", "done")
-                    if s3_done and not self._done_latched["S3"]:
-                        print("PLC: S3 done seen (raw) -> latching")
-                        self._done_latched["S3"] = True
-                    
-                    # If S3 done is latched and S3 is no longer busy, advance
                     s3_busy = _get(ms, "S3", "busy")
                     s3_ready = _get(ms, "S3", "ready")
+                    s3_fault = _get(ms, "S3", "fault")
+                    
+                    # Detect busy edges
+                    s3_busy_rise = (not self._prev_S3_busy) and s3_busy
+                    s3_busy_fall = self._prev_S3_busy and (not s3_busy)
+                    
+                    if s3_done and not self._done_latched["S3"]:
+                        print("PLC: S3 DONE detected (raw) -> latching")
+                        self._done_latched["S3"] = True
+                    
+                    # BACKUP COMPLETION: If start was sent, busy falls, station is ready and no fault
+                    backup_complete = (self._start_sent["S3"] and s3_busy_fall and 
+                                      s3_ready and not s3_fault)
                     
                     # Timeout counter
                     self._s3_wait_counter += 1
                     
-                    if (self._done_latched["S3"] and not s3_busy and s3_ready):
-                        print("PLC: S3 done latched -> advancing to START_S4")
+                    completion_condition = (self._done_latched["S3"] or backup_complete)
+                    
+                    if completion_condition and s3_ready and not s3_busy and not s3_fault:
+                        if backup_complete:
+                            print("PLC: S3 BUSY_FALL completion detected")
+                        else:
+                            print("PLC: S3 done latched -> advancing to START_S4")
+                        
                         self._done_latched["S3"] = False
                         self._start_sent["S3"] = False
                         self._state = "START_S4"
@@ -649,7 +751,11 @@ class PLC_LineCoordinator:
                         self._buffers["S3_to_S4"] = min(self._buffers["S3_to_S4"] + 1, BUF_MAX)
                         print(f"PLC: Forced S3_to_S4 buffer to {self._buffers['S3_to_S4']}")
                     else:
-                        print(f"  WAIT_S3_DONE: done_latched={self._done_latched['S3']}, busy={s3_busy}, ready={s3_ready}, timeout={self._s3_wait_counter}/30")
+                        print(f"  WAIT_S3_DONE: done_latched={self._done_latched['S3']}, busy={s3_busy}, ready={s3_ready}, "
+                              f"busy_fall={s3_busy_fall}, start_sent={self._start_sent['S3']}, timeout={self._s3_wait_counter}/15")
+                    
+                    # Update previous busy state
+                    self._prev_S3_busy = s3_busy
 
                 # ---- START_S4: Send start pulse to S4 ----
                 elif self._state == "START_S4":
@@ -664,7 +770,12 @@ class PLC_LineCoordinator:
                     
                     print(f"  S4 start check: ready={s4_ready}, busy={s4_busy}, fault={s4_fault}, buffer={self._buffers['S3_to_S4']}")
                     
-                    if (s4_ready and not s4_busy and not s4_fault and self._buffers["S3_to_S4"] > 0):
+                    # FIX: Check if S4 is already busy (station started autonomously)
+                    if s4_busy and not self._start_sent["S4"]:
+                        print("PLC: S4 already busy in START_S4 -> forcing WAIT")
+                        self._start_sent["S4"] = True
+                        self._state = "WAIT_S4_DONE"
+                    elif (s4_ready and not s4_busy and not s4_fault and self._buffers["S3_to_S4"] > 0):
                         if not self._start_sent["S4"]:
                             print("PLC: START pulse -> S4")
                             _set_cmd(ms, "S4", start=1, stop=0, reset=0)
@@ -686,19 +797,33 @@ class PLC_LineCoordinator:
                     
                     # Latch S4 done
                     s4_done = _get(ms, "S4", "done")
-                    if s4_done and not self._done_latched["S4"]:
-                        print("PLC: S4 done seen (raw) -> latching")
-                        self._done_latched["S4"] = True
-                    
-                    # If S4 done is latched and S4 is no longer busy, advance
                     s4_busy = _get(ms, "S4", "busy")
                     s4_ready = _get(ms, "S4", "ready")
+                    s4_fault = _get(ms, "S4", "fault")
+                    
+                    # Detect busy edges
+                    s4_busy_rise = (not self._prev_S4_busy) and s4_busy
+                    s4_busy_fall = self._prev_S4_busy and (not s4_busy)
+                    
+                    if s4_done and not self._done_latched["S4"]:
+                        print("PLC: S4 DONE detected (raw) -> latching")
+                        self._done_latched["S4"] = True
+                    
+                    # BACKUP COMPLETION: If start was sent, busy falls, station is ready and no fault
+                    backup_complete = (self._start_sent["S4"] and s4_busy_fall and 
+                                      s4_ready and not s4_fault)
                     
                     # Timeout counter
                     self._s4_wait_counter += 1
                     
-                    if (self._done_latched["S4"] and not s4_busy and s4_ready):
-                        print("PLC: S4 done latched -> advancing to START_S5")
+                    completion_condition = (self._done_latched["S4"] or backup_complete)
+                    
+                    if completion_condition and s4_ready and not s4_busy and not s4_fault:
+                        if backup_complete:
+                            print("PLC: S4 BUSY_FALL completion detected")
+                        else:
+                            print("PLC: S4 done latched -> advancing to START_S5")
+                        
                         self._done_latched["S4"] = False
                         self._start_sent["S4"] = False
                         self._state = "START_S5"
@@ -713,10 +838,15 @@ class PLC_LineCoordinator:
                         self._start_sent["S4"] = False
                         self._state = "START_S5"
                         self._s4_wait_counter = 0
-                        # self._buffers["S4_to_S5"] = min(self._buffers["S4_to_S5"] + 1, BUF_MAX)
-                        print(f"PLC: Forced S4_to_S5 buffer to {self._buffers['S4_to_S5']}")
+                        # FIX: Increment buffer on timeout to prevent deadlock
+                        self._buffers["S4_to_S5"] = min(self._buffers["S4_to_S5"] + 1, BUF_MAX)
+                        print(f"PLC: Forced S4_to_S5 buffer increment, now at {self._buffers['S4_to_S5']}")
                     else:
-                        print(f"  WAIT_S4_DONE: done_latched={self._done_latched['S4']}, busy={s4_busy}, ready={s4_ready}, timeout={self._s4_wait_counter}/30")
+                        print(f"  WAIT_S4_DONE: done_latched={self._done_latched['S4']}, busy={s4_busy}, ready={s4_ready}, "
+                              f"busy_fall={s4_busy_fall}, start_sent={self._start_sent['S4']}, timeout={self._s4_wait_counter}/30")
+                    
+                    # Update previous busy state
+                    self._prev_S4_busy = s4_busy
 
                 # ---- START_S5: Send start pulse to S5 ----
                 elif self._state == "START_S5":
@@ -731,7 +861,14 @@ class PLC_LineCoordinator:
                     
                     print(f"  S5 start check: ready={s5_ready}, busy={s5_busy}, fault={s5_fault}, buffer={self._buffers['S4_to_S5']}")
                     
-                    if (s5_ready and not s5_busy and not s5_fault and self._buffers["S4_to_S5"] > 0):
+                    # FIX: Check if S5 is already busy (station started autonomously)
+                    if s5_busy and not self._start_sent["S5"]:
+                        print("PLC: S5 already busy in START_S5 -> forcing WAIT")
+                        self._start_sent["S5"] = True
+                        self._state = "WAIT_S5_DONE"
+                    elif self._buffers["S4_to_S5"] == 0:
+                        print(f"PLC: No work: S4_to_S5 buffer empty")
+                    elif (s5_ready and not s5_busy and not s5_fault and self._buffers["S4_to_S5"] > 0):
                         if not self._start_sent["S5"]:
                             print("PLC: START pulse -> S5")
                             _set_cmd(ms, "S5", start=1, stop=0, reset=0)
@@ -744,7 +881,7 @@ class PLC_LineCoordinator:
                         else:
                             print("PLC: S5 start already sent, waiting...")
                     else:
-                        print(f"PLC: S5 not ready to start")
+                        print(f"PLC: S5 not ready to start (buffer={self._buffers['S4_to_S5']}, ready={s5_ready}, busy={s5_busy}, fault={s5_fault})")
 
                 # ---- WAIT_S5_DONE: Wait for S5 to complete ----
                 elif self._state == "WAIT_S5_DONE":
@@ -753,19 +890,33 @@ class PLC_LineCoordinator:
                     
                     # Latch S5 done
                     s5_done = _get(ms, "S5", "done")
-                    if s5_done and not self._done_latched["S5"]:
-                        print("PLC: S5 done seen (raw) -> latching")
-                        self._done_latched["S5"] = True
-                    
-                    # If S5 done is latched and S5 is no longer busy, advance
                     s5_busy = _get(ms, "S5", "busy")
                     s5_ready = _get(ms, "S5", "ready")
+                    s5_fault = _get(ms, "S5", "fault")
+                    
+                    # Detect busy edges
+                    s5_busy_rise = (not self._prev_S5_busy) and s5_busy
+                    s5_busy_fall = self._prev_S5_busy and (not s5_busy)
+                    
+                    if s5_done and not self._done_latched["S5"]:
+                        print("PLC: S5 DONE detected (raw) -> latching")
+                        self._done_latched["S5"] = True
+                    
+                    # BACKUP COMPLETION: If start was sent, busy falls, station is ready and no fault
+                    backup_complete = (self._start_sent["S5"] and s5_busy_fall and 
+                                      s5_ready and not s5_fault)
                     
                     # Timeout counter
                     self._s5_wait_counter += 1
                     
-                    if (self._done_latched["S5"] and not s5_busy and s5_ready):
-                        print("PLC: S5 done latched -> advancing to START_S6")
+                    completion_condition = (self._done_latched["S5"] or backup_complete)
+                    
+                    if completion_condition and s5_ready and not s5_busy and not s5_fault:
+                        if backup_complete:
+                            print("PLC: S5 BUSY_FALL completion detected")
+                        else:
+                            print("PLC: S5 done latched -> advancing to START_S6")
+                        
                         self._done_latched["S5"] = False
                         self._start_sent["S5"] = False
                         self._state = "START_S6"
@@ -774,7 +925,7 @@ class PLC_LineCoordinator:
                         # Buffer S5->S6
                         self._buffers["S5_to_S6"] = min(self._buffers["S5_to_S6"] + 1, BUF_MAX)
                         print(f"PLC: Incremented S5_to_S6 buffer to {self._buffers['S5_to_S6']}")
-                    elif self._s5_wait_counter > 30:  # Timeout
+                    elif self._s5_wait_counter > 200:  # Increased timeout for ST5 (200 scans ≈ 20-40 seconds)
                         print(f"PLC: TIMEOUT - S5 stuck for {self._s5_wait_counter} scans, forcing advance")
                         self._done_latched["S5"] = False
                         self._start_sent["S5"] = False
@@ -783,7 +934,11 @@ class PLC_LineCoordinator:
                         self._buffers["S5_to_S6"] = min(self._buffers["S5_to_S6"] + 1, BUF_MAX)
                         print(f"PLC: Forced S5_to_S6 buffer to {self._buffers['S5_to_S6']}")
                     else:
-                        print(f"  WAIT_S5_DONE: done_latched={self._done_latched['S5']}, busy={s5_busy}, ready={s5_ready}, timeout={self._s5_wait_counter}/30")
+                        print(f"  WAIT_S5_DONE: done_latched={self._done_latched['S5']}, busy={s5_busy}, ready={s5_ready}, "
+                              f"busy_fall={s5_busy_fall}, start_sent={self._start_sent['S5']}, timeout={self._s5_wait_counter}/200")
+                    
+                    # Update previous busy state
+                    self._prev_S5_busy = s5_busy
 
                 # ---- START_S6: Send start pulse to S6 ----
                 elif self._state == "START_S6":
@@ -798,7 +953,12 @@ class PLC_LineCoordinator:
                     
                     print(f"  S6 start check: ready={s6_ready}, busy={s6_busy}, fault={s6_fault}, buffer={self._buffers['S5_to_S6']}")
                     
-                    if (s6_ready and not s6_busy and not s6_fault and self._buffers["S5_to_S6"] > 0):
+                    # FIX: Check if S6 is already busy (station started autonomously)
+                    if s6_busy and not self._start_sent["S6"]:
+                        print("PLC: S6 already busy in START_S6 -> forcing WAIT")
+                        self._start_sent["S6"] = True
+                        self._state = "WAIT_S6_DONE"
+                    elif (s6_ready and not s6_busy and not s6_fault and self._buffers["S5_to_S6"] > 0):
                         if not self._start_sent["S6"]:
                             print("PLC: START pulse -> S6")
                             _set_cmd(ms, "S6", start=1, stop=0, reset=0)
@@ -820,19 +980,33 @@ class PLC_LineCoordinator:
                     
                     # Latch S6 done
                     s6_done = _get(ms, "S6", "done")
-                    if s6_done and not self._done_latched["S6"]:
-                        print("PLC: S6 done seen (raw) -> latching")
-                        self._done_latched["S6"] = True
-                    
-                    # If S6 done is latched and S6 is no longer busy, cycle complete
                     s6_busy = _get(ms, "S6", "busy")
                     s6_ready = _get(ms, "S6", "ready")
+                    s6_fault = _get(ms, "S6", "fault")
+                    
+                    # Detect busy edges
+                    s6_busy_rise = (not self._prev_S6_busy) and s6_busy
+                    s6_busy_fall = self._prev_S6_busy and (not s6_busy)
+                    
+                    if s6_done and not self._done_latched["S6"]:
+                        print("PLC: S6 DONE detected (raw) -> latching")
+                        self._done_latched["S6"] = True
+                    
+                    # BACKUP COMPLETION: If start was sent, busy falls, station is ready and no fault
+                    backup_complete = (self._start_sent["S6"] and s6_busy_fall and 
+                                      s6_ready and not s6_fault)
                     
                     # Timeout counter
                     self._s6_wait_counter += 1
                     
-                    if (self._done_latched["S6"] and not s6_busy and s6_ready):
-                        print("PLC: S6 done latched -> FULL CYCLE COMPLETE")
+                    completion_condition = (self._done_latched["S6"] or backup_complete)
+                    
+                    if completion_condition and s6_ready and not s6_busy and not s6_fault:
+                        if backup_complete:
+                            print("PLC: S6 BUSY_FALL completion detected")
+                        else:
+                            print("PLC: S6 done latched -> FULL CYCLE COMPLETE")
+                        
                         self._done_latched["S6"] = False
                         self._start_sent["S6"] = False
                         self._s6_wait_counter = 0
@@ -851,7 +1025,7 @@ class PLC_LineCoordinator:
                         # Go back to START_S1 for next unit
                         self._state = "START_S1"
                         print("PLC: Restarting pipeline with next unit")
-                    elif self._s6_wait_counter > 30:  # Timeout
+                    elif self._s6_wait_counter > 300:  # Increased timeout for ST6 (300 scans ≈ 30-60 seconds)
                         print(f"PLC: TIMEOUT - S6 stuck for {self._s6_wait_counter} scans, forcing cycle complete")
                         self._done_latched["S6"] = False
                         self._start_sent["S6"] = False
@@ -861,7 +1035,11 @@ class PLC_LineCoordinator:
                         self._state = "START_S1"
                         print(f"PLC: Forced batch {self._batch_id-1} complete, restarting")
                     else:
-                        print(f"  WAIT_S6_DONE: done_latched={self._done_latched['S6']}, busy={s6_busy}, ready={s6_ready}, timeout={self._s6_wait_counter}/30")
+                        print(f"  WAIT_S6_DONE: done_latched={self._done_latched['S6']}, busy={s6_busy}, ready={s6_ready}, "
+                              f"busy_fall={s6_busy_fall}, start_sent={self._start_sent['S6']}, timeout={self._s6_wait_counter}/300")
+                    
+                    # Update previous busy state
+                    self._prev_S6_busy = s6_busy
                 
                 # Update DONE LATCHES (safety catch)
                 for st in STATIONS:
@@ -870,7 +1048,7 @@ class PLC_LineCoordinator:
                             print(f"PLC: Safety latch for {st} done")
                             self._done_latched[st] = True
                 
-                # Update previous states for edge detection
+                # Update previous done states for edge detection
                 for st in STATIONS:
                     self._prev_done[st] = (_get(ms, st, "done") == 1)
 
@@ -881,7 +1059,6 @@ class PLC_LineCoordinator:
                     reset = getattr(self.mySignals, f"{st}_cmd_reset")
                     stop = getattr(self.mySignals, f"{st}_cmd_stop")
                     print(f"  TX {st} start={start} reset={reset} stop={stop}")
-
                 # End of user custom code region.
                 #Send ethernet packet to ST1_ComponentKitting
                 self.sendEthernetPacketToST1_ComponentKitting()
@@ -1371,7 +1548,7 @@ class PLC_LineCoordinator:
                 for str in signal:
                     str += '\0'
                     str = str.encode('utf-8')
-                    packedData += struct.pack(f'={len(str)}s', str)
+                    packedData += struct.pack(f'={len(str)}s', *str)
                 return packedData
             else:
                 return struct.pack(f'={len(signal)}{signalType}', *signal)
