@@ -7,6 +7,7 @@ import math
 
 PythonGateways = 'pythonGateways/'
 sys.path.append(PythonGateways)
+import opt_dashboard as opt
 
 import VsiCommonPythonApi as vsiCommonPythonApi
 import VsiTcpUdpPythonGateway as vsiEthernetPythonGateway
@@ -340,7 +341,12 @@ class PLC_LineCoordinator:
                 
             print("PLC: Initialized with full 6-station state machine")
             print("PLC: Pipeline flow: S1 -> S2 -> S3 -> S4 -> S5 -> S6 -> FINISH")
+            # start dashboard (one time)
+            opt.start_in_thread(host="0.0.0.0", port=8055)
+            print("PLC: opt_dashboard started on http://127.0.0.1:8055")
             # End of user custom code region.
+            
+
             self.updateInternalVariables()
 
             if(vsiCommonPythonApi.isStopRequested()):
@@ -391,7 +397,38 @@ class PLC_LineCoordinator:
                 ms = self.mySignals
                 self._scan_count += 1
                 self._sim_time_s = vsiCommonPythonApi.getSimulationTimeInNs() / 1e9
+                # ---- opt_dashboard: consume scenario triggers (fault/maintenance) ----
+                trigs = opt.consume_triggers()
+                for t in trigs:
+                    if t.get("type") == "fault_request":
+                        opt.inject_fault(t.get("station", "S1,S2,S3,S4,S5,S6"), t.get("duration_s", 20.0), self._sim_time_s, reason="fault")
+                    elif t.get("type") == "maintenance_request":
+                        opt.schedule_maintenance(t.get("station", "S1,S2,S3,S4,S5,S6"), t.get("duration_s", 15.0), self._sim_time_s)
 
+                # ---- opt_dashboard: build + publish KPI snapshot ----
+                snap = opt.build_kpi_snapshot(self, ms, STATIONS)
+                opt.set_kpi_snapshot(snap)
+                # ---- opt_dashboard: run history buttons (optional) ----
+                web_start, web_stop, web_reset = opt.consume_web_cmds()
+
+                if web_start:
+                    opt.run_start(meta={"sim_time_s": self._sim_time_s})
+
+                if web_stop:
+                    opt.run_stop(snap)
+
+                if web_reset:
+                    opt.run_stop(snap)
+
+
+                if not self._run_enable:
+                    snap = opt.build_kpi_snapshot(self, ms, STATIONS)
+                    opt.set_kpi_snapshot(snap)
+                    opt.write_kpis_to_files(snap)
+                    
+                
+                
+            
                 # 1) PRINT PLC STATE EVERY SCAN
                 print(f"\n=== PLC SCAN {self._scan_count} ===")
                 print(f"PLC state={self._state} step={self.simulationStep}ns run_enable={self._run_enable}")
