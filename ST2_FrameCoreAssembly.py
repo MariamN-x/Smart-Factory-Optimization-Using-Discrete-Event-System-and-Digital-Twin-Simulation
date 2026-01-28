@@ -46,19 +46,15 @@ ST2_FrameCoreAssembly1 = 0
 
 # Start of user custom code region. Please apply edits only within these regions:  Global Variables & Definitions
 
-# Start of user custom code region. Global Variables & Definitions
-
 import simpy
 import random
-import math
 
 # =====================
-# STATION 2 HANDLING WITH PERSISTENT HANDSHAKE
+# STATION 2 FIXED HANDLER WITH PROPER TIMING
 # =====================
-class ST2_CycleHandler:
+class FixedFrameCoreHandler:
     """
-    Handles frame core assembly cycles.
-    Optimized to maintain busy/ready states consistently for the PLC.
+    Fixed handler with proper timing advancement and handshake.
     """
     def __init__(self, env: simpy.Environment):
         self.env = env
@@ -68,17 +64,18 @@ class ST2_CycleHandler:
         self._cycle_time_jitter = 0.15 
         
         self._busy = False
-        self._done_pulse = False
-        self._ready = True 
+        self._done_latched = False
+        self._ready = True
         self._fault = False
         
-        self._start_time_s = 0
+        self._cycle_start_s = 0
         self._last_cycle_time_ms = 12000
         
         self._completed = 0
         self._scrapped = 0
         self._reworks = 0
         self._total_cycles = 0
+        self._cycle_time_sum_s = 0.0
         self._cycle_time_avg_s = 0.0
         
     def reset(self):
@@ -86,13 +83,15 @@ class ST2_CycleHandler:
             self._cycle_proc.interrupt()
         self.state = "IDLE"
         self._busy = False
-        self._done_pulse = False
+        self._done_latched = False
         self._ready = True
         self._completed = 0
         self._scrapped = 0
         self._reworks = 0
         self._total_cycles = 0
+        self._cycle_time_sum_s = 0.0
         self._cycle_time_avg_s = 0.0
+        self._last_cycle_time_ms = 12000
         
     def start_cycle(self, recipe_id: int):
         """Starts a cycle; returns False if already busy."""
@@ -106,9 +105,11 @@ class ST2_CycleHandler:
         
         self.state = "RUNNING"
         self._busy = True
-        self._done_pulse = False
-        self._start_time_s = self.env.now
+        self._done_latched = False
+        self._ready = False
+        self._cycle_start_s = self.env.now
         self._cycle_proc = self.env.process(self._run_cycle())
+        print(f"  FixedFrameCoreHandler: Starting cycle at env.now={self.env.now:.3f}s, expected={self._current_cycle_time_s:.3f}s")
         return True
         
     def _run_cycle(self):
@@ -118,6 +119,13 @@ class ST2_CycleHandler:
             # Outcome logic
             r = random.random()
             self._total_cycles += 1
+            
+            # Calculate actual cycle time
+            actual_time_s = self.env.now - self._cycle_start_s
+            self._last_cycle_time_ms = int(actual_time_s * 1000)
+            self._cycle_time_sum_s += actual_time_s
+            self._cycle_time_avg_s = self._cycle_time_sum_s / self._total_cycles
+            
             if r < 0.02: # 2% Scrap
                 self.state = "SCRAPPED"
                 self._scrapped += 1
@@ -128,76 +136,109 @@ class ST2_CycleHandler:
                 self.state = "COMPLETE"
                 self._completed += 1
             
-            # Timing calculations
-            duration_s = self.env.now - self._start_time_s
-            self._last_cycle_time_ms = int(duration_s * 1000)
-            self._cycle_time_avg_s = ((self._cycle_time_avg_s * (self._total_cycles - 1)) + duration_s) / self._total_cycles
+            print(f"  FixedFrameCoreHandler: Cycle completed at env.now={self.env.now:.3f}s, "
+                  f"actual={self._last_cycle_time_ms}ms, state={self.state}")
             
-            self._done_pulse = True
+            self._done_latched = True
             self._busy = False
             self._cycle_proc = None
         except simpy.Interrupt:
             self._busy = False
+            self._done_latched = False
             self._cycle_proc = None
+            self.state = "IDLE"
 
     def stop_cycle(self):
         if self._cycle_proc:
             self._cycle_proc.interrupt()
         self.state = "IDLE"
         self._busy = False
+        self._done_latched = False
 
-class ST2_SimRuntime:
+class ST2_FixedSimRuntime:
     def __init__(self):
         self.env = simpy.Environment()
-        self.handler = ST2_CycleHandler(self.env)
+        self.handler = FixedFrameCoreHandler(self.env)
         
-        self.enabled = False
-        self._done_output_latched = False
-        self._done_was_set_prev = False
+        # Handshake state
+        self._run_latched = False
+        self._prev_cmd_start = 0
         
+        # Context
         self.batch_id = 0
         self.recipe_id = 0
 
-    def step(self, dt_s: float):
-        """Logic Step: Triggered every VSI simulation step."""
-        # Process start if enabled and idle
-        if self.enabled and not self.handler._busy:
+    def reset(self):
+        self.env = simpy.Environment()
+        self.handler = FixedFrameCoreHandler(self.env)
+        self._run_latched = False
+        self._prev_cmd_start = 0
+        print("  ST2_FixedSimRuntime: Full reset")
+        
+    def update_handshake(self, cmd_start: int, cmd_stop: int, cmd_reset: int):
+        """Process PLC commands and update internal state"""
+        cmd_start_int = 1 if cmd_start else 0
+        
+        # Handle reset
+        if cmd_reset:
+            self.reset()
+            return
+            
+        # Rising edge of cmd_start AND handler is idle
+        if cmd_start_int == 1 and self._prev_cmd_start == 0 and not self.handler._busy:
+            # Clear any previous done flag
+            self.handler._done_latched = False
+            self._run_latched = True
+            print(f"  ST2_FixedSimRuntime: Rising edge cmd_start, starting cycle")
+            
+        # Falling edge of cmd_start - clear done latch
+        if cmd_start_int == 0 and self._prev_cmd_start == 1:
+            self._run_latched = False
+            self.handler._done_latched = False
+            print(f"  ST2_FixedSimRuntime: cmd_start dropped, clearing done latch")
+            
+        # Stop command
+        if cmd_stop:
+            self._run_latched = False
+            self.handler.stop_cycle()
+            
+        self._prev_cmd_start = cmd_start_int
+        
+        # Start cycle if latched and not busy
+        if self._run_latched and not self.handler._busy:
             self.handler.start_cycle(self.recipe_id)
         
-        # Process stop if disabled
-        if not self.enabled and self.handler._busy:
-            self.handler.stop_cycle()
-
-        # Advance SimPy time
-        target = self.env.now + dt_s
-        self.env.run(until=target)
-
-        # Robust Done Pulse Handshake (Matching ST1 logic)
-        # Ensures 'done' is high for exactly one VSI tick
-        is_done = self.handler._done_pulse
-        if is_done and not self._done_was_set_prev:
-            self._done_output_latched = True
-            self._done_was_set_prev = True
-        elif not is_done:
-            self._done_was_set_prev = False
+    def step(self, dt_s: float):
+        if dt_s is None or dt_s <= 0:
+            return
+            
+        # DEBUG: Show time advancement
+        old_time = self.env.now
+        target_time = self.env.now + float(dt_s)
+        self.env.run(until=target_time)
+        
+        if self.handler._busy:
+            print(f"  ST2_FixedSimRuntime: Time advanced {old_time:.3f}s -> {self.env.now:.3f}s, "
+                  f"busy={self.handler._busy}, done_latched={self.handler._done_latched}")
 
     def get_outputs(self):
-        # Ready is only true if we are enabled (latched) but not currently working
-        ready_signal = 1 if (not self.handler._busy and self.enabled) else 0
+        # Ready = not busy AND not fault AND run_latched is False (idle)
+        ready_signal = 1 if (not self.handler._busy and not self.handler._fault and not self._run_latched) else 0
+        
+        # Done is latched until PLC clears cmd_start
+        done_signal = 1 if self.handler._done_latched else 0
         
         out = (
             ready_signal,
             1 if self.handler._busy else 0,
-            0, # fault
-            1 if self._done_output_latched else 0,
+            0,  # fault
+            done_signal,
             self.handler._last_cycle_time_ms,
             self.handler._completed,
             self.handler._scrapped,
             self.handler._reworks,
             self.handler._cycle_time_avg_s
         )
-        # Clear the one-shot output pulse after it is read for the Ethernet packet
-        self._done_output_latched = False 
         return out
 
 # End of user custom code region. Please don't edit beyond this point.
@@ -226,18 +267,9 @@ class ST2_FrameCoreAssembly:
         # Start of user custom code region. Please apply edits only within these regions:  Constructor
 
         self._sim = None
-        self._run_latched = False
         self._prev_cmd_start = 0
         self._prev_cmd_stop = 0
         self._prev_cmd_reset = 0
-
-        # Latest SimPy snapshot copied into VSI mainThread (debug / KPIs)
-        self.last_result = {
-            "cycles_started": 0,
-            "env_now": 0,
-            "batch_id": 0,
-            "recipe_id": 0,
-        }
 
 # End of user custom code region. Please don't edit beyond this point.
 
@@ -250,12 +282,11 @@ class ST2_FrameCoreAssembly:
             vsiCommonPythonApi.waitForReset()
 
             # Start of user custom code region. Please apply edits only within these regions:  After Reset
-            self._sim = ST2_SimRuntime()
-            self._run_latched = False
+            self._sim = ST2_FixedSimRuntime()
             self._prev_cmd_start = 0
             self._prev_cmd_stop = 0
             self._prev_cmd_reset = 0
-            print("ST2: SimPy runtime initialized with clean handshake")
+            print("ST2: Fixed SimPy runtime initialized")
 
 # End of user custom code region. Please don't edit beyond this point.
             self.updateInternalVariables()
@@ -265,14 +296,6 @@ class ST2_FrameCoreAssembly:
             self.establishTcpUdpConnection()
             nextExpectedTime = vsiCommonPythonApi.getSimulationTimeInNs()
             while(vsiCommonPythonApi.getSimulationTimeInNs() < self.totalSimulationTime):
-
-                # Start of user custom code region. Please apply edits only within these regions:  Inside the while loop
-
-                # REMOVED: Moved to "Before sending the packet" region to ensure proper execution order
-                # The edge detection and SimPy stepping must happen AFTER receiving the Ethernet packet
-                # This ensures fresh PLC inputs are processed immediately
-
-                # End of user custom code region. Please don't edit beyond this point.
 
                 self.updateInternalVariables()
 
@@ -291,59 +314,43 @@ class ST2_FrameCoreAssembly:
                 print(f"ST2 attempting to receive on PORT: {PLC_LineCoordinatorSocketPortNumber1}")
                 receivedData = vsiEthernetPythonGateway.recvEthernetPacket(PLC_LineCoordinatorSocketPortNumber1)
                 
-                # DEBUG: Instrument receive path
-                print(f"ST2 RX meta dest/src/len: {receivedData[0]}, {receivedData[1]}, {receivedData[3]}")
-                
                 if(receivedData[3] != 0):
                     self.decapsulateReceivedData(receivedData)
 
                 # Start of user custom code region. Please apply edits only within these regions:  Before sending the packet
 
-               # Start of user custom code region. Before sending the packet
+                # Process handshake and simulation stepping AFTER receiving the packet
+                if self._sim is not None:
+                    # Update context
+                    self._sim.batch_id = self.mySignals.batch_id
+                    self._sim.recipe_id = self.mySignals.recipe_id
+                    
+                    # Process PLC commands and update handshake state
+                    self._sim.update_handshake(
+                        self.mySignals.cmd_start,
+                        self.mySignals.cmd_stop,
+                        self.mySignals.cmd_reset
+                    )
+                    
+                    # Advance simulation time
+                    dt_s = float(self.simulationStep) / 1e9 if self.simulationStep else 0.0
+                    self._sim.step(dt_s)
+                    
+                    # Get outputs from SimPy
+                    (self.mySignals.ready, self.mySignals.busy, self.mySignals.fault, 
+                     self.mySignals.done, self.mySignals.cycle_time_ms, self.mySignals.completed, 
+                     self.mySignals.scrapped, self.mySignals.reworks, 
+                     self.mySignals.cycle_time_avg_s) = self._sim.get_outputs()
 
-                # 1. Edge Detection & Latched Run State (Mirroring ST1 success)
-                if self.mySignals.cmd_reset and not self._prev_cmd_reset:
-                    self._run_latched = False
-                    if self._sim is not None:
-                        self._sim.handler.reset()
-
-                if self.mySignals.cmd_start and not self._prev_cmd_start:
-                    self._run_latched = True  # LATCH stays True unlike previous buggy version
-
-                if self.mySignals.cmd_stop and not self._prev_cmd_stop:
-                    self._run_latched = False
-
+                # Update previous states
                 self._prev_cmd_start = int(self.mySignals.cmd_start)
                 self._prev_cmd_stop = int(self.mySignals.cmd_stop)
                 self._prev_cmd_reset = int(self.mySignals.cmd_reset)
 
-                # 2. Advance Simulation
-                dt_s = float(self.simulationStep) / 1e9 if self.simulationStep else 0.0
-
-                if self._sim is not None:
-                    # Update SimRuntime context
-                    self._sim.enabled = self._run_latched
-                    self._sim.batch_id = self.mySignals.batch_id
-                    self._sim.recipe_id = self.mySignals.recipe_id
-                    
-                    # Step SimPy
-                    self._sim.step(dt_s)
-                    
-                    # 3. Map SimPy results to VSI signals for the PLC
-                    (self.mySignals.ready, self.mySignals.busy, self.mySignals.fault, 
-                    self.mySignals.done, self.mySignals.cycle_time_ms, self.mySignals.completed, 
-                    self.mySignals.scrapped, self.mySignals.reworks, 
-                    self.mySignals.cycle_time_avg_s) = self._sim.get_outputs()
-
-# End of user custom code region.
                 # End of user custom code region. Please don't edit beyond this point.
 
                 #Send ethernet packet to PLC_LineCoordinator
                 self.sendEthernetPacketToPLC_LineCoordinator()
-
-                # Start of user custom code region. Please apply edits only within these regions:  After sending the packet
-
-                # End of user custom code region. Please don't edit beyond this point.
 
                 print("\n+=ST2_FrameCoreAssembly+=")
                 print("  VSI time:", end = " ")
@@ -380,10 +387,9 @@ class ST2_FrameCoreAssembly:
                 print("\tcycle_time_avg_s =", end = " ")
                 print(self.mySignals.cycle_time_avg_s)
                 
-                # Debug output
-                print("  Internal state:")
-                print(f"\tenv_now = {self.last_result.get('env_now', 0):.3f}s")
-                print(f"\tcycles_started = {self.last_result.get('cycles_started', 0)}")
+                # Show SimPy time if available
+                if self._sim is not None:
+                    print(f"  SimPy env.now = {self._sim.env.now:.3f}s")
 
                 print("\n\n")
 
@@ -408,14 +414,10 @@ class ST2_FrameCoreAssembly:
         except Exception as e:
             if str(e) == "stopRequested":
                 print("Terminate signal has been received from one of the VSI clients")
-                # Advance time with a step that is equal to "simulationStep + 1" so that all other clients
-                # receive the terminate packet before terminating this client
                 vsiCommonPythonApi.advanceSimulation(self.simulationStep + 1)
             else:
                 print(f"An error occurred: {str(e)}")
         except:
-            # Advance time with a step that is equal to "simulationStep + 1" so that all other clients
-            # receive the terminate packet before terminating this client
             vsiCommonPythonApi.advanceSimulation(self.simulationStep + 1)
 
 
@@ -423,7 +425,6 @@ class ST2_FrameCoreAssembly:
     def establishTcpUdpConnection(self):
         if(self.clientPortNum[ST2_FrameCoreAssembly1] == 0):
             self.clientPortNum[ST2_FrameCoreAssembly1] = vsiEthernetPythonGateway.tcpConnect(bytes(PLC_LineCoordinatorIpAddress), PLC_LineCoordinatorSocketPortNumber1)
-            print(f"ST2 tcpConnect handle: {self.clientPortNum[ST2_FrameCoreAssembly1]}")  # Keep for debugging
 
         if(self.clientPortNum[ST2_FrameCoreAssembly1] == 0):
             print("Error: Failed to connect to port: PLC_LineCoordinator on TCP port: ")
@@ -441,15 +442,12 @@ class ST2_FrameCoreAssembly:
         for i in range(self.receivedNumberOfBytes):
             self.receivedPayload[i] = receivedData[2][i]
 
-        # DEBUG: Print what we received
         print(f"ST2 decapsulate: destPort={self.receivedDestPortNumber}, srcPort={self.receivedSrcPortNumber}, len={self.receivedNumberOfBytes}")
         
-        # Decode PLC command packets when we receive 9 bytes
         if self.receivedNumberOfBytes == 9:
             print("Received 9-byte packet from PLC (command packet)")
             receivedPayload = bytes(self.receivedPayload)
             
-            # Decode the 9-byte command packet
             self.mySignals.cmd_start, receivedPayload = self.unpackBytes('?', receivedPayload)
             self.mySignals.cmd_stop, receivedPayload = self.unpackBytes('?', receivedPayload)
             self.mySignals.cmd_reset, receivedPayload = self.unpackBytes('?', receivedPayload)
@@ -486,13 +484,8 @@ class ST2_FrameCoreAssembly:
 
         bytesToSend += self.packBytes('d', self.mySignals.cycle_time_avg_s)
 
-        #Send ethernet packet to PLC_LineCoordinator
         print(f"ST2 sending to PLC on port: {PLC_LineCoordinatorSocketPortNumber1}")
         vsiEthernetPythonGateway.sendEthernetPacket(PLC_LineCoordinatorSocketPortNumber1, bytes(bytesToSend))
-
-        # Start of user custom code region. Please apply edits only within these regions:  Protocol's callback function
-
-        # End of user custom code region. Please don't edit beyond this point.
 
 
 
@@ -565,10 +558,6 @@ def main():
     inputArgs = argparse.ArgumentParser(" ")
     inputArgs.add_argument('--domain', metavar='D', default='AF_UNIX', help='Socket domain for connection with the VSI TLM fabric server')
     inputArgs.add_argument('--server-url', metavar='CO', default='localhost', help='server URL of the VSI TLM Fabric Server')
-
-    # Start of user custom code region. Please apply edits only within these regions:  Main method
-
-    # End of user custom code region. Please don't edit beyond this point.
 
     args = inputArgs.parse_args()
 
