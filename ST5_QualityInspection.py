@@ -50,22 +50,11 @@ import simpy
 # -----------------------------
 # Station 5: Quality Inspection + Diverter (SimPy core)
 # -----------------------------
-# Real-world idea:
-# - A unit arrives from Station 4.
-# - Camera/measurement + checks (visual + basic functional).
-# - Optional re-inspection (one rework loop).
-# - Diverter sends to PASS lane or REJECT/REWORK lane.
-#
-# VSI integration:
-# - PLC controls via cmd_start/cmd_stop/cmd_reset.
-# - We step SimPy in the mainThread loop and copy results to mySignals.
 
 def _st5_accept_rate(recipe_id: int) -> float:
-    # Tune per recipe: different printer variants have different pass rates.
     base = 0.88
     if int(recipe_id) == 0:
         return base
-    # small variation but clamped
     return max(0.70, min(0.97, base - (int(recipe_id) % 5) * 0.02))
 
 class _ST5SimModel:
@@ -76,30 +65,37 @@ class _ST5SimModel:
         # state
         self.busy = False
         self.fault_latched = False
-
-        # results / KPIs
-        self.accept = 0
-        self.reject = 0
-        self.last_accept = 0  # bool as int
-        self.last_cycle_time_s = 0.0
-        self._done_pulse = False
-
-        # internal
-        self._active_proc = None
+        self._unit_done = False
+        self._unit_decision = None  # True=accept, False=reject
         self._current_batch = 0
         self._current_recipe = 0
+        self._active_proc = None
 
-    def reset(self, random_seed: int = 5):
-        # rebuild everything (fast + clean)
-        self.__init__(random_seed=random_seed)
+        # results / KPIs
+        self.accept_total = 0
+        self.reject_total = 0
+        self.last_cycle_time_s = 0.0
+
+    def reset(self):
+        self.env = simpy.Environment()
+        self.busy = False
+        self.fault_latched = False
+        self._unit_done = False
+        self._unit_decision = None
+        self._current_batch = 0
+        self._current_recipe = 0
+        self._active_proc = None
+        self.accept_total = 0
+        self.reject_total = 0
+        self.last_cycle_time_s = 0.0
 
     def start_unit(self, batch_id: int, recipe_id: int) -> bool:
-        if self.fault_latched:
-            return False
-        if self.busy:
+        if self.fault_latched or self.busy:
             return False
 
         self.busy = True
+        self._unit_done = False
+        self._unit_decision = None
         self._current_batch = int(batch_id)
         self._current_recipe = int(recipe_id)
         self._active_proc = self.env.process(self._unit_process(batch_id, recipe_id))
@@ -108,23 +104,31 @@ class _ST5SimModel:
     def step(self, dt_s: float):
         if dt_s <= 0:
             return
-        # advance time
         target = self.env.now + float(dt_s)
         self.env.run(until=target)
+        
+        # Check if process completed during this step
+        if self._active_proc and not self._active_proc.is_alive and self.busy:
+            self.busy = False
+            self._unit_done = True
 
-    def pop_done_pulse(self) -> bool:
-        if self._done_pulse:
-            self._done_pulse = False
+    def get_done_pulse(self) -> bool:
+        """Return True if a unit just completed, then clear the flag"""
+        if self._unit_done:
+            self._unit_done = False
             return True
         return False
+
+    def get_last_decision(self) -> bool:
+        """Return the acceptance decision of the last completed unit"""
+        return self._unit_decision if self._unit_decision is not None else False
 
     # ---- SimPy process ----
     def _unit_process(self, batch_id: int, recipe_id: int):
         t0 = self.env.now
 
-        # Small chance of inspection cell fault (camera/fixture/jig)
+        # Small chance of inspection cell fault
         if random.random() < 0.005:
-            # fault happens during setup
             yield self.env.timeout(0.2)
             self.fault_latched = True
             self.busy = False
@@ -145,26 +149,22 @@ class _ST5SimModel:
 
         # Optional re-inspection once (rework loop)
         if not decision_accept:
-            # quick manual wipe / reposition
             yield self.env.timeout(0.6)
-            # re-run compute faster
             yield self.env.timeout(0.5)
-            # partial recovery chance
             decision_accept = (random.random() < min(0.95, p_accept + 0.12))
 
         # Diverter actuation
         yield self.env.timeout(0.2)
 
         # Update KPIs
-        self.last_accept = 1 if decision_accept else 0
+        self._unit_decision = decision_accept
         if decision_accept:
-            self.accept += 1
+            self.accept_total += 1
         else:
-            self.reject += 1
+            self.reject_total += 1
 
         self.last_cycle_time_s = float(self.env.now - t0)
-        self._done_pulse = True
-        self.busy = False
+        # Process will end here, busy flag will be cleared in step() when process dies
 # End of user custom code region. Please don't edit beyond this point.
 class ST5_QualityInspection:
 
@@ -189,12 +189,27 @@ class ST5_QualityInspection:
         self.mySignals = MySignals()
 
         # Start of user custom code region. Please apply edits only within these regions:  Constructor
-        # SimPy station model (created before mainThread)
+        # SimPy station model
         self._st5 = _ST5SimModel(random_seed=5)
+        
+        # Handshake state variables (like ST1 pattern)
+        self._prev_cmd_start = 0
         self._prev_cmd_reset = 0
-        self._sim_dt_s = 0.1  # will be updated from VSI simulationStep
-        self._reset_handled = False
+        self._prev_cmd_stop = 0
+        
+        # Runtime state
+        self._start_latched = False
+        self._done_pulse_remaining = 0
+        
+        # Timing
+        self._sim_dt_s = 0.1
+        
+        # Station initialization
         self._initialized = False
+        
+        # Current batch/recipe
+        self._current_batch_id = 0
+        self._current_recipe_id = 0
         # End of user custom code region. Please don't edit beyond this point.
 
 
@@ -206,8 +221,19 @@ class ST5_QualityInspection:
             vsiCommonPythonApi.waitForReset()
 
             # Start of user custom code region. Please apply edits only within these regions:  After Reset
-            # initialize outputs - start as NOT ready until we receive proper reset
-            self.mySignals.ready = 0  # Changed from 1 to 0 - station is NOT ready initially
+            # Initialize state - station starts in reset state
+            self._st5.reset()
+            self._prev_cmd_start = 0
+            self._prev_cmd_reset = 0
+            self._prev_cmd_stop = 0
+            self._start_latched = False
+            self._done_pulse_remaining = 0
+            self._initialized = False
+            self._current_batch_id = 0
+            self._current_recipe_id = 0
+            
+            # Initialize outputs
+            self.mySignals.ready = 0
             self.mySignals.busy = 0
             self.mySignals.fault = 0
             self.mySignals.done = 0
@@ -215,8 +241,6 @@ class ST5_QualityInspection:
             self.mySignals.accept = 0
             self.mySignals.reject = 0
             self.mySignals.last_accept = 0
-            self._initialized = False
-            self._reset_handled = False
             # End of user custom code region. Please don't edit beyond this point.
             self.updateInternalVariables()
 
@@ -253,91 +277,97 @@ class ST5_QualityInspection:
                 except Exception:
                     self._sim_dt_s = 0.1
 
-                # --- detect reset edge ---
-                cmd_reset = 1 if self.mySignals.cmd_reset else 0
+                # --- Get current command states ---
+                cmd_start = 1 if self.mySignals.cmd_start else 0
                 cmd_stop = 1 if self.mySignals.cmd_stop else 0
+                cmd_reset = 1 if self.mySignals.cmd_reset else 0
                 
-                # IMPORTANT: Handle reset when both stop=1 and reset=1 (PLC reset sequence)
-                if cmd_reset == 1 and cmd_stop == 1:
-                    if not self._reset_handled:
-                        print("ST5: Receiving RESET command (stop=1, reset=1)")
-                        # hard reset: rebuild the SimPy model and clear outputs
-                        self._st5.reset(random_seed=5)
-                        self.mySignals.accept = 0
-                        self.mySignals.reject = 0
-                        self.mySignals.last_accept = 0
-                        self.mySignals.cycle_time_ms = 0
-                        self.mySignals.done = 0
-                        self.mySignals.fault = 0
-                        self.mySignals.busy = 0
-                        self.mySignals.ready = 0  # NOT ready during reset
-                        self._reset_handled = True
-                        self._initialized = False
-                elif cmd_reset == 0 and cmd_stop == 0 and self._reset_handled:
-                    # Reset completed, station is now ready
-                    if not self._initialized:
-                        print("ST5: Reset complete, station is READY")
-                        self.mySignals.ready = 1
-                        self.mySignals.busy = 0
-                        self._initialized = True
-
-                self._prev_cmd_reset = cmd_reset
-
-                # --- apply PLC control ---
-                start_en = bool(self.mySignals.cmd_start)
-                stop_en = bool(self.mySignals.cmd_stop)
-                reset_en = bool(self.mySignals.cmd_reset)
-
-                # If we have a latched fault, expose it (PLC must reset)
-                if self._st5.fault_latched:
-                    self.mySignals.fault = 1
-                    self.mySignals.ready = 0
+                # --- Detect edges ---
+                start_edge = (cmd_start == 1 and self._prev_cmd_start == 0)
+                reset_edge = (cmd_reset == 1 and self._prev_cmd_reset == 0)
+                
+                # --- RESET handling (rising edge only) ---
+                if reset_edge:
+                    print("ST5: RESET rising edge detected")
+                    # Reset SimPy model
+                    self._st5.reset()
+                    # Clear all latches and outputs
+                    self._start_latched = False
+                    self._done_pulse_remaining = 0
+                    self._initialized = True  # Station is now initialized
+                    
+                    self.mySignals.ready = 1  # Ready after reset
                     self.mySignals.busy = 0
-                    self.mySignals.done = 0
-                else:
                     self.mySignals.fault = 0
-
-                    # Handle stop command (overrides everything)
-                    if stop_en and not reset_en:
-                        # paused by PLC (normal stop, not reset)
-                        self.mySignals.ready = 0
-                        self.mySignals.busy = 1 if self._st5.busy else 0
-                        self.mySignals.done = 0
-                    elif reset_en:
-                        # Reset mode - station is not ready
-                        self.mySignals.ready = 0
-                        self.mySignals.busy = 0
-                        self.mySignals.done = 0
-                    else:
-                        # Normal operation (not stopped, not reset)
-                        # start new unit if enabled and idle
-                        if start_en and (not self._st5.busy) and self._initialized:
-                            self._st5.start_unit(self.mySignals.batch_id, self.mySignals.recipe_id)
-
-                        # step sim time only when not stopped and initialized
-                        if start_en and self._initialized:
-                            self._st5.step(self._sim_dt_s)
-
-                        # update outputs snapshot
-                        if self._initialized:
-                            self.mySignals.busy = 1 if self._st5.busy else 0
-                            self.mySignals.ready = 1 if (not self._st5.busy) else 0
-
-                            # done pulse
-                            self.mySignals.done = 1 if self._st5.pop_done_pulse() else 0
-
-                            # cycle time in ms (last completed)
-                            self.mySignals.cycle_time_ms = int(self._st5.last_cycle_time_s * 1000.0)
-
-                            # counters
-                            self.mySignals.accept = int(self._st5.accept)
-                            self.mySignals.reject = int(self._st5.reject)
-                            self.mySignals.last_accept = 1 if self._st5.last_accept else 0
-                        else:
-                            # Not initialized yet - wait for PLC
+                    self.mySignals.done = 0
+                    self.mySignals.cycle_time_ms = 0
+                    self.mySignals.accept = 0
+                    self.mySignals.reject = 0
+                    self.mySignals.last_accept = 0
+                
+                # --- START handling (one-shot pulse) ---
+                if start_edge and not cmd_stop and not cmd_reset and self._initialized:
+                    # Check if station is ready to start
+                    if (not self._st5.busy and not self._st5.fault_latched and 
+                        not self._start_latched and self._done_pulse_remaining == 0):
+                        print(f"ST5: START edge latched (batch={self.mySignals.batch_id}, recipe={self.mySignals.recipe_id})")
+                        success = self._st5.start_unit(self.mySignals.batch_id, self.mySignals.recipe_id)
+                        if success:
+                            self._start_latched = True
                             self.mySignals.ready = 0
-                            self.mySignals.busy = 0
-                            self.mySignals.done = 0
+                            self.mySignals.busy = 1
+                            self._current_batch_id = self.mySignals.batch_id
+                            self._current_recipe_id = self.mySignals.recipe_id
+                
+                # --- STEP SimPy model (CRITICAL: step based on latched/busy state, NOT cmd_start) ---
+                # Step if start_latched OR busy OR done_pulse_remaining>0
+                should_step = (self._start_latched or self._st5.busy or self._done_pulse_remaining > 0) and self._initialized and not cmd_reset
+                
+                # Stop command pauses stepping
+                if cmd_stop and not cmd_reset:
+                    should_step = False
+                    self.mySignals.ready = 0
+                
+                if should_step:
+                    # Debug log when stepping without cmd_start
+                    if cmd_start == 0 and (self._start_latched or self._st5.busy):
+                        print("ST5: stepping (latched/busy) cmd_start=0")
+                    self._st5.step(self._sim_dt_s)
+                
+                # --- CYCLE COMPLETION handling ---
+                if self._st5.get_done_pulse():
+                    print("ST5: Cycle complete -> emitting DONE pulse")
+                    # Update KPI counters from model
+                    self.mySignals.accept = int(self._st5.accept_total)
+                    self.mySignals.reject = int(self._st5.reject_total)
+                    self.mySignals.last_accept = 1 if self._st5.get_last_decision() else 0
+                    
+                    # Update cycle time
+                    self.mySignals.cycle_time_ms = int(self._st5.last_cycle_time_s * 1000.0)
+                    
+                    # Set done pulse
+                    self._done_pulse_remaining = 1
+                    self._start_latched = False
+                    self.mySignals.busy = 0
+                    self.mySignals.ready = 1
+                
+                # --- DONE pulse output (one-shot) ---
+                self.mySignals.done = 1 if self._done_pulse_remaining > 0 else 0
+                if self._done_pulse_remaining > 0:
+                    self._done_pulse_remaining -= 1
+                
+                # --- Update status outputs ---
+                # Busy and fault directly from model (but override if done pulse is active)
+                self.mySignals.busy = 1 if (self._st5.busy or self._start_latched) else 0
+                self.mySignals.fault = 1 if self._st5.fault_latched else 0
+                
+                # READY logic: not busy, not start_latched, no done pulse active, not resetting
+                # Note: ready already set appropriately above
+                
+                # Save previous states for edge detection
+                self._prev_cmd_start = cmd_start
+                self._prev_cmd_stop = cmd_stop
+                self._prev_cmd_reset = cmd_reset
                 # End of user custom code region. Please don't edit beyond this point.
 
                 #Send ethernet packet to PLC_LineCoordinator
@@ -433,18 +463,23 @@ class ST5_QualityInspection:
         for i in range(self.receivedNumberOfBytes):
             self.receivedPayload[i] = receivedData[2][i]
 
-        if(self.receivedSrcPortNumber == PLC_LineCoordinatorSocketPortNumber0):
-            print("Received packet from PLC_LineCoordinator")
+        # DEBUG: Print packet metadata
+        print(f"ST5 RX meta dest/src/len: {self.receivedDestPortNumber}, {self.receivedSrcPortNumber}, {self.receivedNumberOfBytes}")
+        
+        # Decode by length==9 (command packet)
+        if self.receivedNumberOfBytes == 9:
+            print("ST5: Received 9-byte packet from PLC -> decoding command...")
             receivedPayload = bytes(self.receivedPayload)
             self.mySignals.cmd_start, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.cmd_stop, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.cmd_reset, receivedPayload = self.unpackBytes('?', receivedPayload)
-
             self.mySignals.batch_id, receivedPayload = self.unpackBytes('L', receivedPayload)
-
             self.mySignals.recipe_id, receivedPayload = self.unpackBytes('H', receivedPayload)
+            
+            print(f"ST5: Decoded PLC cmd_start={self.mySignals.cmd_start}, cmd_stop={self.mySignals.cmd_stop}, cmd_reset={self.mySignals.cmd_reset}, "
+                  f"batch={self.mySignals.batch_id}, recipe={self.mySignals.recipe_id}")
+        else:
+            print(f"ST5: Ignoring non-command packet (len={self.receivedNumberOfBytes})")
 
 
     def sendEthernetPacketToPLC_LineCoordinator(self):
