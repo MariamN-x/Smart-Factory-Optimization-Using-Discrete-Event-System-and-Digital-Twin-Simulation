@@ -1,0 +1,463 @@
+#add inside template folder with logs files
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siemens Smart Factory Optimization Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --siemens-blue: #009999;
+            --siemens-dark: #003333;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+        }
+        
+        body {
+            background-color: #1a1a2e;
+            color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--siemens-dark), var(--siemens-blue));
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            background-color: #2d3047;
+            border: 1px solid #3a3d5d;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            height: 100%;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .card-header {
+            background-color: #3a3d5d;
+            border-bottom: 2px solid var(--siemens-blue);
+            font-weight: 600;
+        }
+        
+        .kpi-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .kpi-label {
+            font-size: 0.9rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-running { background-color: var(--success); }
+        .status-idle { background-color: var(--warning); }
+        .status-fault { background-color: var(--danger); }
+        .status-maintenance { background-color: var(--info); }
+        
+        .buffer-bar {
+            height: 20px;
+            background-color: #3a3d5d;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        
+        .buffer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--siemens-blue), #00cccc);
+            transition: width 0.5s ease;
+        }
+        
+        .event-log {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            padding: 10px;
+            border-left: 4px solid transparent;
+            margin-bottom: 5px;
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 5px;
+        }
+        
+        .event-info { border-left-color: var(--info); }
+        .event-warning { border-left-color: var(--warning); }
+        .event-error { border-left-color: var(--danger); }
+        .event-maintenance { border-left-color: #6f42c1; }
+        
+        .control-btn {
+            margin: 2px;
+            width: 100%;
+        }
+        
+        .station-card {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .station-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .plot-container {
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .refresh-badge {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .refresh-badge:hover {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="dashboard-header mt-3">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-industry"></i> Siemens Smart Factory Optimization Dashboard</h1>
+                    <p class="mb-0">Real-time monitoring and control of 6-station production line</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="d-inline-block me-3">
+                        <span class="badge bg-success" id="connection-status">
+                            <i class="fas fa-plug"></i> Connected
+                        </span>
+                    </div>
+                    <div class="d-inline-block">
+                        <span class="badge bg-info refresh-badge" onclick="location.reload()" title="Refresh">
+                            <i class="fas fa-sync-alt"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top KPIs -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">OEE</div>
+                    <div class="kpi-value" id="kpi-oee">0%</div>
+                    <div class="progress" style="height: 6px;">
+                        <div id="oee-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Throughput</div>
+                    <div class="kpi-value" id="kpi-throughput">0</div>
+                    <small>Target: <span id="target-throughput">10</span> units/hr</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">Energy Efficiency</div>
+                    <div class="kpi-value" id="kpi-energy">0</div>
+                    <small>kWh per unit</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card">
+                    <div class="kpi-label">First Pass Yield</div>
+                    <div class="kpi-value" id="kpi-yield">0%</div>
+                    <div class="progress" style="height: 6px;">
+                        <div id="yield-progress" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Production Overview -->
+            <div class="col-lg-8">
+                <!-- Charts Row -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-chart-line"></i> Production Throughput
+                            </div>
+                            <div class="card-body">
+                                <div id="throughput-chart" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-bolt"></i> Energy Consumption
+                            </div>
+                            <div class="card-body">
+                                <div id="energy-chart" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stations Status -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-cogs"></i> Station Status</span>
+                                <span class="badge bg-dark" id="total-products">Total: 0 products</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="stations-container">
+                                    <!-- Stations will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buffer Status -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-exchange-alt"></i> Buffer Status
+                            </div>
+                            <div class="card-body">
+                                <div id="buffers-container">
+                                    <!-- Buffers will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Controls & Events -->
+            <div class="col-lg-4">
+                <!-- Optimization Controls -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-sliders-h"></i> Optimization Controls
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Optimization Mode</label>
+                            <select class="form-select bg-dark text-light" id="optimization-mode" onchange="changeMode(this.value)">
+                                <option value="balanced">Balanced</option>
+                                <option value="throughput">Max Throughput</option>
+                                <option value="energy_saving">Energy Saving</option>
+                                <option value="quality">Quality Focus</option>
+                            </select>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <button class="btn btn-danger control-btn" onclick="emergencyStop()">
+                                    <i class="fas fa-stop-circle"></i> Emergency Stop
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-success control-btn" onclick="resumeProduction()">
+                                    <i class="fas fa-play-circle"></i> Resume
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Fault Injection</label>
+                            <div class="input-group">
+                                <select class="form-select bg-dark text-light" id="fault-station">
+                                    <option value="S1">Station S1</option>
+                                    <option value="S2">Station S2</option>
+                                    <option value="S3">Station S3</option>
+                                    <option value="S4">Station S4</option>
+                                    <option value="S5">Station S5</option>
+                                    <option value="S6">Station S6</option>
+                                </select>
+                                <button class="btn btn-warning" onclick="injectFault()">
+                                    <i class="fas fa-bug"></i> Inject
+                                </button>
+                                <button class="btn btn-info" onclick="clearFault()">
+                                    <i class="fas fa-broom"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-dark">
+                            <small>
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Current Mode:</strong> <span id="current-mode">balanced</span>
+                                <br>
+                                <strong>Emergency Stop:</strong> <span id="emergency-status">Inactive</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-heartbeat"></i> System Status
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <span class="status-indicator status-running" id="system-status"></span>
+                                    <span>System</span>
+                                </div>
+                            </div>
+                            <div class="col-6 text-end" id="batch-id">Batch: 0</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Simulation Time</small>
+                                <div id="sim-time">0s</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Bottleneck</small>
+                                <div id="bottleneck">None</div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div>
+                            <small class="text-muted">Maintenance Schedule</small>
+                            <div id="maintenance-list">
+                                <div class="text-center text-muted">No maintenance scheduled</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Log -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-history"></i> Event Log</span>
+                        <button class="btn btn-sm btn-dark" onclick="clearEvents()">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                    <div class="card-body event-log" id="event-log">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-spinner fa-spin"></i> Waiting for events...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="row mt-4 mb-3">
+            <div class="col-12 text-center text-muted">
+                <small>
+                    Siemens Smart Factory Simulation & Optimization 2025-2026 | 
+                    Digital Twin Dashboard v1.0 | 
+                    Last Update: <span id="last-update">Never</span>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+        // Initialize WebSocket connection
+        const socket = io();
+        
+        // Connection status
+        socket.on('connect', function() {
+            document.getElementById('connection-status').className = 'badge bg-success';
+            document.getElementById('connection-status').innerHTML = '<i class="fas fa-plug"></i> Connected';
+        });
+        
+        socket.on('disconnect', function() {
+            document.getElementById('connection-status').className = 'badge bg-danger';
+            document.getElementById('connection-status').innerHTML = '<i class="fas fa-plug"></i> Disconnected';
+        });
+        
+        socket.on('connected', function(data) {
+            console.log('Connected to server:', data.message);
+        });
+        
+        // Handle data updates
+        socket.on('data_update', function(data) {
+            updateDashboard(data);
+        });
+        
+        // Handle control responses
+        socket.on('control_update', function(response) {
+            showNotification(response.message, response.status === 'success' ? 'success' : 'error');
+        });
+        
+        // Load initial data
+        fetch('/api/data')
+            .then(response => response.json())
+            .then(data => updateDashboard(data))
+            .catch(error => console.error('Error loading initial data:', error));
+        
+        // Load charts
+        loadCharts();
+        setInterval(loadCharts, 10000); // Refresh charts every 10 seconds
+        
+        // Notification function
+        function showNotification(message, type = 'info') {
+            const alertClass = {
+                'success': 'alert-success',
+                'error': 'alert-danger',
+                'warning': 'alert-warning',
+                'info': 'alert-info'
+            }[type] || 'alert-info';
+            
+            const notification = document.createElement('div');
+            notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 1000; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
