@@ -7,6 +7,7 @@ Real-time visualization of PLC optimization data
 
 import json
 import time
+import math
 import threading
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request
@@ -89,7 +90,6 @@ class DashboardDataManager:
         }
         
     def update_from_log(self):
-        """Update dashboard data from JSON log file"""
         try:
             if os.path.exists(LOG_FILE):
                 with open(LOG_FILE, 'r') as f:
@@ -114,12 +114,24 @@ class DashboardDataManager:
                                 if data.get("total_products", 0) > 0:
                                     self.current_data["energy"]["energy_per_product"] = total / data["total_products"]
                             
-                            # Update quality metrics
+                            # Update quality metrics - FIXED FIELD NAMES
                             if "quality_metrics" in data:
                                 qm = data["quality_metrics"]
                                 self.current_data["quality"]["first_pass_yield"] = qm.get("first_pass_yield", 0)
                                 self.current_data["quality"]["scrap_rate"] = qm.get("scrap_rate", 0)
-                                self.current_data["quality"]["rework_rate"] = qm.get("rework_rate", 0)
+                                # Use overall_yield for rework_rate display or rename field
+                                self.current_data["quality"]["rework_rate"] = qm.get("overall_yield", 0)
+                                
+                                # Update accept/reject count based on yield
+                                total_products = data.get("total_products", 0)
+                                if total_products > 0:
+                                    yield_percent = qm.get("first_pass_yield", 0)
+                                    accepted = int(total_products * (yield_percent / 100))
+                                    rejected = total_products - accepted
+                                    self.current_data["quality"]["accept_reject"] = {
+                                        "accept": accepted,
+                                        "reject": rejected
+                                    }
                             
                             # Update buffers
                             if "buffer_levels" in data:
