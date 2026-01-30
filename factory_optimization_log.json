@@ -1,0 +1,1071 @@
+{
+  "simulation_start": "2026-01-30T10:31:22.000088",
+  "station_configuration": [
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6"
+  ],
+  "optimization_parameters": {
+    "mode": "balanced",
+    "target_throughput": 10,
+    "max_energy": 50
+  },
+  "performance_history": [
+    {
+      "timestamp": "2026-01-30T10:32:01.239984",
+      "sim_time": 0.00901442,
+      "event_type": "shift_change",
+      "data": {
+        "action": "shift_end",
+        "hour": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:08.595007",
+      "sim_time": 1.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S1",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:11.171730",
+      "sim_time": 6.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S4",
+        "wait_time": 13
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:12.535488",
+      "sim_time": 9.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S5",
+        "wait_time": 11
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:12.572701",
+      "sim_time": 9.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 0.0,
+        "total_products": 0,
+        "energy_consumption": {
+          "S1": 0.006638888888888901,
+          "S2": 0.006744444444444438,
+          "S3": 0.0032666666666666634,
+          "S4": 0.005911111111111104,
+          "S5": 0.000988888888888888,
+          "S6": 0.0011111111111111096
+        },
+        "buffer_levels": {
+          "S1_to_S2": 0,
+          "S2_to_S3": 0,
+          "S3_to_S4": 0,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 0.0,
+          "overall_yield": 0.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:13.469845",
+      "sim_time": 11.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 13
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:18.388813",
+      "sim_time": 19.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 0.0,
+        "total_products": 0,
+        "energy_consumption": {
+          "S1": 0.007472222222222276,
+          "S2": 0.012694444444444463,
+          "S3": 0.008266666666666651,
+          "S4": 0.0175777777777778,
+          "S5": 0.0016888888888888863,
+          "S6": 0.008488888888888874
+        },
+        "buffer_levels": {
+          "S1_to_S2": 0,
+          "S2_to_S3": 0,
+          "S3_to_S4": 0,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 0.0,
+          "overall_yield": 0.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:20.542645",
+      "sim_time": 23.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S1",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:22.333327",
+      "sim_time": 28.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S4",
+        "wait_time": 13
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:22.763656",
+      "sim_time": 29.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 120.36504946123198,
+        "total_products": 1,
+        "energy_consumption": {
+          "S1": 0.012888888888888967,
+          "S2": 0.017994444444444455,
+          "S3": 0.011488888888888951,
+          "S4": 0.029244444444444514,
+          "S5": 0.00224444444444444,
+          "S6": 0.01113333333333331
+        },
+        "buffer_levels": {
+          "S1_to_S2": 0,
+          "S2_to_S3": 0,
+          "S3_to_S4": 1,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:23.491028",
+      "sim_time": 31.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S5",
+        "wait_time": 11
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:24.626497",
+      "sim_time": 34.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 11
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:26.635882",
+      "sim_time": 39.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 90.20518427525728,
+        "total_products": 1,
+        "energy_consumption": {
+          "S1": 0.01494444444444449,
+          "S2": 0.02632777777777767,
+          "S3": 0.01648888888888902,
+          "S4": 0.040911111111111224,
+          "S5": 0.003811111111111101,
+          "S6": 0.016377777777777745
+        },
+        "buffer_levels": {
+          "S1_to_S2": 0,
+          "S2_to_S3": 0,
+          "S3_to_S4": 1,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:27.418363",
+      "sim_time": 41.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S1",
+        "wait_time": 13
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:30.359155",
+      "sim_time": 47.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S5",
+        "wait_time": 11
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:31.307938",
+      "sim_time": 49.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 12
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:31.325864",
+      "sim_time": 49.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 144.26251617412726,
+        "total_products": 2,
+        "energy_consumption": {
+          "S1": 0.02152222222222214,
+          "S2": 0.033144444444444324,
+          "S3": 0.021400000000000204,
+          "S4": 0.04898055555555559,
+          "S5": 0.004980555555555549,
+          "S6": 0.01862222222222236
+        },
+        "buffer_levels": {
+          "S1_to_S2": 0,
+          "S2_to_S3": 0,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:34.941051",
+      "sim_time": 56.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S1",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:35.777552",
+      "sim_time": 58.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S3",
+        "wait_time": 13
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:36.184248",
+      "sim_time": 59.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 180.27337128741902,
+        "total_products": 3,
+        "energy_consumption": {
+          "S1": 0.025166666666666487,
+          "S2": 0.0396000000000001,
+          "S3": 0.026400000000000277,
+          "S4": 0.051088888888888635,
+          "S5": 0.005536111111111103,
+          "S6": 0.023266666666666963
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 1,
+          "S3_to_S4": 1,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:36.656430",
+      "sim_time": 60.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S4",
+        "wait_time": 16
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:38.142681",
+      "sim_time": 63.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S5",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:39.654777",
+      "sim_time": 66.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:40.982023",
+      "sim_time": 69.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 154.48651493090236,
+        "total_products": 3,
+        "energy_consumption": {
+          "S1": 0.029055555555555272,
+          "S2": 0.040711111111111385,
+          "S3": 0.02780000000000036,
+          "S4": 0.06275555555555534,
+          "S5": 0.0071027777777777764,
+          "S6": 0.027377777777778237
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 1,
+          "S3_to_S4": 1,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:44.171655",
+      "sim_time": 76.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S3",
+        "wait_time": 12
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:45.245863",
+      "sim_time": 78.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S4",
+        "wait_time": 15
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:45.580709",
+      "sim_time": 79.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 180.20495064942136,
+        "total_products": 4,
+        "energy_consumption": {
+          "S1": 0.03459444444444403,
+          "S2": 0.04615555555555604,
+          "S3": 0.030266666666667105,
+          "S4": 0.07442222222222142,
+          "S5": 0.0076583333333333295,
+          "S6": 0.029888888888889516
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 1,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:46.206837",
+      "sim_time": 81.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S5",
+        "wait_time": 13
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:46.951261",
+      "sim_time": 83.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:49.273627",
+      "sim_time": 89.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 200.2023947889696,
+        "total_products": 5,
+        "energy_consumption": {
+          "S1": 0.03695555555555507,
+          "S2": 0.05174444444444514,
+          "S3": 0.035266666666666946,
+          "S4": 0.08608888888888742,
+          "S5": 0.008827777777777837,
+          "S6": 0.03540000000000064
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 1,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:51.753646",
+      "sim_time": 95.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S4",
+        "wait_time": 20
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:53.959494",
+      "sim_time": 99.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 180.1639231904656,
+        "total_products": 5,
+        "energy_consumption": {
+          "S1": 0.043166666666666034,
+          "S2": 0.05935555555555649,
+          "S3": 0.03746666666666667,
+          "S4": 0.09775555555555343,
+          "S5": 0.009997222222222345,
+          "S6": 0.03717777777777855
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 2,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:54.319669",
+      "sim_time": 100.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 19
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:57.220564",
+      "sim_time": 106.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S1",
+        "wait_time": 11
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:58.319768",
+      "sim_time": 108.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S2",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:32:59.061400",
+      "sim_time": 109.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 196.52619135914546,
+        "total_products": 6,
+        "energy_consumption": {
+          "S1": 0.04656666666666594,
+          "S2": 0.06458333333333442,
+          "S3": 0.03837777777777751,
+          "S4": 0.09945277777777532,
+          "S5": 0.010552777777777987,
+          "S6": 0.04202222222222296
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 1,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:00.940731",
+      "sim_time": 112.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S4",
+        "wait_time": 20
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:03.365340",
+      "sim_time": 117.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 19
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:04.317217",
+      "sim_time": 119.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 180.13658192821632,
+        "total_products": 6,
+        "energy_consumption": {
+          "S1": 0.05063888888888805,
+          "S2": 0.07291666666666728,
+          "S3": 0.043377777777777224,
+          "S4": 0.11019444444444136,
+          "S5": 0.011722222222222493,
+          "S6": 0.04580000000000076
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 1,
+          "S3_to_S4": 1,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:06.117559",
+      "sim_time": 123.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S1",
+        "wait_time": 11
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:07.155657",
+      "sim_time": 125.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S2",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:08.967339",
+      "sim_time": 128.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S4",
+        "wait_time": 15
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:09.841670",
+      "sim_time": 129.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 193.98191967285342,
+        "total_products": 7,
+        "energy_consumption": {
+          "S1": 0.05587222222222126,
+          "S2": 0.07944444444444457,
+          "S3": 0.0471333333333325,
+          "S4": 0.12186111111110737,
+          "S5": 0.012277777777778135,
+          "S6": 0.048644444444445274
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 2,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:11.145198",
+      "sim_time": 131.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S5",
+        "wait_time": 13
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:12.371287",
+      "sim_time": 133.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:15.235312",
+      "sim_time": 139.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 205.84806575467547,
+        "total_products": 8,
+        "energy_consumption": {
+          "S1": 0.05853888888888785,
+          "S2": 0.0861166666666663,
+          "S3": 0.04768888888888779,
+          "S4": 0.13352777777777405,
+          "S5": 0.013447222222222641,
+          "S6": 0.05415555555555631
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 2,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:16.809727",
+      "sim_time": 143.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S3",
+        "wait_time": 12
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:17.819561",
+      "sim_time": 145.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S4",
+        "wait_time": 15
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:19.291677",
+      "sim_time": 148.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S5",
+        "wait_time": 13
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:19.724059",
+      "sim_time": 149.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 192.11653222741532,
+        "total_products": 8,
+        "energy_consumption": {
+          "S1": 0.0647499999999989,
+          "S2": 0.09372777777777694,
+          "S3": 0.05148888888888751,
+          "S4": 0.14519444444444146,
+          "S5": 0.014869444444444916,
+          "S6": 0.055266666666667595
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 1,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:20.524351",
+      "sim_time": 151.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:23.857846",
+      "sim_time": 158.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S1",
+        "wait_time": 15
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:24.288257",
+      "sim_time": 159.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 202.61521914519219,
+        "total_products": 9,
+        "energy_consumption": {
+          "S1": 0.06717222222222158,
+          "S2": 0.10039999999999867,
+          "S3": 0.05648888888888722,
+          "S4": 0.14853611111110804,
+          "S5": 0.015533333333333888,
+          "S6": 0.0608444444444453
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 1,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:24.959959",
+      "sim_time": 161.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S3",
+        "wait_time": 11
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:25.639283",
+      "sim_time": 163.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S4",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:26.585006",
+      "sim_time": 166.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S5",
+        "wait_time": 12
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:27.381163",
+      "sim_time": 168.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 14
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:27.852582",
+      "sim_time": 169.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 190.69029451203852,
+        "total_products": 9,
+        "energy_consumption": {
+          "S1": 0.07222222222222167,
+          "S2": 0.10873333333333153,
+          "S3": 0.0614444444444425,
+          "S4": 0.15763333333333074,
+          "S5": 0.01666666666666731,
+          "S6": 0.06362222222222315
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 1,
+          "S3_to_S4": 1,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:31.039335",
+      "sim_time": 175.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S1",
+        "wait_time": 15
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:33.470951",
+      "sim_time": 179.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 200.10114621581727,
+        "total_products": 10,
+        "energy_consumption": {
+          "S1": 0.07647777777777744,
+          "S2": 0.11518888888888659,
+          "S3": 0.06591111111110896,
+          "S4": 0.16929999999999817,
+          "S5": 0.01722222222222295,
+          "S6": 0.06753333333333413
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 2,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:34.130712",
+      "sim_time": 180.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S4",
+        "wait_time": 19
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:36.771965",
+      "sim_time": 185.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 19
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:38.663107",
+      "sim_time": 189.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 189.56446122343053,
+        "total_products": 10,
+        "energy_consumption": {
+          "S1": 0.07969444444444444,
+          "S2": 0.12229444444444167,
+          "S3": 0.06646666666666497,
+          "S4": 0.18096666666666558,
+          "S5": 0.018355555555556374,
+          "S6": 0.07264444444444533
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 2,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:43.863062",
+      "sim_time": 199.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S2",
+        "wait_time": 13
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:43.876616",
+      "sim_time": 199.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 198.09011672081056,
+        "total_products": 11,
+        "energy_consumption": {
+          "S1": 0.08242222222222263,
+          "S2": 0.12441666666666336,
+          "S3": 0.06702222222222096,
+          "S4": 0.19263333333333302,
+          "S5": 0.018911111111112017,
+          "S6": 0.07822222222222326
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 2,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:46.475917",
+      "sim_time": 204.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S5",
+        "wait_time": 11
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:47.390077",
+      "sim_time": 206.90901442,
+      "event_type": "bottleneck",
+      "data": {
+        "station": "S6",
+        "wait_time": 13
+      }
+    },
+    {
+      "timestamp": "2026-01-30T10:33:49.274390",
+      "sim_time": 209.90901442,
+      "event_type": "performance_snapshot",
+      "data": {
+        "throughput": 188.65316532221752,
+        "total_products": 11,
+        "energy_consumption": {
+          "S1": 0.08716666666666721,
+          "S2": 0.132749999999997,
+          "S3": 0.07188888888888736,
+          "S4": 0.19761944444444418,
+          "S5": 0.020044444444445444,
+          "S6": 0.08226666666666763
+        },
+        "buffer_levels": {
+          "S1_to_S2": 1,
+          "S2_to_S3": 1,
+          "S3_to_S4": 2,
+          "S4_to_S5": 0,
+          "S5_to_S6": 0
+        },
+        "quality_metrics": {
+          "first_pass_yield": 100.0,
+          "overall_yield": 100.0,
+          "scrap_rate": 0.0,
+          "rework_rate": 0.0
+        }
+      }
+    }
+  ]
+}
