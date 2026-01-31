@@ -97,7 +97,8 @@ Run the simulation:
 ```bash
 python packaging_scada.py
 ```
-
+- **Simulation library:** SimPy  
+- **GUI library:** Tkinter (built-in with Python)
 ---
 
 ## Notes
@@ -110,9 +111,4 @@ python packaging_scada.py
 
 **Author:** Mina Atef
 
-```
-
-
-
-tell me and I’ll adjust it exactly how you want.
 ```
