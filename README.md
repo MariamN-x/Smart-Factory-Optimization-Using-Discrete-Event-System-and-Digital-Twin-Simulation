@@ -1,3 +1,10 @@
+Here you go 👍
+I cleaned the **alignment**, fixed **Markdown formatting**, corrected **code blocks**, and placed the **images properly**.
+This version is **final, GitHub-ready, and clean**.
+
+---
+
+````md
 # 3D Printer Packaging Station – SCADA Simulation
 
 **Developed by:** Mina Atef (only)
@@ -7,8 +14,7 @@
 ## What is this project?
 
 This is a **software simulation** of a **3D printer packaging station**.  
-It models how a real packaging line works using PLC logic, sensors, actuators,
-and a SCADA interface.  
+It models how a real packaging line works using **PLC logic**, **sensors**, **actuators**, and a **SCADA interface**.  
 No real hardware is used.
 
 ---
@@ -17,25 +23,23 @@ No real hardware is used.
 
 The system is built from **four parts**:
 
-- **Sensors** – detect box position, stock levels, and faults  
-- **PLC** – controls the full packaging sequence  
-- **Actuators** – motors, robot, flap folder, tape sealer, label unit, conveyors  
-- **Human Resource (HR)** – simulates operator repairs and refills  
+- **Sensors** – detect box position, stock levels, and machine faults  
+- **PLC** – controls the full packaging sequence and decision logic  
+- **Actuators** – robot, motors, flap folder, tape sealer, label unit, conveyors  
+- **Human Resource (HR)** – simulates operator repairs and material refills  
 
 ---
 
 ## Station 6 – Sensors & Actuators Blueprint
 
-
-::contentReference[oaicite:0]{index=0}
-
+![Station 6 – Sensors and Actuators Blueprint](https://github.com/user-attachments/assets/101c0a76-65f4-401d-b78b-3d62002b710e)
 
 **Station 6.png** represents the **blueprint of the packaging station**.
 
 It shows:
 - All **sensors** used in the station  
 - All **actuators** controlled by the PLC  
-- How the station is structured logically  
+- The logical structure of the station  
 
 The SCADA screen displays these same signals live during the simulation.
 
@@ -51,7 +55,7 @@ Each product follows this order:
 4. Flaps are closed  
 5. Tape is applied  
 6. Label is applied  
-7. Box exits to final conveyor  
+7. Box exits to the final conveyor  
 
 Only one product is processed per printer signal.
 
@@ -64,9 +68,10 @@ The system stops if:
 - Cartons, tape, or labels are empty  
 - The final conveyor is full  
 
-- **Red light** → system stopped  
-- **Yellow light** → low stock warning  
-- **Green light** → normal operation  
+Tower lights behavior:
+- **Green** → normal operation  
+- **Yellow** → low stock warning  
+- **Red** → fault or downtime  
 
 HR automatically handles repairs and refills.
 
@@ -74,9 +79,12 @@ HR automatically handles repairs and refills.
 
 ## SCADA Interface
 
+![SCADA Interface](https://github.com/user-attachments/assets/f9c011ca-cf99-4871-9712-ab8e9a44df14)
+
 The SCADA GUI shows:
 - System state (RUNNING / DOWNTIME)
-- Sensors and actuators live values
+- Live sensor values
+- Live actuator states
 - Tower lights
 - KPIs (packages, availability, downtime)
 - Event log
@@ -86,19 +94,31 @@ The SCADA GUI shows:
 ## How to Run
 
 Install dependency:
-
+```bash
 pip install simpy
+````
 
-##Run the simulation:
+Run the simulation:
 
+```bash
 python packaging_scada.py
-Notes
-Software-only simulation
+```
 
-No real PLC or hardware
+---
 
-Intended for learning and demonstration
-<img width="1920" height=<img width="1918" height="1010" alt="SCADA" src="https://github.com/user-attachments/assets/f9c011ca-cf99-4871-9712-ab8e9a44df14" />
-"1080" alt="Station 6" src="https://github.com/user-attachments/assets/101c0a76-65f4-401d-b78b-3d62002b710e" />
+## Notes
 
-##Author: Mina Atef
+* Software-only simulation
+* No real PLC or industrial hardware
+* Intended for learning, testing, and demonstration
+
+---
+
+**Author:** Mina Atef
+
+```
+
+
+
+tell me and I’ll adjust it exactly how you want.
+```
