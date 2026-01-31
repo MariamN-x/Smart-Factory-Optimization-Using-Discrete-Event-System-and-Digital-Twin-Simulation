@@ -4,6 +4,14 @@ A desktop simulator for a small kitting cell in a 3D-printer assembly line.
 
 It runs a discrete-event simulation with a PLC-style state machine, shows live status in a SCADA dashboard, and can replay runs in a 3D viewer from log files.
 
+## Screenshots
+
+### SCADA dashboard
+<img width="2559" height="1444" alt="SCADA dashboard" src="https://github.com/user-attachments/assets/b8dbf654-4506-425f-81e2-f9370f979993" />
+
+### 3D visualization / replay
+<img width="2559" height="1474" alt="3D visualization / replay" src="https://github.com/user-attachments/assets/44b2f670-24cb-47ba-8f1b-215901557f0b" />
+
 ## Features
 
 - End-to-end kitting flow:
