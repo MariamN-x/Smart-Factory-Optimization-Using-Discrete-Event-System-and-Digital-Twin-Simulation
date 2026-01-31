@@ -55,3 +55,4 @@ python -m venv .venv
 # macOS/Linux: source .venv/bin/activate
 
 pip install simpy PyQt5 numpy matplotlib PyOpenGL PyOpenGL_accelerate
+## Developed by Mina Adel
