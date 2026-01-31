@@ -1,10 +1,4 @@
-Here you go 👍
-I cleaned the **alignment**, fixed **Markdown formatting**, corrected **code blocks**, and placed the **images properly**.
-This version is **final, GitHub-ready, and clean**.
 
----
-
-````md
 # 3D Printer Packaging Station – SCADA Simulation
 
 **Developed by:** Mina Atef (only)
