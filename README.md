@@ -13,6 +13,7 @@ The simulation uses two key technologies:
 
 ---
 
+
 ## What’s Inside
 
 - **PLC_LineCoordinator (Controller / Server)**
@@ -122,6 +123,9 @@ So the separation is realistic:
 ```bash
 pip install simpy
 ```
+## screenshots
+![CLI](https://github.com/user-attachments/assets/feeb2d34-75fa-4c12-856e-a4de3688988e)
+
 ## Authors
 
 * Mina Adel
