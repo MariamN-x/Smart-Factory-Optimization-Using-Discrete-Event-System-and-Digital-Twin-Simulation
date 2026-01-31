@@ -1,7 +1,6 @@
 
 # 3D Printer Packaging Station – SCADA Simulation
 
-**Developed by:** Mina Atef (only)
 
 ---
 
@@ -109,5 +108,5 @@ python packaging_scada.py
 
 ---
 
-**Author:** Mina Atef
+**Developed by:** Mina Atef
 
