@@ -135,14 +135,16 @@ Used to monitor the line during runtime.from the logs
 
 ### Optimization Dashboard (analysis)
 Used to analyze and compare production behavior using the same logs.
-![WhatsApp Image 2026-01-31 at 3 36 48 PM](https://github.com/user-attachments/assets/33a6e4f7-aff2-443a-baee-9fb1e31cb5ab)
-![O2](https://github.com/user-attachments/assets/b5b9168a-dab5-45ff-a6ff-b287c35d611d)
-![O1](https://github.com/user-attachments/assets/61f24945-47b5-4a30-b6cd-6dc73d98a1bc)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/33a6e4f7-aff2-443a-baee-9fb1e31cb5ab" width="85%" />
+</p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/61f24945-47b5-4a30-b6cd-6dc73d98a1bc" width="49%" />
+  <img src="https://github.com/user-attachments/assets/b5b9168a-dab5-45ff-a6ff-b287c35d611d" width="49%" />
+</p>
 
 
-Run it:
-```bash
-python opt_dashboard.py
+
 
 ## screenshots
 ![CLI](https://github.com/user-attachments/assets/feeb2d34-75fa-4c12-856e-a4de3688988e)
