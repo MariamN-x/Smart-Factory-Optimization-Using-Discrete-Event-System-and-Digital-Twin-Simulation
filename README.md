@@ -1,161 +1,126 @@
+# 3D Printer Production Line Digital Twin (PLC + ST1–ST6)
 
-# Digital Twin Manufacturing Line (VSI + SimPy)
+This repository contains a **station-level digital twin** of a 3D-printer manufacturing line.
+It is controlled using **PLC-style handshakes** and a **pipeline execution model**.
 
-## Overview
+The simulation uses two key technologies:
 
-This project implements a **Digital Twin manufacturing line** using **Siemens Innexis Virtual System Interconnect (VSI)** and **SimPy**.
+- **Innexis Virtual System Interconnect (VSI)** (closed source by Siemens)  
+  Used to run multiple Python components as separate “devices” and exchange packets (PLC ↔ stations).
 
-The system is first defined using **Digital Twin Definition Language (DTDL)**, which specifies the PLC Line Coordinator, six production stations (ST1–ST6), their signals, and communication links. The defined digital twin is then deployed and executed on **Innexis Virtual System Interconnect (VSI)**.
-
-The manufacturing line follows a **pipeline execution model** coordinated by a **PLC Line Coordinator**. Each production station is implemented in **Python using SimPy**, an **open-source** discrete-event simulation library, and integrated through VSI using **TCP/IP** communication.
-
-**Innexis Virtual System Interconnect (VSI)** is a **closed-source Siemens platform**, used to manage time synchronization, signal exchange, and communication between digital twin components.
-
----
-
-## Key Features
-
-* Digital Twin defined first using DTDL
-* Six production stations (ST1–ST6)
-* Central PLC Line Coordinator
-* PLC-style handshake logic (ready / busy / done)
-* Pipeline-based execution with parallel station operation
-* Runtime log generation for all components
-* KPI monitoring and optimization analysis using external dashboards
+- **SimPy** (open-source Python library)  
+  Used inside each station to model cycle timing, delays, faults, and maintenance as discrete-event processes.
 
 ---
 
-## System Architecture
+## What’s Inside
 
-### Digital Twin Definition (DTDL)
+- **PLC_LineCoordinator (Controller / Server)**
+  - Runs the main scan loop (PLC behavior)
+  - Sends commands to all stations (start/stop/reset + batch/recipe)
+  - Receives station feedback packets
+  - Maintains **virtual buffers** (WIP tokens) to enforce correct pipeline ordering
+  - Uses **done-latch** logic to safely detect short `done` pulses
 
-DTDL is used to define the structure of the digital twin, including:
-
-* PLC Line Coordinator
-* Production stations (ST1–ST6)
-* Input/output signals
-* Communication ports and connections
-
-DTDL acts as the integration layer between all components deployed on VSI.
-
----
-
-### Innexis Virtual System Interconnect (VSI)
-
-**Innexis Virtual System Interconnect (VSI)** is a **closed-source platform by Siemens** used to:
-
-* Deploy the DTDL-defined digital twin
-* Synchronize simulation time across components
-* Provide TCP/IP-based communication
-* Exchange signals between PLC and stations
-
-All PLC and station processes run as independent VSI clients.
+- **ST1–ST6 Stations (Clients)**
+  - Each station runs a small state machine (ready/busy/done/fault)
+  - Starts **only** when PLC sends a start command
+  - Internally modeled using SimPy generator processes
 
 ---
 
-### PLC Line Coordinator
+## Stations Overview
 
-The **PLC Line Coordinator** is responsible only for **control and coordination**.
-
-* Sends start, stop, and reset commands to stations
-* Receives status feedback and cycle times
-* Enforces correct sequencing and pipeline flow
-* Prevents race conditions and duplicate execution
-
-The PLC **does not perform optimization** and **does not analyze KPIs**.
-
----
-
-### Production Stations (ST1–ST6)
-
-Each production station:
-
-* Waits for an explicit PLC command
-* Executes exactly one cycle per command
-* Reports:
-
-  * ready / busy / done
-  * fault status
-  * cycle time
-
-Stations operate independently and may run in parallel when pipeline conditions are satisfied.
+| Station | Role | PLC Port | Example Station Outputs |
+|---|---|---:|---|
+| ST1 | Component Kitting | 6001 | ready/busy/done/fault + cycle time |
+| ST2 | Frame Core Assembly | 6002 | counters (scrap/rework) + cycle time |
+| ST3 | Electronics Wiring | 6003 | wiring checks + cycle time |
+| ST4 | Calibration + Testing | 6004 | test pass/fail counters |
+| ST5 | Quality Inspection | 6005 | accept/reject decision + counters |
+| ST6 | Packaging + Dispatch | 6006 | packing/dispatch counters + downtime |
 
 ---
 
-## Pipeline Execution Model
+## How the Pipeline is Integrated
 
-The manufacturing line operates as a **pipeline**, not a sequential system.
+There are multiple ways to integrate a multi-station pipeline. This project follows the PLC approach and supports typical pipeline behavior (overlap between stations).
 
-* Multiple stations can operate concurrently
-* Parallel execution occurs when upstream work is available
-* The PLC coordinates execution using handshake signals and internal buffers
+### A) Sequential (simple, lowest throughput)
+- PLC runs ST1, waits done, then ST2, then ST3… until ST6.
+- Easy, but it wastes time because stations do not overlap.
 
-This reflects real industrial production lines.
+### B) True pipeline (overlap + ordering control)
+- Multiple stations can run at the same time.
+- PLC still enforces correct order using **virtual buffers** (WIP tokens).
+- Example: ST2 can start only if `buffer_S1_to_S2 > 0`.
 
----
+### C) Event-driven start (generator-based readiness)
+- Stations expose readiness/busy/done signals.
+- PLC reacts each scan based on signals and buffers.
+- This is how you get deterministic behavior without race conditions.
 
-## Dashboards and Analysis
-
-### KPI Dashboard
-
-The **KPI Dashboard** is an external, read-only observer.
-
-* Reads runtime logs generated by:
-
-  * the PLC Line Coordinator
-  * all production stations
-* Computes performance indicators such as:
-
-  * station cycle times
-  * utilization
-  * throughput
-  * rejects and rework counts
-
-The KPI Dashboard **does not interact with the PLC** and **does not affect simulation behavior**.
+**This repository uses (B) + (C).**  
+Stations overlap, but only when the PLC allows it.
 
 ---
 
-### Optimization Dashboard
+## Core Reliability Mechanisms
 
-The **Optimization Dashboard** is an external analysis tool used to evaluate production behavior.
+### 1) Generator-based station cycles (SimPy)
+Each station’s “cycle” is modeled as a **generator** like:
 
-* Reads the same runtime logs as the KPI Dashboard
-* Performs optimization analysis based on **user-defined parameters**
-* Identifies:
+- start is received → station becomes busy
+- `yield env.timeout(cycle_time)` → time passes in simulation
+- station sets done, updates counters, returns to ready
 
-  * bottlenecks
-  * inefficiencies
-  * performance trade-offs
+This makes timing deterministic and easy to test.
 
-Both dashboards operate as **external observers** and **do not influence the simulation control flow**.
+### 2) One-shot start + internal start latch
+- PLC sends `cmd_start=1` as a short pulse (often one scan).
+- Station latches it internally so it can finish the cycle even if start goes low next scan.
 
-The Optimization Dashboard **does not interact with the PLC** and **does not directly control stations**.
+Why it matters: it prevents “missed starts” and repeated cycles.
+
+### 3) Done pulse + PLC done-latch (edge-safe)
+- Stations typically raise `done=1` briefly.
+- PLC uses a **done-latch** per station to reliably detect completion even if the pulse is short.
+
+Why it matters: it prevents “PLC never saw done” bugs.
+
+### 4) Virtual buffers (WIP tokens)
+PLC keeps counters that represent parts moving through the line:
+
+- When ST1 completes: `buffer_S1_to_S2 += 1`
+- Before starting ST2: require `buffer_S1_to_S2 > 0`
+- When ST2 starts: `buffer_S1_to_S2 -= 1` and later `buffer_S2_to_S3 += 1`
+
+Why it matters:
+- prevents ST2 starting without input
+- prevents duplicated production
+- keeps the pipeline valid during parallel execution
+
+---
+
+## Communication (VSI Role)
+
+VSI is used to run the PLC and each station as separate components and exchange packets:
+
+- **PLC → Station:** command packet (start/stop/reset + batch_id + recipe_id)
+- **Station → PLC:** feedback packet (ready/busy/done/fault + KPIs)
+
+So the separation is realistic:
+- distributed components
+- network delay/scan timing effects
+- packet decoding/encoding (pack/unpack)
 
 ---
 
-## Communication
+## Requirements
 
-* Protocol: **TCP/IP**
-* VSI Python gateways are used for communication
-* Data flow:
-
-  * PLC → Stations: control commands
-  * Stations → PLC: status signals and timing data
-* Dashboards → Logs: read-only access
-
----
-
-## Open-Source vs Proprietary Components
-
-* **Innexis Virtual System Interconnect (VSI)**
-  Closed-source Siemens platform used for system integration and synchronization.
-
-* **SimPy**
-  Open-source Python library used to model station behavior and process timing.
-
-This separation allows realistic industrial integration while keeping station logic transparent and extensible.
-
----
+### Python dependency
+```bash
+pip install simpy
 
 ## Authors
 
