@@ -60,7 +60,7 @@ There are multiple ways to integrate a multi-station pipeline. This project foll
 - PLC reacts each scan based on signals and buffers.
 - This is how you get deterministic behavior without race conditions.
 
-**This repository uses (B) + (C).**  
+### **This repository uses (B) + (C).**  
 Stations overlap, but only when the PLC allows it.
 
 ---
