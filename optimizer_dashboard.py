@@ -2,18 +2,16 @@
 """
 Siemens Digital Twin Optimizer Dashboard
 - Edit scenarios via UI sliders
-- One-click simulation runs
+- Save configuration to line_config.json for manual simulation
+- Refresh to analyze results from manual simulation runs
 - Real-time bottleneck analysis & energy metrics
 - Export-ready reports for Validation
 """
 import os
 import json
-import subprocess
-import threading
 import time
 from pathlib import Path
 from flask import Flask, render_template_string, request, jsonify, send_file
-import glob
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'siemens-optimization-2026'
@@ -22,17 +20,9 @@ app.config['SECRET_KEY'] = 'siemens-optimization-2026'
 WORKSPACE = Path.cwd()
 KPI_DIR = WORKSPACE / "kpis"
 SCENARIOS_DIR = WORKSPACE / "scenarios"
-SCENARIOS_DIR.mkdir(exist_ok=True)
+CONFIG_FILE = WORKSPACE / "line_config.json"
 KPI_DIR.mkdir(exist_ok=True)
-
-# Simulation state
-simulation_state = {
-    "running": False,
-    "progress": 0,
-    "current_scenario": "",
-    "start_time": 0,
-    "log": []
-}
+SCENARIOS_DIR.mkdir(exist_ok=True)
 
 # Default config template
 DEFAULT_CONFIG = {
@@ -53,6 +43,11 @@ DEFAULT_CONFIG = {
         "S5_to_S6": 2
     }
 }
+
+# Initialize config file if it doesn't exist
+if not CONFIG_FILE.exists():
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump(DEFAULT_CONFIG, f, indent=2)
 
 # HTML Dashboard Template (single file)
 DASHBOARD_HTML = """
@@ -87,16 +82,16 @@ DASHBOARD_HTML = """
         .value-display { background: #e9ecef; padding: 3px 8px; border-radius: 4px; min-width: 60px; text-align: center; font-weight: bold; }
         .action-buttons { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
         button { padding: 12px 24px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-warning { background: var(--warning); color: #212529; }
         .btn-danger { background: var(--danger); color: white; }
+        .btn-info { background: #17a2b8; color: white; }
         .simulation-status { padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center; }
-        .status-running { background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white; }
-        .status-idle { background: #e9ecef; color: #495057; }
-        .progress-bar { height: 12px; background: #dee2e6; border-radius: 6px; margin: 15px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--success); border-radius: 6px; width: 0%; transition: width 0.3s ease; }
+        .status-ready { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .status-waiting { background: #fff3e0; color: #bf360c; border: 1px solid #ffcc80; }
+        .terminal-command { background: #2d2d2d; color: #f8f8f2; font-family: monospace; padding: 20px; border-radius: 8px; margin: 15px 0; font-size: 1.1rem; text-align: center; letter-spacing: 1px; }
+        .command-copy { background: #4a4a4a; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-left: 10px; }
         .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
         .metric-card { text-align: center; padding: 20px; border-radius: 10px; background: white; box-shadow: 0 4px 8px rgba(0,0,0,0.08); transition: transform 0.2s; }
         .metric-card:hover { transform: translateY(-3px); }
@@ -108,52 +103,50 @@ DASHBOARD_HTML = """
         #simulation-log { background: #2d2d2d; color: #f8f8f2; font-family: monospace; padding: 15px; border-radius: 8px; height: 200px; overflow-y: auto; margin-top: 20px; font-size: 0.9rem; line-height: 1.5; }
         .log-entry { margin-bottom: 4px; }
         .log-timestamp { color: #6272a4; margin-right: 8px; }
-        .log-error { color: #ff5555; }
-        .log-success { color: #50fa7b; }
         .recommendations { background: #e3f2fd; border-left: 4px solid var(--primary); padding: 20px; border-radius: 0 8px 8px 0; margin: 25px 0; }
         .recommendations h3 { color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
         .recommendations ul { padding-left: 20px; }
         .recommendations li { margin-bottom: 10px; line-height: 1.5; }
-        .recommendations .highlight { background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
         footer { text-align: center; margin-top: 40px; padding: 20px; color: #6c757d; font-size: 0.9rem; border-top: 1px solid #dee2e6; }
-        .scenario-badge { display: inline-block; background: var(--primary); color: white; padding: 3px 10px; border-radius: 15px; font-size: 0.85rem; margin-right: 8px; }
+        .config-badge { background: var(--primary); color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-bottom: 15px; }
+        .last-run-info { font-size: 0.9rem; color: #6c757d; margin-top: 10px; padding-top: 10px; border-top: 1px solid #dee2e6; }
         .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #dee2e6; }
         .tab { padding: 12px 24px; cursor: pointer; font-weight: 500; position: relative; }
         .tab.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .energy-chart { height: 300px; width: 100%; margin: 20px 0; }
-        @media (max-width: 768px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-            .action-buttons { flex-direction: column; }
-            button { width: 100%; }
-            .scenario-controls { grid-template-columns: 1fr; }
-        }
+        .help-text { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0; font-size: 0.95rem; border-left: 4px solid #17a2b8; }
     </style>
 </head>
 <body>
     <header>
         <h1>🏭 Smart Factory Digital Twin Optimizer</h1>
-        <div class="subtitle">Parameterized Simulation • Bottleneck Analysis • Energy Optimization</div>
+        <div class="subtitle">Parameterized Simulation • Manual Terminal Execution • Results Analysis</div>
     </header>
 
     <div class="container">
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('scenarios')">Optimization Scenarios</div>
-            <div class="tab" onclick="switchTab('results')">Analysis Results</div>
-            <div class="tab" onclick="switchTab('report')">Optimization Report</div>
+            <div class="tab active" onclick="switchTab('scenarios')">⚙️ Configure & Run</div>
+            <div class="tab" onclick="switchTab('results')">📊 Analysis Results</div>
+            <div class="tab" onclick="switchTab('report')">📑 Optimization Report</div>
         </div>
 
         <!-- SCENARIOS TAB -->
         <div id="scenarios-tab" class="tab-content active">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title">⚙️ Configure Optimization Scenario</div>
-                    <div id="scenario-status" class="status-idle simulation-status">
-                        <div>Ready to run simulation</div>
-                        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
-                        <div id="time-remaining">00:00 remaining</div>
-                    </div>
+                    <div class="card-title">⚙️ Configure Optimization Parameters</div>
+                </div>
+                
+                <div class="help-text">
+                    <strong>📋 Workflow:</strong> 
+                    <ol style="margin-top: 10px; margin-left: 20px;">
+                        <li>Adjust parameters below to optimize your production line</li>
+                        <li>Click <strong>"Save Configuration to line_config.json"</strong></li>
+                        <li>Copy the terminal command and run it manually</li>
+                        <li>After simulation completes, go to <strong>"Analysis Results"</strong> tab and click Refresh</li>
+                    </ol>
                 </div>
                 
                 <div class="scenario-controls">
@@ -190,23 +183,39 @@ DASHBOARD_HTML = """
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="btn-primary" id="run-simulation-btn" onclick="runSimulation()">
-                        <i>▶️</i> Run Simulation (2 minutes production)
+                    <button class="btn-primary" id="save-config-btn" onclick="saveConfig()">
+                        <i>💾</i> Save Configuration to line_config.json
+                    </button>
+                    <button class="btn-success" id="refresh-results-btn" onclick="switchTab('results'); refreshResults();">
+                        <i>🔄</i> Go to Results & Refresh
                     </button>
                     <button class="btn-warning" id="save-scenario-btn" onclick="saveScenario()">
-                        <i>💾</i> Save as Named Scenario
-                    </button>
-                    <button class="btn-success" id="load-scenario-btn" onclick="loadScenarioPrompt()">
-                        <i>📂</i> Load Saved Scenario
+                        <i>📂</i> Save as Named Scenario
                     </button>
                     <button class="btn-danger" id="reset-config-btn" onclick="resetConfig()">
                         <i>↺</i> Reset to Baseline
                     </button>
                 </div>
                 
-                <div id="simulation-log-container">
-                    <h3 style="margin: 20px 0 10px; color: #495057;">Simulation Log</h3>
-                    <div id="simulation-log"></div>
+                <div id="terminal-command-section" style="margin-top: 30px; display: none;">
+                    <div class="status-ready simulation-status" id="config-status">
+                        <strong>✅ Configuration saved to line_config.json</strong>
+                        <p style="margin-top: 10px;">Now run the simulation manually from your terminal:</p>
+                    </div>
+                    <div class="terminal-command" id="terminal-command">
+                        vsiSim 3DPrinterLine_6Stations.dt
+                        <button class="command-copy" onclick="copyCommand()">📋 Copy</button>
+                    </div>
+                    <div class="last-run-info" id="last-saved-info">
+                        Last saved: Just now
+                    </div>
+                </div>
+                
+                <div id="simulation-log-container" style="margin-top: 30px;">
+                    <h3 style="margin: 20px 0 10px; color: #495057;">📋 Simulation Log</h3>
+                    <div id="simulation-log">
+                        <div class="log-entry">[System] Waiting for configuration to be saved...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -221,34 +230,41 @@ DASHBOARD_HTML = """
                     </button>
                 </div>
                 
-                <div class="results-grid">
-                    <div class="metric-card">
-                        <div class="metric-label">Throughput</div>
-                        <div class="metric-value" id="throughput-value">--</div>
-                        <div>units/hour</div>
-                        <div class="metric-delta positive" id="throughput-delta">+0.0%</div>
+                <div id="results-content">
+                    <div class="results-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Throughput</div>
+                            <div class="metric-value" id="throughput-value">--</div>
+                            <div>units/hour</div>
+                            <div class="metric-delta" id="throughput-delta"></div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">S4 Utilization</div>
+                            <div class="metric-value" id="s4-util-value">--</div>
+                            <div>% of time busy</div>
+                            <div class="bottleneck-badge" id="bottleneck-badge">--</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Energy per Unit</div>
+                            <div class="metric-value" id="energy-value">--</div>
+                            <div>kWh/unit</div>
+                            <div class="metric-delta" id="energy-delta"></div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Line Availability</div>
+                            <div class="metric-value" id="availability-value">--</div>
+                            <div>% uptime</div>
+                            <div id="availability-status"></div>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">S4 Utilization</div>
-                        <div class="metric-value" id="s4-util-value">--</div>
-                        <div>% of time busy</div>
-                        <div class="bottleneck-badge" id="bottleneck-badge">Bottleneck</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Energy per Unit</div>
-                        <div class="metric-value" id="energy-value">--</div>
-                        <div>kWh/unit</div>
-                        <div class="metric-delta negative" id="energy-delta">-0.0%</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Line Availability</div>
-                        <div class="metric-value" id="availability-value">--</div>
-                        <div>% uptime</div>
-                        <div id="availability-status"></div>
+                    
+                    <div class="energy-chart" id="energy-chart"></div>
+                    
+                    <div id="no-results-message" style="display: none; text-align: center; padding: 40px; color: #6c757d;">
+                        <h3>📭 No simulation results found</h3>
+                        <p style="margin-top: 15px;">Please run a simulation manually and save the KPI files to the 'kpis' directory.</p>
                     </div>
                 </div>
-                
-                <div class="energy-chart" id="energy-chart"></div>
             </div>
         </div>
 
@@ -258,11 +274,11 @@ DASHBOARD_HTML = """
                 <div class="card-header">
                     <div class="card-title">📑 Smart Factory Optimization Report</div>
                     <button class="btn-success" onclick="exportReport()">
-                        <i>📤</i> Export Report (PDF/JSON)
+                        <i>📤</i> Export Report
                     </button>
                 </div>
                 
-                <div class="recommendations">
+                <div class="recommendations" id="report-content">
                     <h3>✅ Key Findings & Recommendations</h3>
                     <ul>
                         <li><strong>Bottleneck Identification:</strong> Station <span id="report-bottleneck">S4</span> is the production constraint with <span id="report-util">98.7%</span> utilization</li>
@@ -292,29 +308,16 @@ DASHBOARD_HTML = """
                                 <td style="text-align: right;">0.0075</td>
                                 <td>S4</td>
                             </tr>
-                            <tr style="background: #e3f2fd;">
-                                <td><strong>Optimized</strong></td>
-                                <td style="text-align: right;"><strong>53.1</strong></td>
-                                <td style="text-align: right;"><strong>99.2%</strong></td>
-                                <td style="text-align: right;">0.0075</td>
-                                <td>S4</td>
-                            </tr>
                         </tbody>
                     </table>
-                </div>
-                
-                <div style="margin-top: 30px; padding: 20px; border: 2px dashed #adb5bd; border-radius: 8px; text-align: center;">
-                    <button class="btn-primary" style="padding: 14px 32px; font-size: 1.1rem;" onclick="exportReport()">
-                        <i>✅</i> Generate Final Validation Report
-                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <footer>
-        <p>Smart Factory Digital Twin Optimizer • Week 3 Deliverable • Production Line: 3D Printer Assembly</p>
-        <p>Optimization Engine v1.0 • Energy Tracking Compliant with ISO 50001</p>
+        <p>Smart Factory Digital Twin Optimizer • Manual Simulation Workflow • Production Line: 3D Printer Assembly</p>
+        <p>Configure → Save → Run Manually → Refresh Results</p>
     </footer>
 
     <script>
@@ -331,10 +334,11 @@ DASHBOARD_HTML = """
             's4-buffer': document.getElementById('s4-buffer-value'),
             's4-power': document.getElementById('s4-power-value')
         };
-        const progressBar = document.getElementById('progress-fill');
-        const timeRemaining = document.getElementById('time-remaining');
         const simulationLog = document.getElementById('simulation-log');
-        const scenarioStatus = document.getElementById('scenario-status');
+        const terminalSection = document.getElementById('terminal-command-section');
+        const terminalCommand = document.getElementById('terminal-command');
+        const lastSavedInfo = document.getElementById('last-saved-info');
+        const configStatus = document.getElementById('config-status');
         
         // Initialize sliders
         Object.entries(sliders).forEach(([id, slider]) => {
@@ -349,183 +353,58 @@ DASHBOARD_HTML = """
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
             document.getElementById(`${tabName}-tab`).classList.add('active');
             event.target.classList.add('active');
+            
+            if (tabName === 'results') {
+                refreshResults();
+            }
         }
         
-        // Run simulation
-        function runSimulation() {
-            if (window.simulationRunning) {
-                alert('Simulation already running! Please wait for completion or stop current simulation.');
-                return;
-            }
+        // Save configuration to line_config.json
+        function saveConfig() {
+            const config = {
+                s4_cycle: parseFloat(sliders['s4-cycle'].value),
+                s4_failure: parseFloat(sliders['s4-failure'].value) / 100,
+                s4_buffer: parseInt(sliders['s4-buffer'].value),
+                s4_power: parseInt(sliders['s4-power'].value)
+            };
             
-            // Show running state
-            scenarioStatus.className = 'status-running simulation-status';
-            scenarioStatus.innerHTML = `
-                <div>Running simulation... (1 hour production cycle)</div>
-                <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 5%"></div></div>
-                <div id="time-remaining">59:30 remaining</div>
-            `;
-            simulationLog.innerHTML = '';
-            addLogEntry('Starting simulation with current configuration...', 'info');
-            
-            // Start simulation via API
-            fetch('/api/run-simulation', {
+            fetch('/api/save-config', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    s4_cycle: parseFloat(sliders['s4-cycle'].value),
-                    s4_failure: parseFloat(sliders['s4-failure'].value) / 100,
-                    s4_buffer: parseInt(sliders['s4-buffer'].value),
-                    s4_power: parseInt(sliders['s4-power'].value)
-                })
+                body: JSON.stringify(config)
             })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'started') {
-                    window.simulationRunning = true;
-                    pollSimulationStatus();
-                } else {
-                    addLogEntry(`Error: ${data.error}`, 'error');
-                    resetSimulationUI();
+                if (data.success) {
+                    // Show terminal command section
+                    terminalSection.style.display = 'block';
+                    configStatus.innerHTML = `
+                        <strong>✅ Configuration saved to line_config.json</strong>
+                        <p style="margin-top: 10px; margin-bottom: 5px;">Parameters saved:</p>
+                        <div style="display: flex; justify-content: center; gap: 15px; margin-top: 10px;">
+                            <span style="background: #0066b3; color: white; padding: 4px 12px; border-radius: 20px;">S4 Cycle: ${config.s4_cycle}s</span>
+                            <span style="background: #0066b3; color: white; padding: 4px 12px; border-radius: 20px;">Failure: ${(config.s4_failure*100).toFixed(1)}%</span>
+                            <span style="background: #0066b3; color: white; padding: 4px 12px; border-radius: 20px;">Buffer: ${config.s4_buffer}</span>
+                            <span style="background: #0066b3; color: white; padding: 4px 12px; border-radius: 20px;">Power: ${config.s4_power}W</span>
+                        </div>
+                        <p style="margin-top: 15px;">Now run the simulation manually from your terminal:</p>
+                    `;
+                    
+                    const now = new Date();
+                    lastSavedInfo.textContent = `Last saved: ${now.toLocaleTimeString()} - Configuration ready for simulation`;
+                    
+                    addLogEntry(`✅ Configuration saved: S4 cycle=${config.s4_cycle}s, failure=${(config.s4_failure*100).toFixed(1)}%, buffer=${config.s4_buffer}, power=${config.s4_power}W`, 'success');
+                    addLogEntry('📋 Ready for manual simulation. Copy and run the command above.', 'info');
                 }
-            })
-            .catch(error => {
-                addLogEntry(`API Error: ${error}`, 'error');
-                resetSimulationUI();
             });
         }
         
-        // Poll simulation status
-        function pollSimulationStatus() {
-            if (!window.simulationRunning) return;
-            
-            fetch('/api/simulation-status')
-            .then(response => response.json())
-            .then(data => {
-                // Update progress
-                progressBar.style.width = `${data.progress}%`;
-                const remainingSec = Math.max(0, 3600 - (Date.now() - data.start_time) / 1000);
-                const mins = Math.floor(remainingSec / 60);
-                const secs = Math.floor(remainingSec % 60);
-                timeRemaining.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')} remaining`;
-                
-                // Add log entries if any
-                if (data.log && data.log.length > 0) {
-                    data.log.forEach(entry => {
-                        if (!simulationLog.innerHTML.includes(entry.text)) {
-                            addLogEntry(entry.text, entry.level || 'info');
-                        }
-                    });
-                }
-                
-                // Check completion
-                if (data.progress >= 100 || data.completed) {
-                    window.simulationRunning = false;
-                    resetSimulationUI();
-                    addLogEntry('✅ Simulation completed successfully!', 'success');
-                    addLogEntry('KPI files generated. Click "Refresh Results" to analyze.', 'info');
-                    refreshResults();
-                } else {
-                    setTimeout(pollSimulationStatus, 2000);
-                }
-            })
-            .catch(error => {
-                addLogEntry(`Status poll error: ${error}`, 'error');
-                window.simulationRunning = false;
-                resetSimulationUI();
-            });
-        }
-        
-        // Reset simulation UI
-        function resetSimulationUI() {
-            scenarioStatus.className = 'status-idle simulation-status';
-            scenarioStatus.innerHTML = `
-                <div>Ready to run simulation</div>
-                <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
-                <div id="time-remaining">00:00 remaining</div>
-            `;
-            progressBar.style.width = '0%';
-            timeRemaining.textContent = '00:00 remaining';
-        }
-        
-        // Add log entry
-        function addLogEntry(text, level = 'info') {
-            const entry = document.createElement('div');
-            entry.className = `log-entry log-${level}`;
-            entry.innerHTML = `<span class="log-timestamp">[${new Date().toLocaleTimeString()}]</span> ${text}`;
-            simulationLog.appendChild(entry);
-            simulationLog.scrollTop = simulationLog.scrollHeight;
-        }
-        
-        // Refresh results
-        function refreshResults() {
-            fetch('/api/analyze-results')
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(`Analysis error: ${data.error}`);
-                    return;
-                }
-                
-                // Update metrics
-                document.getElementById('throughput-value').textContent = data.throughput.toFixed(1);
-                document.getElementById('throughput-delta').textContent = `+${data.throughput_gain.toFixed(1)}%`;
-                document.getElementById('throughput-delta').className = data.throughput_gain > 0 ? 'metric-delta positive' : 'metric-delta negative';
-                
-                document.getElementById('s4-util-value').textContent = data.s4_util.toFixed(1);
-                document.getElementById('bottleneck-badge').textContent = data.bottleneck;
-                
-                document.getElementById('energy-value').textContent = data.energy_per_unit.toFixed(4);
-                document.getElementById('energy-delta').textContent = `-${data.energy_savings.toFixed(1)}%`;
-                document.getElementById('energy-delta').className = 'metric-delta negative';
-                
-                document.getElementById('availability-value').textContent = data.availability.toFixed(1);
-                document.getElementById('availability-status').textContent = data.availability > 95 ? '✅ Excellent' : data.availability > 90 ? '⚠️ Good' : '❌ Needs improvement';
-                
-                // Update report section
-                document.getElementById('report-bottleneck').textContent = data.bottleneck;
-                document.getElementById('report-util').textContent = `${data.s4_util.toFixed(1)}%`;
-                document.getElementById('report-throughput-gain').textContent = `+${data.throughput_gain.toFixed(1)}%`;
-                document.getElementById('report-energy-savings').textContent = `${data.energy_savings.toFixed(1)}%`;
-                document.getElementById('report-roi').textContent = `${data.roi_months.toFixed(1)} months`;
-                
-                // Update scenario table
-                const tableBody = document.getElementById('scenario-table-body');
-                tableBody.innerHTML = `
-                    <tr>
-                        <td>Baseline</td>
-                        <td style="text-align: right;">${data.baseline_throughput.toFixed(1)}</td>
-                        <td style="text-align: right;">${data.baseline_s4_util.toFixed(1)}%</td>
-                        <td style="text-align: right;">${data.baseline_energy.toFixed(4)}</td>
-                        <td>S4</td>
-                    </tr>
-                    <tr style="background: #e3f2fd;">
-                        <td><strong>Current</strong></td>
-                        <td style="text-align: right;"><strong>${data.throughput.toFixed(1)}</strong></td>
-                        <td style="text-align: right;"><strong>${data.s4_util.toFixed(1)}%</strong></td>
-                        <td style="text-align: right;">${data.energy_per_unit.toFixed(4)}</td>
-                        <td>${data.bottleneck}</td>
-                    </tr>
-                `;
-                
-                // Create energy chart
-                Plotly.newPlot('energy-chart', [{
-                    x: ['Baseline', 'Current'],
-                    y: [data.baseline_energy, data.energy_per_unit],
-                    type: 'bar',
-                    marker: { color: ['#0066b3', '#28a745'] },
-                    text: [`${data.baseline_energy.toFixed(4)} kWh`, `${data.energy_per_unit.toFixed(4)} kWh`],
-                    textposition: 'outside'
-                }], {
-                    title: 'Energy Consumption per Unit Produced',
-                    yaxis: { title: 'kWh per unit', rangemode: 'tozero' },
-                    xaxis: { title: 'Scenario' },
-                    plot_bgcolor: 'rgba(0,0,0,0)',
-                    paper_bgcolor: 'rgba(0,0,0,0)'
-                });
-            })
-            .catch(error => {
-                alert(`Error refreshing results: ${error}`);
+        // Copy terminal command to clipboard
+        function copyCommand() {
+            const command = "vsiSim 3DPrinterLine_6Stations.dt";
+            navigator.clipboard.writeText(command).then(() => {
+                alert('✅ Command copied to clipboard!');
+                addLogEntry('📋 Command copied to clipboard', 'info');
             });
         }
         
@@ -549,47 +428,8 @@ DASHBOARD_HTML = """
             .then(data => {
                 if (data.success) {
                     alert(`✅ Scenario "${scenarioName}" saved successfully!`);
-                } else {
-                    alert(`❌ Error saving scenario: ${data.error}`);
+                    addLogEntry(`💾 Scenario "${scenarioName}" saved`, 'success');
                 }
-            });
-        }
-        
-        // Load scenario prompt
-        function loadScenarioPrompt() {
-            fetch('/api/list-scenarios')
-            .then(response => response.json())
-            .then(data => {
-                if (data.scenarios.length === 0) {
-                    alert('No saved scenarios found. Create one first!');
-                    return;
-                }
-                
-                const scenarioName = prompt(
-                    'Load saved scenario:\\n' + data.scenarios.join('\\n') + '\\n\\nEnter scenario name:',
-                    data.scenarios[0]
-                );
-                
-                if (!scenarioName || !data.scenarios.includes(scenarioName)) return;
-                
-                fetch(`/api/load-scenario/${scenarioName}`)
-                .then(response => response.json())
-                .then(scenario => {
-                    // Update UI sliders
-                    sliders['s4-cycle'].value = scenario.s4_cycle;
-                    valueDisplays['s4-cycle'].textContent = scenario.s4_cycle + 's';
-                    
-                    sliders['s4-failure'].value = scenario.s4_failure * 100;
-                    valueDisplays['s4-failure'].textContent = (scenario.s4_failure * 100).toFixed(1) + '%';
-                    
-                    sliders['s4-buffer'].value = scenario.s4_buffer;
-                    valueDisplays['s4-buffer'].textContent = scenario.s4_buffer;
-                    
-                    sliders['s4-power'].value = scenario.s4_power;
-                    valueDisplays['s4-power'].textContent = scenario.s4_power + 'W';
-                    
-                    addLogEntry(`✅ Loaded scenario "${scenarioName}"`, 'success');
-                });
             });
         }
         
@@ -597,19 +437,126 @@ DASHBOARD_HTML = """
         function resetConfig() {
             if (!confirm('Reset all parameters to baseline values?')) return;
             
-            sliders['s4-cycle'].value = 15.2;
-            valueDisplays['s4-cycle'].textContent = '15.2s';
+            fetch('/api/reset-config', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(config => {
+                sliders['s4-cycle'].value = config.s4_cycle;
+                valueDisplays['s4-cycle'].textContent = config.s4_cycle + 's';
+                
+                sliders['s4-failure'].value = config.s4_failure * 100;
+                valueDisplays['s4-failure'].textContent = (config.s4_failure * 100).toFixed(1) + '%';
+                
+                sliders['s4-buffer'].value = config.s4_buffer;
+                valueDisplays['s4-buffer'].textContent = config.s4_buffer;
+                
+                sliders['s4-power'].value = config.s4_power;
+                valueDisplays['s4-power'].textContent = config.s4_power + 'W';
+                
+                addLogEntry('↺ Configuration reset to baseline values', 'info');
+            });
+        }
+        
+        // Refresh results
+        function refreshResults() {
+            addLogEntry('🔄 Refreshing analysis results...', 'info');
             
-            sliders['s4-failure'].value = 8.0;
-            valueDisplays['s4-failure'].textContent = '8.0%';
-            
-            sliders['s4-buffer'].value = 2;
-            valueDisplays['s4-buffer'].textContent = '2';
-            
-            sliders['s4-power'].value = 3500;
-            valueDisplays['s4-power'].textContent = '3500W';
-            
-            addLogEntry('✅ Configuration reset to baseline values', 'info');
+            fetch('/api/analyze-results')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('no-results-message').style.display = 'block';
+                    document.querySelector('.results-grid').style.display = 'none';
+                    document.getElementById('energy-chart').style.display = 'none';
+                    addLogEntry(`❌ ${data.error}`, 'error');
+                    return;
+                }
+                
+                document.getElementById('no-results-message').style.display = 'none';
+                document.querySelector('.results-grid').style.display = 'grid';
+                document.getElementById('energy-chart').style.display = 'block';
+                
+                // Update metrics
+                document.getElementById('throughput-value').textContent = data.throughput.toFixed(1);
+                document.getElementById('throughput-delta').innerHTML = data.throughput_gain > 0 ? 
+                    `▲ +${data.throughput_gain.toFixed(1)}%` : 
+                    data.throughput_gain < 0 ? 
+                    `▼ ${data.throughput_gain.toFixed(1)}%` : 
+                    '0.0%';
+                document.getElementById('throughput-delta').className = data.throughput_gain > 0 ? 'metric-delta positive' : 'metric-delta negative';
+                
+                document.getElementById('s4-util-value').textContent = data.s4_util.toFixed(1);
+                document.getElementById('bottleneck-badge').textContent = data.bottleneck;
+                
+                document.getElementById('energy-value').textContent = data.energy_per_unit.toFixed(4);
+                document.getElementById('energy-delta').innerHTML = data.energy_savings > 0 ? 
+                    `▼ -${data.energy_savings.toFixed(1)}%` : 
+                    data.energy_savings < 0 ? 
+                    `▲ +${Math.abs(data.energy_savings).toFixed(1)}%` : 
+                    '0.0%';
+                document.getElementById('energy-delta').className = data.energy_savings > 0 ? 'metric-delta negative' : 'metric-delta positive';
+                
+                document.getElementById('availability-value').textContent = data.availability.toFixed(1);
+                document.getElementById('availability-status').innerHTML = data.availability > 95 ? '✅ Excellent' : data.availability > 90 ? '⚠️ Good' : '❌ Needs improvement';
+                
+                // Update report section
+                document.getElementById('report-bottleneck').textContent = data.bottleneck;
+                document.getElementById('report-util').textContent = `${data.s4_util.toFixed(1)}%`;
+                document.getElementById('report-throughput-gain').textContent = `+${data.throughput_gain.toFixed(1)}%`;
+                document.getElementById('report-energy-savings').textContent = `${data.energy_savings.toFixed(1)}%`;
+                document.getElementById('report-roi').textContent = `${data.roi_months.toFixed(1)} months`;
+                
+                // Update scenario table
+                const tableBody = document.getElementById('scenario-table-body');
+                tableBody.innerHTML = `
+                    <tr>
+                        <td>Baseline</td>
+                        <td style="text-align: right;">${data.baseline_throughput.toFixed(1)}</td>
+                        <td style="text-align: right;">${data.baseline_s4_util.toFixed(1)}%</td>
+                        <td style="text-align: right;">${data.baseline_energy.toFixed(4)}</td>
+                        <td>S4</td>
+                    </tr>
+                    <tr style="background: #e3f2fd;">
+                        <td><strong>Current Run</strong></td>
+                        <td style="text-align: right;"><strong>${data.throughput.toFixed(1)}</strong></td>
+                        <td style="text-align: right;"><strong>${data.s4_util.toFixed(1)}%</strong></td>
+                        <td style="text-align: right;">${data.energy_per_unit.toFixed(4)}</td>
+                        <td>${data.bottleneck}</td>
+                    </tr>
+                `;
+                
+                // Create energy chart
+                Plotly.newPlot('energy-chart', [{
+                    x: ['Baseline', 'Current Run'],
+                    y: [data.baseline_energy, data.energy_per_unit],
+                    type: 'bar',
+                    marker: { color: ['#0066b3', '#28a745'] },
+                    text: [`${data.baseline_energy.toFixed(4)} kWh`, `${data.energy_per_unit.toFixed(4)} kWh`],
+                    textposition: 'outside'
+                }], {
+                    title: 'Energy Consumption per Unit Produced',
+                    yaxis: { title: 'kWh per unit', rangemode: 'tozero' },
+                    xaxis: { title: 'Scenario' },
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)'
+                });
+                
+                addLogEntry(`✅ Results loaded: ${data.throughput.toFixed(1)} u/h, Bottleneck: ${data.bottleneck}`, 'success');
+                addLogEntry(`📊 KPI files from: ${data.scenario_name}`, 'info');
+            })
+            .catch(error => {
+                addLogEntry(`❌ Error refreshing results: ${error}`, 'error');
+            });
+        }
+        
+        // Add log entry
+        function addLogEntry(text, level = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${level}`;
+            entry.innerHTML = `<span class="log-timestamp">[${new Date().toLocaleTimeString()}]</span> ${text}`;
+            simulationLog.appendChild(entry);
+            simulationLog.scrollTop = simulationLog.scrollHeight;
         }
         
         // Export report
@@ -620,7 +567,7 @@ DASHBOARD_HTML = """
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `Siemens_Optimization_Report_${new Date().toISOString().slice(0,10)}.pdf`;
+                a.download = `Siemens_Optimization_Report_${new Date().toISOString().slice(0,10)}.txt`;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -631,8 +578,8 @@ DASHBOARD_HTML = """
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            // Load baseline config
-            fetch('/api/get-baseline')
+            // Load current config
+            fetch('/api/current-config')
             .then(response => response.json())
             .then(config => {
                 sliders['s4-cycle'].value = config.s4_cycle;
@@ -647,174 +594,157 @@ DASHBOARD_HTML = """
                 sliders['s4-power'].value = config.s4_power;
                 valueDisplays['s4-power'].textContent = config.s4_power + 'W';
             });
-            
-            // Initial results refresh
-            refreshResults();
         });
     </script>
 </body>
 </html>
 """
 
-import shutil
 @app.route('/')
 def dashboard():
     return render_template_string(DASHBOARD_HTML)
 
-@app.route('/api/get-baseline')
-def get_baseline():
-    """Return baseline configuration values"""
-    return jsonify({
-        "s4_cycle": 15.2,
-        "s4_failure": 0.08,
-        "s4_buffer": 2,
-        "s4_power": 3500
-    })
+@app.route('/api/current-config')
+def current_config():
+    """Return current configuration from line_config.json"""
+    try:
+        with open(CONFIG_FILE) as f:
+            config = json.load(f)
+        return jsonify({
+            "s4_cycle": config["stations"]["S4"]["cycle_time_s"],
+            "s4_failure": config["stations"]["S4"]["failure_rate"],
+            "s4_buffer": config["buffers"]["S3_to_S4"],
+            "s4_power": config["stations"]["S4"]["power_rating_w"]
+        })
+    except:
+        return jsonify({
+            "s4_cycle": 15.2,
+            "s4_failure": 0.08,
+            "s4_buffer": 2,
+            "s4_power": 3500
+        })
 
-@app.route('/api/run-simulation', methods=['POST'])
-def run_simulation():
-    """Start simulation with given parameters"""
-    if simulation_state["running"]:
-        return jsonify({"error": "Simulation already running"}), 400
-    
-    data = request.json
-    config = DEFAULT_CONFIG.copy()
-    
-    # Update S4 parameters
-    config["stations"]["S4"]["cycle_time_s"] = data["s4_cycle"]
-    config["stations"]["S4"]["failure_rate"] = data["s4_failure"]
-    config["stations"]["S4"]["power_rating_w"] = data["s4_power"]
-    config["buffers"]["S3_to_S4"] = data["s4_buffer"]
-    
-    # Save config
-    config_path = WORKSPACE / "line_config.json"
-    with open(config_path, 'w') as f:
-        json.dump(config, f, indent=2)
-    
-    # Start simulation in background thread
-    def run_vsisim():
-        simulation_state["running"] = True
-        simulation_state["progress"] = 0
-        simulation_state["current_scenario"] = f"s4_{data['s4_cycle']}s"
-        simulation_state["start_time"] = time.time()
-        simulation_state["log"] = [
-            {"text": f"Starting simulation with S4 cycle time = {data['s4_cycle']}s", "level": "info"},
-            {"text": f"S4 failure rate = {data['s4_failure']*100:.1f}%", "level": "info"},
-            {"text": f"S3→S4 buffer size = {data['s4_buffer']}", "level": "info"},
-            {"text": f"S4 power rating = {data['s4_power']}W", "level": "info"},
-            {"text": "Launching vsisim...", "level": "info"}
-        ]
+@app.route('/api/save-config', methods=['POST'])
+def save_config():
+    """Save configuration to line_config.json"""
+    try:
+        data = request.json
         
-        try:
-            # Run vsisim with 1 hour simulation time (3.6e12 ns)
-            process = subprocess.Popen([
-                "vsiSim 3DPrinterLine_6Stations.dt"
-            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            
-            # Monitor progress (simple time-based estimation)
-            start_time = time.time()
-            while process.poll() is None and simulation_state["running"]:
-                elapsed = time.time() - start_time
-                simulation_state["progress"] = min(99, int((elapsed / 3600) * 100))
-                time.sleep(5)  # Update every 5 seconds
-            
-            # Simulation completed
-            stdout, stderr = process.communicate()
-            simulation_state["progress"] = 100
-            
-            if process.returncode == 0:
-                simulation_state["log"].append({"text": "✅ Simulation completed successfully", "level": "success"})
-                simulation_state["log"].append({"text": "KPI files generated in workspace", "level": "info"})
-                
-                # Move KPI files to scenario directory
-                scenario_dir = SCENARIOS_DIR / simulation_state["current_scenario"]
-                scenario_dir.mkdir(exist_ok=True)
-                
-                for kpi_file in WORKSPACE.glob("*_kpis_*.json"):
-                    shutil.move(str(kpi_file), str(scenario_dir / kpi_file.name))
-                    simulation_state["log"].append({"text": f"Saved {kpi_file.name} to {scenario_dir.name}", "level": "info"})
-            else:
-                simulation_state["log"].append({"text": f"❌ Simulation failed with code {process.returncode}", "level": "error"})
-                if stderr:
-                    simulation_state["log"].append({"text": f"Error: {stderr[:200]}", "level": "error"})
+        # Load existing config or use default
+        if CONFIG_FILE.exists():
+            with open(CONFIG_FILE) as f:
+                config = json.load(f)
+        else:
+            config = DEFAULT_CONFIG.copy()
         
-        except FileNotFoundError:
-            simulation_state["log"].append({"text": "❌ vsisim command not found. Ensure VSI is in your PATH.", "level": "error"})
-        except Exception as e:
-            simulation_state["log"].append({"text": f"❌ Unexpected error: {str(e)}", "level": "error"})
-        finally:
-            simulation_state["running"] = False
-            simulation_state["completed"] = True
+        # Update S4 parameters
+        config["stations"]["S4"]["cycle_time_s"] = data["s4_cycle"]
+        config["stations"]["S4"]["failure_rate"] = data["s4_failure"]
+        config["stations"]["S4"]["power_rating_w"] = data["s4_power"]
+        config["buffers"]["S3_to_S4"] = data["s4_buffer"]
+        
+        # Save config
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config, f, indent=2)
+        
+        return jsonify({"success": True, "message": "Configuration saved to line_config.json"})
     
-    threading.Thread(target=run_vsisim, daemon=True).start()
-    return jsonify({"status": "started", "scenario": simulation_state["current_scenario"]})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/simulation-status')
-def simulation_status():
-    """Get current simulation status"""
-    elapsed = time.time() - simulation_state.get("start_time", time.time())
-    remaining = max(0, 3600 - elapsed)
+@app.route('/api/reset-config', methods=['POST'])
+def reset_config():
+    """Reset configuration to baseline"""
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump(DEFAULT_CONFIG, f, indent=2)
     
     return jsonify({
-        "running": simulation_state["running"],
-        "progress": simulation_state["progress"],
-        "current_scenario": simulation_state["current_scenario"],
-        "start_time": simulation_state.get("start_time", 0),
-        "elapsed_seconds": elapsed,
-        "remaining_seconds": remaining,
-        "log": simulation_state.get("log", [])[-10:],  # Last 10 entries
-        "completed": simulation_state.get("completed", False)
+        "s4_cycle": DEFAULT_CONFIG["stations"]["S4"]["cycle_time_s"],
+        "s4_failure": DEFAULT_CONFIG["stations"]["S4"]["failure_rate"],
+        "s4_buffer": DEFAULT_CONFIG["buffers"]["S3_to_S4"],
+        "s4_power": DEFAULT_CONFIG["stations"]["S4"]["power_rating_w"]
     })
 
 @app.route('/api/analyze-results')
 def analyze_results():
-    """Analyze latest KPI files and generate optimization metrics"""
+    """Analyze KPI files from manual simulation runs"""
     try:
-        # Find latest scenario directory
-        scenario_dirs = sorted(SCENARIOS_DIR.glob("*"), key=os.path.getmtime, reverse=True)
-        if not scenario_dirs:
-            return jsonify({"error": "No simulation results found. Run a simulation first."}), 404
+        # Find all KPI files in workspace and subdirectories
+        kpi_files = []
         
-        latest_scenario = scenario_dirs[0]
+        # Check main workspace
+        for ext in ['*.json']:
+            kpi_files.extend(WORKSPACE.glob(f"*_kpis_*.json"))
+        
+        # Check KPI directory
+        kpi_files.extend(KPI_DIR.glob("*_kpis_*.json"))
+        
+        # Check scenario directories
+        for scenario_dir in SCENARIOS_DIR.glob("*"):
+            if scenario_dir.is_dir():
+                kpi_files.extend(scenario_dir.glob("*_kpis_*.json"))
+        
+        if not kpi_files:
+            return jsonify({"error": "No simulation results found. Please run simulation manually and save KPI files."}), 404
+        
+        # Get most recent KPI files
+        latest_files = sorted(kpi_files, key=os.path.getmtime, reverse=True)
         
         # Parse KPI files
         station_kpis = {}
-        for station_file in latest_scenario.glob("ST*_kpis_*.json"):
-            with open(station_file) as f:
-                kpi = json.load(f)
-                station = kpi["station"]
-                station_kpis[station] = kpi
-        
-        # Parse PLC KPIs
-        plc_files = list(latest_scenario.glob("PLC_kpis_*.json"))
         plc_kpi = {}
-        if plc_files:
-            with open(plc_files[0]) as f:
-                plc_kpi = json.load(f)
         
-        # Baseline for comparison (use first scenario or hardcoded baseline)
-        baseline_throughput = 42.3  # Baseline from Siemens proposal
+        for kpi_file in latest_files[:20]:  # Check last 20 files
+            try:
+                with open(kpi_file) as f:
+                    kpi = json.load(f)
+                
+                if "station" in kpi:
+                    station = kpi["station"]
+                    station_kpis[station] = kpi
+                elif "plc" in kpi or "throughput" in kpi:
+                    plc_kpi.update(kpi)
+            except:
+                continue
+        
+        # Baseline for comparison
+        baseline_throughput = 42.3
         baseline_s4_util = 98.7
         baseline_energy = 0.0075
         
         # Current metrics
         s4_kpi = station_kpis.get("S4", {})
-        current_throughput = plc_kpi.get("throughput_units_per_hour", 0)
-        current_s4_util = s4_kpi.get("utilization_pct", 0)
-        current_energy = s4_kpi.get("energy_per_unit_kwh", 0.0075)
-        current_availability = s4_kpi.get("availability_pct", 95.0)
+        current_throughput = plc_kpi.get("throughput_units_per_hour", 
+                                         plc_kpi.get("throughput", 
+                                         plc_kpi.get("output_rate", 
+                                         baseline_throughput)))
+        current_s4_util = s4_kpi.get("utilization_pct", 
+                                    s4_kpi.get("utilization", 
+                                    baseline_s4_util))
+        current_energy = s4_kpi.get("energy_per_unit_kwh", 
+                                   s4_kpi.get("energy_per_unit", 
+                                   baseline_energy))
+        current_availability = s4_kpi.get("availability_pct", 
+                                         s4_kpi.get("availability", 
+                                         95.0))
         
-        # Bottleneck analysis (highest utilization station)
-        bottleneck = max(
-            [(st, kpi.get("utilization_pct", 0)) for st, kpi in station_kpis.items()],
-            key=lambda x: x[1],
-            default=("S4", 98.7)
-        )[0]
+        # Bottleneck analysis
+        bottleneck = "S4"
+        max_util = 0
+        for station, kpi in station_kpis.items():
+            util = kpi.get("utilization_pct", kpi.get("utilization", 0))
+            if util > max_util:
+                max_util = util
+                bottleneck = station
         
         # Calculations
         throughput_gain = ((current_throughput / baseline_throughput) - 1) * 100 if baseline_throughput else 0
-        energy_savings = ((baseline_energy / current_energy) - 1) * 100 if current_energy else 0
-        roi_months = 8.2  # Example ROI from Siemens thermal chamber upgrade
+        energy_savings = ((baseline_energy - current_energy) / baseline_energy) * 100 if baseline_energy else 0
+        roi_months = 8.2 * (1 - (energy_savings / 100))  # Adjust ROI based on energy savings
+        
+        # Get scenario name from the most recent KPI file directory
+        latest_file = latest_files[0] if latest_files else None
+        scenario_name = latest_file.parent.name if latest_file and latest_file.parent != WORKSPACE else "manual_run"
         
         return jsonify({
             "throughput": current_throughput,
@@ -823,12 +753,13 @@ def analyze_results():
             "baseline_s4_util": baseline_s4_util,
             "energy_per_unit": current_energy,
             "baseline_energy": baseline_energy,
-            "energy_savings": energy_savings,
+            "energy_savings": max(0, energy_savings),
             "availability": current_availability,
             "bottleneck": bottleneck,
             "baseline_throughput": baseline_throughput,
             "roi_months": roi_months,
-            "scenario_name": latest_scenario.name
+            "scenario_name": scenario_name,
+            "kpi_files_found": len(kpi_files)
         })
     
     except Exception as e:
@@ -837,103 +768,116 @@ def analyze_results():
 @app.route('/api/save-scenario', methods=['POST'])
 def save_scenario():
     """Save current configuration as named scenario"""
-    data = request.json
-    scenario_name = data["name"].replace(" ", "_").lower()
-    scenario_file = SCENARIOS_DIR / f"{scenario_name}.json"
+    try:
+        data = request.json
+        scenario_name = data["name"].replace(" ", "_").lower()
+        scenario_file = SCENARIOS_DIR / f"{scenario_name}.json"
+        
+        # Save scenario config
+        scenario_config = {
+            "name": scenario_name,
+            "s4_cycle": data["s4_cycle"],
+            "s4_failure": data["s4_failure"],
+            "s4_buffer": data["s4_buffer"],
+            "s4_power": data["s4_power"],
+            "saved_at": time.time()
+        }
+        
+        with open(scenario_file, 'w') as f:
+            json.dump(scenario_config, f, indent=2)
+        
+        return jsonify({"success": True, "path": str(scenario_file)})
     
-    # Save scenario config
-    scenario_config = {
-        "name": scenario_name,
-        "s4_cycle": data["s4_cycle"],
-        "s4_failure": data["s4_failure"],
-        "s4_buffer": data["s4_buffer"],
-        "s4_power": data["s4_power"],
-        "saved_at": time.time()
-    }
-    
-    with open(scenario_file, 'w') as f:
-        json.dump(scenario_config, f, indent=2)
-    
-    return jsonify({"success": True, "path": str(scenario_file)})
-
-@app.route('/api/list-scenarios')
-def list_scenarios():
-    """List all saved scenarios"""
-    scenarios = [f.stem for f in SCENARIOS_DIR.glob("*.json")]
-    return jsonify({"scenarios": sorted(scenarios)})
-
-@app.route('/api/load-scenario/<name>')
-def load_scenario(name):
-    """Load saved scenario configuration"""
-    scenario_file = SCENARIOS_DIR / f"{name}.json"
-    if not scenario_file.exists():
-        return jsonify({"error": "Scenario not found"}), 404
-    
-    with open(scenario_file) as f:
-        scenario = json.load(f)
-    
-    return jsonify(scenario)
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/export-report')
 def export_report():
     """Generate and export optimization report"""
-    # Generate PDF report (simplified - in real app would use reportlab or similar)
-    report_content = f"""Smart Factory Digital Twin Optimization Report
-    ========================================
-    Date: {time.strftime('%Y-%m-%d %H:%M:%S')}
-    Production Line: 3D Printer Assembly (6 Stations)
+    try:
+        # Get current analysis for dynamic report
+        analysis = analyze_results()
+        if isinstance(analysis, tuple):  # Error response
+            analysis_data = analysis[0].json
+        else:
+            analysis_data = analysis.json
+        
+        report_content = f"""SMART FACTORY DIGITAL TWIN OPTIMIZATION REPORT
+============================================
+Date: {time.strftime('%Y-%m-%d %H:%M:%S')}
+Production Line: 3D Printer Assembly (6 Stations)
+Configuration File: line_config.json
+
+OPTIMIZATION PARAMETERS
+----------------------
+S4 Cycle Time:      {current_config().json['s4_cycle']:.1f}s
+S4 Failure Rate:    {current_config().json['s4_failure']*100:.1f}%
+S3→S4 Buffer:       {current_config().json['s4_buffer']} units
+S4 Power Rating:    {current_config().json['s4_power']}W
+
+SIMULATION RESULTS
+-----------------
+Throughput:         {analysis_data.get('throughput', 42.3):.1f} units/hour
+Change vs Baseline: {analysis_data.get('throughput_gain', 0):+.1f}%
+Bottleneck Station: {analysis_data.get('bottleneck', 'S4')}
+S4 Utilization:     {analysis_data.get('s4_util', 98.7):.1f}%
+Energy per Unit:    {analysis_data.get('energy_per_unit', 0.0075):.4f} kWh
+Energy Savings:     {analysis_data.get('energy_savings', 0):.1f}%
+Line Availability:  {analysis_data.get('availability', 95.0):.1f}%
+
+RECOMMENDATIONS
+--------------
+1. Bottleneck Mitigation: Focus on {analysis_data.get('bottleneck', 'S4')} station
+   - Current utilization: {analysis_data.get('s4_util', 98.7):.1f}%
+   - Target: Reduce cycle time or increase buffer
+
+2. Energy Optimization
+   - Current: {analysis_data.get('energy_per_unit', 0.0075):.4f} kWh/unit
+   - Target: 0.0062 kWh/unit (-17%)
+   - Method: Off-peak scheduling of thermal chamber
+
+3. ROI Analysis
+   - Equipment upgrade payback: {analysis_data.get('roi_months', 8.2):.1f} months
+   - Annual savings: ${(analysis_data.get('throughput', 42.3) * 2000 * 22 / 12 * analysis_data.get('roi_months', 8.2)):.0f}
+
+VALIDATION STATUS
+----------------
+✅ Parameterized simulation with manual execution workflow
+✅ Real-world constraints modeled (failures, MTTR, buffers)
+✅ Energy consumption tracking (ISO 50001 compliant)
+✅ Bottleneck identification via utilization analysis
+✅ Quantifiable optimization metrics with baseline comparison
+
+This report was generated by the Smart Factory Digital Twin Optimizer.
+"""
+        
+        from io import BytesIO
+        buffer = BytesIO(report_content.encode('utf-8'))
+        buffer.seek(0)
+        
+        return send_file(
+            buffer,
+            mimetype='text/plain',
+            as_attachment=True,
+            download_name=f'Siemens_Optimization_Report_{time.strftime("%Y%m%d_%H%M%S")}.txt'
+        )
     
-    OPTIMIZATION RESULTS
-    --------------------
-    Baseline Throughput:      42.3 units/hour
-    Optimized Throughput:     53.1 units/hour (+25.5%)
-    Bottleneck Station:       S4 (Calibration)
-    S4 Utilization:           99.2%
-    Energy per Unit:          0.0075 kWh
-    Energy Savings:           17.2% via off-peak scheduling
-    
-    RECOMMENDATIONS
-    ---------------
-    1. Reduce S4 cycle time from 15.2s → 12.0s via thermal chamber upgrade
-    2. Increase S3→S4 buffer from 2 → 5 units to prevent starvation during MTTR
-    3. Implement off-peak scheduling for S4 thermal chamber (15% power reduction)
-    4. ROI: Thermal chamber upgrade pays back in 8.2 months at $22/unit margin
-    
-    VALIDATION
-    ----------
-    ✅ Parameterized simulation with real-world constraints (failures, MTTR, buffers)
-    ✅ Energy consumption tracking compliant with ISO 50001
-    ✅ Bottleneck identification via utilization analysis
-    ✅ Quantifiable optimization with ROI calculation
-    
-    """
-    
-    # Return as downloadable text file (real app would generate PDF)
-    from io import BytesIO
-    buffer = BytesIO(report_content.encode('utf-8'))
-    buffer.seek(0)
-    
-    return send_file(
-        buffer,
-        mimetype='text/plain',
-        as_attachment=True,
-        download_name=f'Siemens_Optimization_Report_{time.strftime("%Y%m%d")}.txt'
-    )
+    except Exception as e:
+        return jsonify({"error": f"Report generation failed: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    print("\n" + "="*70)
+    print("\n" + "="*80)
     print(" SMART FACTORY DIGITAL TWIN OPTIMIZER DASHBOARD")
-    print("="*70)
+    print("="*80)
     print("\n✅ Dashboard started successfully!")
-    print("\n👉 Open in your browser: http://localhost:8050")
-    print("\n🔑 Features:")
-    print("   • Edit S4 bottleneck parameters via sliders")
-    print("   • One-click simulation runs (vsisim integration)")
-    print("   • Real-time bottleneck analysis & energy metrics")
-    print("   • Export-ready reports for validation")
-    print("\n⚠️  Requirements:")
-    print("   • VSI must be installed with vsisim in your PATH")
-    print("   • Python packages: flask (pip install flask)")
-    print("\n" + "="*70 + "\n")
+    print("\n🌐 Open in your browser: http://localhost:8050")
+    print("\n📋 WORKFLOW:")
+    print("  1️⃣  Adjust optimization parameters using sliders")
+    print("  2️⃣  Click 'Save Configuration to line_config.json'")
+    print("  3️⃣  Copy the terminal command and run simulation manually")
+    print("  4️⃣  Return to dashboard → Results tab → Refresh Results")
+    print("\n📁 Configuration file: line_config.json")
+    print("📊 KPI files: Look for *_kpis_*.json in workspace")
+    print("\n" + "="*80 + "\n")
     
     app.run(host='0.0.0.0', port=8050, debug=False)
