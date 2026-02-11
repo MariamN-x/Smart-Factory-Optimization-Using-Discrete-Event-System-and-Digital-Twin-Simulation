@@ -40,52 +40,348 @@ ST3_ElectronicsWiring0 = 0
 import simpy
 
 # --- Station 3 (Electronics + Wiring) PARAMETERIZED SimPy model ---
+class FixedWiringStation:
+    """
+    Parameterized station for electronics wiring with config-driven cycle time, failures, and KPI tracking.
+    Includes energy consumption tracking like ST1.
+    """
+    def __init__(self, env: simpy.Environment, config: dict):
+        self.env = env
+        self.config = config  # Store config for entire simulation run
+        
+        # Load parameters ONCE at init (VSI constraint: no runtime changes)
+        self._nominal_cycle_time_s = config.get("cycle_time_s", 18.0)
+        self._failure_rate = config.get("failure_rate", 0.0)
+        self._mttr_s = config.get("mttr_s", 0.0)
+        self._buffer_capacity = config.get("buffer_capacity", 2)
+        self._power_rating_w = config.get("power_rating_w", 2200)  # Higher power for electronics station
+        
+        # State variables
+        self.state = "IDLE"
+        self._cycle_proc = None
+        self._busy = False
+        self._fault = False
+        self._done_pulse = False
+        
+        # Cycle timing
+        self._cycle_start_s = 0
+        self._cycle_end_s = 0
+        self._actual_cycle_time_ms = 0
+        self._cycle_count = 0
+        self._cycle_time_sum_ms = 0
+        
+        # Quality results
+        self._strain_relief_ok = 0
+        self._continuity_ok = 0
+        
+        # KPI tracking (NEW for Week 2)
+        self.completed_cycles = 0
+        self.total_downtime_s = 0.0
+        self.total_busy_time_s = 0.0
+        self.last_busy_start_s = 0.0
+        self.failure_count = 0
+        
+        # Quality counters
+        self.total_strain_ok = 0
+        self.total_continuity_ok = 0
+        
+        # ENERGY TRACKING (NEW for Siemens requirement)
+        self.energy_kwh = 0.0
+        
+        print(f"  FixedWiringStation INITIALIZED with config:")
+        print(f"    cycle_time_s={self._nominal_cycle_time_s}, failure_rate={self._failure_rate}, "
+              f"mttr_s={self._mttr_s}, power_rating_w={self._power_rating_w}W")
+
+    def start_cycle(self, start_time_s: float):
+        """Start a new wiring cycle - ONLY called on cmd_start rising edge"""
+        if self._cycle_proc is not None or self._busy:
+            print(f"  WARNING: FixedWiringStation.start_cycle called but already busy!")
+            return False
+        print(f"  FixedWiringStation: Starting job at env.now={self.env.now:.3f}s")
+        self.state = "RUNNING"
+        self._busy = True
+        self._done_pulse = False
+        self._cycle_start_s = start_time_s
+        self._actual_cycle_time_ms = 0
+        self._strain_relief_ok = 0
+        self._continuity_ok = 0
+        # Track busy time start for utilization + energy KPIs
+        self.last_busy_start_s = self.env.now
+        self._cycle_proc = self.env.process(self._wiring_cycle())
+        return True
+
+    def _wiring_cycle(self):
+        """Run a single wiring cycle with probabilistic failure simulation + ENERGY TRACKING"""
+        try:
+            # STEP 1: Mount PSU (scaled time)
+            mount_psu_s = self._nominal_cycle_time_s * (4.0 / 18.0)
+            yield self.env.timeout(mount_psu_s)
+            
+            # STEP 2: Mount board (scaled time)
+            mount_board_s = self._nominal_cycle_time_s * (3.0 / 18.0)
+            yield self.env.timeout(mount_board_s)
+            
+            # STEP 3: Mount screen (scaled time)
+            mount_screen_s = self._nominal_cycle_time_s * (2.0 / 18.0)
+            yield self.env.timeout(mount_screen_s)
+            
+            # STEP 4: Route cables (scaled time)
+            route_cables_s = self._nominal_cycle_time_s * (5.0 / 18.0)
+            yield self.env.timeout(route_cables_s)
+            
+            # STEP 5: Strain relief (scaled time)
+            strain_relief_s = self._nominal_cycle_time_s * (2.0 / 18.0)
+            yield self.env.timeout(strain_relief_s)
+            
+            # STEP 6: Continuity test (scaled time)
+            continuity_test_s = self._nominal_cycle_time_s * (2.0 / 18.0)
+            yield self.env.timeout(continuity_test_s)
+            
+            # Accumulate energy for processing time (W × seconds → kWh)
+            processing_time = mount_psu_s + mount_board_s + mount_screen_s + route_cables_s + strain_relief_s + continuity_test_s
+            energy_ws = self._power_rating_w * processing_time
+            self.energy_kwh += energy_ws / 3.6e6  # Convert W·s to kWh
+            
+            # STEP 7: Check for catastrophic failure
+            if random.random() < self._failure_rate:
+                # Failure occurred
+                self.failure_count += 1
+                failure_start = self.env.now
+                print(f"  ⚠️  FAILURE at {failure_start:.3f}s (cycle #{self._cycle_count+1})")
+                
+                # Enter fault state
+                self._fault = True
+                self._busy = False
+                
+                # Accumulate busy time BEFORE failure
+                self.total_busy_time_s += (failure_start - self.last_busy_start_s)
+                
+                # Simulate repair time (MTTR) - NO ENERGY CONSUMED during repair
+                yield self.env.timeout(self._mttr_s)
+                
+                # Repair complete
+                repair_end = self.env.now
+                downtime = repair_end - failure_start
+                self.total_downtime_s += downtime
+                print(f"  ✅ REPAIR complete at {repair_end:.3f}s (downtime={downtime:.2f}s)")
+                
+                # Exit fault state
+                self._fault = False
+                self.state = "IDLE"
+                return
+            
+            # STEP 8: Quality checks
+            strain_ok = random.random() <= 0.95
+            cont_ok = random.random() <= 0.92
+            
+            # If failed, rework and retest (only once)
+            if not strain_ok or not cont_ok:
+                print(f"  FixedWiringStation: Quality fail, reworking (strain_ok={strain_ok}, cont_ok={cont_ok})")
+                
+                # Rework time (scaled time)
+                rework_s = self._nominal_cycle_time_s * (4.0 / 18.0)
+                yield self.env.timeout(rework_s)
+                
+                # Retest (scaled time)
+                yield self.env.timeout(continuity_test_s)
+                
+                # Additional energy for rework
+                energy_ws = self._power_rating_w * (rework_s + continuity_test_s)
+                self.energy_kwh += energy_ws / 3.6e6
+                
+                # Higher success chances after rework
+                strain_ok = random.random() <= min(0.98, 0.95 + 0.03)
+                cont_ok = random.random() <= min(0.97, 0.92 + 0.05)
+            
+            # STEP 9: Complete cycle
+            self._cycle_end_s = self.env.now
+            actual_time_s = self._cycle_end_s - self._cycle_start_s
+            self._actual_cycle_time_ms = int(actual_time_s * 1000)
+            
+            # Update counters
+            self._cycle_count += 1
+            self._cycle_time_sum_ms += self._actual_cycle_time_ms
+            
+            if not strain_ok or not cont_ok:
+                print(f"  FixedWiringStation: Quality fail - part scrapped")
+                # Don't count as completed cycle for throughput
+                self.state = "QUALITY_FAIL"
+            else:
+                self.completed_cycles += 1
+                self._strain_relief_ok = 1 if strain_ok else 0
+                self._continuity_ok = 1 if cont_ok else 0
+                self.total_strain_ok += self._strain_relief_ok
+                self.total_continuity_ok += self._continuity_ok
+                self.state = "COMPLETE"
+                self._done_pulse = True
+            
+            # Accumulate busy time
+            self.total_busy_time_s += (self.env.now - self.last_busy_start_s)
+            
+            print(f"  FixedWiringStation: Job completed at env.now={self.env.now:.3f}s, "
+                  f"actual_time={self._actual_cycle_time_ms}ms, total_completed={self.completed_cycles}")
+            
+            self._busy = False
+            
+        except simpy.Interrupt:
+            print("  FixedWiringStation: Cycle interrupted by stop command")
+            self._busy = False
+            self._done_pulse = False
+            self.state = "IDLE"
+            # Accumulate partial busy time + energy
+            if self.last_busy_start_s > 0:
+                partial_time = self.env.now - self.last_busy_start_s
+                self.total_busy_time_s += partial_time
+                # Partial energy consumption
+                energy_ws = self._power_rating_w * partial_time
+                self.energy_kwh += energy_ws / 3.6e6
+            self.last_busy_start_s = 0.0
+        finally:
+            self._cycle_proc = None
+
+    def stop_cycle(self):
+        """Stop any running job"""
+        if self._cycle_proc is not None:
+            self._cycle_proc.interrupt()
+        self._busy = False
+        self._done_pulse = False
+        self.state = "IDLE"
+        # Accumulate partial busy time + energy on stop
+        if self.last_busy_start_s > 0:
+            partial_time = self.env.now - self.last_busy_start_s
+            self.total_busy_time_s += partial_time
+            # Partial energy consumption
+            energy_ws = self._power_rating_w * partial_time
+            self.energy_kwh += energy_ws / 3.6e6
+            self.last_busy_start_s = 0.0
+
+    def reset(self):
+        """Full reset - reloads config parameters (for new simulation run)"""
+        print("  FixedWiringStation: FULL RESET")
+        self.stop_cycle()
+        self.state = "IDLE"
+        self._busy = False
+        self._fault = False
+        self._done_pulse = False
+        self._cycle_proc = None
+        self._actual_cycle_time_ms = int(self._nominal_cycle_time_s * 1000)
+        self._cycle_count = 0
+        self._cycle_time_sum_ms = 0
+        self.completed_cycles = 0
+        self.total_downtime_s = 0.0
+        self.total_busy_time_s = 0.0
+        self.last_busy_start_s = 0.0
+        self.failure_count = 0
+        self.total_strain_ok = 0
+        self.total_continuity_ok = 0
+        self.energy_kwh = 0.0
+
+    def is_busy(self):
+        return self._busy
+
+    def is_fault(self):
+        return self._fault
+
+    def get_done_pulse(self):
+        return self._done_pulse
+
+    def clear_done_pulse(self):
+        """Clear done pulse after it's been read"""
+        was_set = self._done_pulse
+        self._done_pulse = False
+        return was_set
+
+    def get_cycle_time_ms(self):
+        return self._actual_cycle_time_ms if self._actual_cycle_time_ms > 0 else int(self._nominal_cycle_time_s * 1000)
+
+    def get_avg_cycle_time_ms(self):
+        if self._cycle_count > 0:
+            return int(self._cycle_time_sum_ms / self._cycle_count)
+        return int(self._nominal_cycle_time_s * 1000)
+
+    def has_active_proc(self):
+        return self._cycle_proc is not None
+
+    def get_strain_relief_ok(self):
+        return self._strain_relief_ok
+
+    def get_continuity_ok(self):
+        return self._continuity_ok
+
+    # NEW: KPI getters for Week 2
+    def get_utilization(self, total_sim_time_s: float) -> float:
+        if total_sim_time_s <= 0:
+            return 0.0
+        return (self.total_busy_time_s / total_sim_time_s) * 100.0
+
+    def get_availability(self, total_sim_time_s: float) -> float:
+        if total_sim_time_s <= 0:
+            return 0.0
+        uptime = total_sim_time_s - self.total_downtime_s
+        return (uptime / total_sim_time_s) * 100.0
+
+    def get_total_downtime_s(self) -> float:
+        return self.total_downtime_s
+
+    def get_failure_count(self) -> int:
+        return self.failure_count
+
+    def get_strain_success_rate(self) -> float:
+        if self.completed_cycles > 0:
+            return (self.total_strain_ok / self.completed_cycles) * 100.0
+        return 0.0
+
+    def get_continuity_success_rate(self) -> float:
+        if self.completed_cycles > 0:
+            return (self.total_continuity_ok / self.completed_cycles) * 100.0
+        return 0.0
+
+    # NEW: Energy getters (Siemens requirement)
+    def get_energy_kwh(self) -> float:
+        """Get total energy consumed in kWh"""
+        return self.energy_kwh
+
+    def get_energy_per_unit_kwh(self) -> float:
+        """Get energy consumed per completed unit (kWh/unit)"""
+        if self.completed_cycles > 0:
+            return self.energy_kwh / self.completed_cycles
+        return 0.0
+
+# VSI <-> SimPy Wrapper with CONFIG LOADING (Week 2)
 class ST3_SimRuntime:
     def __init__(self):
-        # Load config ONCE at simulation start (VSI constraint: no runtime changes)
+        # Load config ONCE at simulation start
         self.config = self._load_config()
-        print(f"ST3_SimRuntime: Loaded config from line_config.json -> cycle_time_base={self.config['cycle_time_s']}s, "
-              f"failure_rate={self.config['failure_rate']}, mttr={self.config['mttr_s']}s")
+        print(f"ST3_SimRuntime: Loaded config from line_config.json -> cycle_time={self.config['cycle_time_s']}s, "
+              f"failure_rate={self.config['failure_rate']}, mttr={self.config['mttr_s']}s, "
+              f"power={self.config['power_rating_w']}W")
         
         self.env = simpy.Environment()
-        self._process = None
+        self.station = FixedWiringStation(self.env, self.config)
         
         # Handshake state
         self._start_latched = False
         self._prev_cmd_start = 0
         self._prev_cmd_stop = 0
         self._prev_cmd_reset = 0
-        self._fault_latched = False
-        self._done_pulse = False
-        
-        # Results from last cycle
-        self._cycle_time_ms = 0
-        self._strain_relief_ok = 0
-        self._continuity_ok = 0
         
         # Context from PLC
         self.batch_id = 0
         self.recipe_id = 0
         
-        # KPI tracking (NEW for Week 2)
-        self.completed_cycles = 0
-        self.total_downtime_s = 0.0      # Accumulated downtime from failures
-        self.total_busy_time_s = 0.0     # Accumulated productive time
-        self.last_busy_start_s = 0.0     # For tracking current busy period
-        self.failure_count = 0           # Total failures occurred
-        
-        # Quality counters (preserve existing functionality)
-        self.total_strain_ok = 0
-        self.total_continuity_ok = 0
+        # Debug tracking
+        self._last_start_edge = False
+        self._last_step_dt = 0.0
 
     def _load_config(self) -> dict:
-        """Load station parameters from external JSON config (Week 2 deliverable)"""
+        """Load station parameters from external JSON config"""
         config_path = "line_config.json"
         default_config = {
-            "cycle_time_s": 18.0,  # Base cycle time (sum of all steps)
+            "cycle_time_s": 18.0,
             "failure_rate": 0.0,
             "mttr_s": 0.0,
-            "buffer_capacity": 2
+            "buffer_capacity": 2,
+            "power_rating_w": 2200  # Default for S3 (electronics station)
         }
         
         if os.path.exists(config_path):
@@ -94,7 +390,12 @@ class ST3_SimRuntime:
                     full_config = json.load(f)
                     # Extract S3-specific config
                     if "stations" in full_config and "S3" in full_config["stations"]:
-                        return full_config["stations"]["S3"]
+                        cfg = full_config["stations"]["S3"]
+                        # Ensure power_rating_w exists (backwards compatibility)
+                        if "power_rating_w" not in cfg:
+                            cfg["power_rating_w"] = default_config["power_rating_w"]
+                            print(f"  ⚠️  ST3: power_rating_w not in config - using default {default_config['power_rating_w']}W")
+                        return cfg
                     else:
                         print(f"  ⚠️  WARNING: line_config.json missing 'stations.S3' section - using defaults")
                         return default_config
@@ -103,33 +404,18 @@ class ST3_SimRuntime:
                 return default_config
         else:
             print(f"  ⚠️  WARNING: {config_path} not found - using default parameters")
-            # Create default config file for user convenience (only done by ST1)
             return default_config
 
     def reset(self):
         """Full reset - reloads config for new simulation run"""
         print("  ST3_SimRuntime: FULL RESET (reloading config)")
         self.config = self._load_config()  # Reload config for new run
-        if self._process is not None:
-            self._process.interrupt()
         self.env = simpy.Environment()
-        self._process = None
+        self.station = FixedWiringStation(self.env, self.config)
         self._start_latched = False
         self._prev_cmd_start = 0
         self._prev_cmd_stop = 0
         self._prev_cmd_reset = 0
-        self._fault_latched = False
-        self._done_pulse = False
-        self._cycle_time_ms = 0
-        self._strain_relief_ok = 0
-        self._continuity_ok = 0
-        self.completed_cycles = 0
-        self.total_downtime_s = 0.0
-        self.total_busy_time_s = 0.0
-        self.last_busy_start_s = 0.0
-        self.failure_count = 0
-        self.total_strain_ok = 0
-        self.total_continuity_ok = 0
         print("  ST3_SimRuntime: Reset complete - ready for new simulation")
 
     def set_context(self, batch_id: int, recipe_id: int):
@@ -137,7 +423,7 @@ class ST3_SimRuntime:
         self.recipe_id = int(recipe_id)
 
     def update_handshake(self, cmd_start: int, cmd_stop: int, cmd_reset: int):
-        """Process PLC commands and update internal state - MATCHES ST1 EXACTLY"""
+        """Process PLC commands and update internal state"""
         # Reset has highest priority
         if cmd_reset and not self._prev_cmd_reset:
             print("  ST3_SimRuntime: RESET command (rising edge)")
@@ -148,169 +434,51 @@ class ST3_SimRuntime:
         
         # Rising edge detection for start
         start_edge = (cmd_start == 1 and self._prev_cmd_start == 0)
+        self._last_start_edge = start_edge
         
         # Stop command (rising edge) - immediate stop
         if cmd_stop and not self._prev_cmd_stop:
             print("  ST3_SimRuntime: STOP command (rising edge)")
             self._start_latched = False
-            if self._process is not None:
-                self._process.interrupt()
-                self._process = None
+            self.station.stop_cycle()
             self._prev_cmd_stop = int(cmd_stop)
         
         # Start logic: ONLY on rising edge AND station idle AND no fault
         if start_edge:
-            if not self._busy() and not self._fault_latched:
-                print("  ST3_SimRuntime: START rising edge, station idle - starting cycle")
+            if not self.station.is_busy() and not self.station.is_fault():
+                print(f"  ST3_SimRuntime: START rising edge, station idle - starting cycle")
                 self._start_latched = True
-                self._done_pulse = False
-                # Start tracking busy time
-                self.last_busy_start_s = self.env.now
-                self._process = self.env.process(self._cycle())
+                self.station.start_cycle(self.env.now)
             else:
-                fault_status = "FAULT" if self._fault_latched else "BUSY"
+                fault_status = "FAULT" if self.station.is_fault() else "BUSY"
                 print(f"  ST3_SimRuntime: START rising edge but station {fault_status} - ignoring")
         
-        # Keep start_latched during entire cycle execution (even if cmd_start drops)
-        # DO NOT clear start_latched when cmd_start drops - matches ST1
+        # Keep start_latched during entire cycle
         self._prev_cmd_start = int(cmd_start)
         
-        # Safety check: if process is alive but start_latched is False, fix it
-        if self._busy() and not self._start_latched:
-            print("  ERROR: ST3_SimRuntime: process alive but start_latched=False! Fixing...")
+        # Safety check: if station is busy but start_latched is False, fix it
+        if self.station.is_busy() and not self._start_latched:
+            print("  ⚠️  ERROR: ST3_SimRuntime: station busy but start_latched=False! Fixing...")
             self._start_latched = True
-
-    def _busy(self):
-        """Check if there's an active SimPy process running"""
-        return self._process is not None and self._process.is_alive
-
-    def _cycle(self):
-        """SimPy process for ST3 cycle - parameterized with failure simulation"""
-        try:
-            start_time = self.env.now
-            print(f"  ST3_SimRuntime._cycle: Starting at env.now={start_time:.3f}s")
-            
-            # STEP 1: Mount PSU (configurable base time scaled to 4.0s nominal)
-            mount_psu_s = self.config["cycle_time_s"] * (4.0 / 18.0)
-            yield self.env.timeout(mount_psu_s)
-            print(f"  ST3_SimRuntime._cycle: Mounted PSU at env.now={self.env.now:.3f}s")
-            
-            # STEP 2: Mount board (scaled to 3.0s nominal)
-            mount_board_s = self.config["cycle_time_s"] * (3.0 / 18.0)
-            yield self.env.timeout(mount_board_s)
-            print(f"  ST3_SimRuntime._cycle: Mounted board at env.now={self.env.now:.3f}s")
-            
-            # STEP 3: Mount screen (scaled to 2.0s nominal)
-            mount_screen_s = self.config["cycle_time_s"] * (2.0 / 18.0)
-            yield self.env.timeout(mount_screen_s)
-            print(f"  ST3_SimRuntime._cycle: Mounted screen at env.now={self.env.now:.3f}s")
-            
-            # STEP 4: Route cables (scaled to 5.0s nominal)
-            route_cables_s = self.config["cycle_time_s"] * (5.0 / 18.0)
-            yield self.env.timeout(route_cables_s)
-            print(f"  ST3_SimRuntime._cycle: Routed cables at env.now={self.env.now:.3f}s")
-            
-            # STEP 5: Strain relief (scaled to 2.0s nominal)
-            strain_relief_s = self.config["cycle_time_s"] * (2.0 / 18.0)
-            yield self.env.timeout(strain_relief_s)
-            print(f"  ST3_SimRuntime._cycle: Strain relief at env.now={self.env.now:.3f}s")
-            
-            # STEP 6: Continuity test (scaled to 2.0s nominal)
-            continuity_test_s = self.config["cycle_time_s"] * (2.0 / 18.0)
-            yield self.env.timeout(continuity_test_s)
-            print(f"  ST3_SimRuntime._cycle: Continuity test at env.now={self.env.now:.3f}s")
-            
-            # STEP 7: Check for catastrophic failure AFTER processing completes (realistic model)
-            if random.random() < self.config["failure_rate"]:
-                # Failure occurred - simulate downtime
-                self.failure_count += 1
-                failure_start = self.env.now
-                
-                # Accumulate busy time BEFORE failure
-                if self.last_busy_start_s > 0:
-                    self.total_busy_time_s += (failure_start - self.last_busy_start_s)
-                    self.last_busy_start_s = 0.0
-                
-                # Enter fault state
-                self._fault_latched = True
-                print(f"  ⚠️  FAILURE at {failure_start:.3f}s - catastrophic event, part lost")
-                
-                # Simulate repair time (MTTR)
-                yield self.env.timeout(self.config["mttr_s"])
-                
-                # Repair complete
-                repair_end = self.env.now
-                downtime = repair_end - failure_start
-                self.total_downtime_s += downtime
-                print(f"  ✅ REPAIR complete at {repair_end:.3f}s (downtime={downtime:.2f}s)")
-                
-                # Exit fault state (reset happens externally via PLC)
-                # DO NOT proceed to quality checks - part is lost during failure
-                self._done_pulse = False
-                return
-            
-            # STEP 8: Quality checks (preserve existing logic)
-            strain_ok = random.random() <= 0.95
-            cont_ok = random.random() <= 0.92
-            
-            # If failed, rework and retest (only once)
-            if not strain_ok or not cont_ok:
-                print(f"  ST3_SimRuntime._cycle: Quality fail, reworking (strain_ok={strain_ok}, cont_ok={cont_ok})")
-                
-                # Rework time (scaled to 4.0s nominal)
-                rework_s = self.config["cycle_time_s"] * (4.0 / 18.0)
-                yield self.env.timeout(rework_s)
-                print(f"  ST3_SimRuntime._cycle: Rework completed at env.now={self.env.now:.3f}s")
-                
-                # Retest (scaled to 2.0s nominal)
-                yield self.env.timeout(continuity_test_s)
-                print(f"  ST3_SimRuntime._cycle: Retest at env.now={self.env.now:.3f}s")
-                
-                # Higher success chances after rework
-                strain_ok = random.random() <= min(0.98, 0.95 + 0.03)
-                cont_ok = random.random() <= min(0.97, 0.92 + 0.05)
-            
-            end_time = self.env.now
-            self._cycle_time_ms = int((end_time - start_time) * 1000)
-            
-            # Determine final status
-            if not strain_ok or not cont_ok:
-                print(f"  ST3_SimRuntime._cycle: Quality fail - part scrapped (not system fault)")
-                # self._fault_latched = True
-                self._done_pulse = False  # No done pulse on fault
-            else:
-                print(f"  ST3_SimRuntime._cycle: SUCCESS at env.now={end_time:.3f}s")
-                self._strain_relief_ok = 1 if strain_ok else 0
-                self._continuity_ok = 1 if cont_ok else 0
-                self._done_pulse = True
-            
-            # Accumulate busy time for successful/quality-failed cycles
-            if self.last_busy_start_s > 0:
-                self.total_busy_time_s += (end_time - self.last_busy_start_s)
-                self.last_busy_start_s = 0.0
-                
-        except simpy.Interrupt:
-            print("  ST3_SimRuntime._cycle: Cycle interrupted")
-            self._done_pulse = False
-            # Accumulate partial busy time on interrupt
-            if self.last_busy_start_s > 0:
-                self.total_busy_time_s += (self.env.now - self.last_busy_start_s)
-                self.last_busy_start_s = 0.0
-        finally:
-            # Always clear process when done
-            self._process = None
+        
+        # Safety check: if station has active process but busy flag is False, fix it
+        if self.station.has_active_proc() and not self.station.is_busy():
+            print("  ⚠️  ERROR: ST3_SimRuntime: active process but busy=False! Fixing...")
+            self.station._busy = True
 
     def step(self, dt_s: float):
-        """Advance simulation ONLY when necessary - matches ST1 exactly"""
-        # Step SimPy ONLY if busy or start_latched
-        should_step = self._busy() or self._start_latched
-        print(f"  ST3_SimRuntime step: env.now={self.env.now:.3f}s, dt_s={dt_s:.6f}s, "
-              f"start_latched={self._start_latched}, busy={self._busy()}, "
-              f"should_step={should_step}")
+        """Advance simulation ONLY when necessary"""
+        self._last_step_dt = dt_s
         
-        # DO NOT step if stop command is active and we're not in a cycle
-        if self._prev_cmd_stop and not self._busy():
-            print(f"  ST3_SimRuntime: NOT stepping - stop command active and not busy")
+        # Step SimPy ONLY if busy OR in fault state OR start_latched
+        should_step = self.station.is_busy() or self.station.is_fault() or self._start_latched
+        print(f"  ST3_SimRuntime step: env.now={self.env.now:.3f}s, dt_s={dt_s:.6f}s, "
+              f"start_latched={self._start_latched}, busy={self.station.is_busy()}, "
+              f"fault={self.station.is_fault()}, should_step={should_step}")
+        
+        # DO NOT step if stop command active and not in cycle/repair
+        if self._prev_cmd_stop and not (self.station.is_busy() or self.station.is_fault()):
+            print(f"  ST3_SimRuntime: NOT stepping - stop command active and idle")
             return
         
         # Only step if we should step
@@ -320,58 +488,65 @@ class ST3_SimRuntime:
             print(f"  ST3_SimRuntime: Stepped to env.now={self.env.now:.3f}s")
         
         # Check for cycle completion and clear start_latched
-        if self._done_pulse and not self._busy():
+        if self.station.get_done_pulse():
             print("  ST3_SimRuntime: Cycle completed, clearing start_latched")
             self._start_latched = False
 
-    def outputs(self):
-        """Get output signals - matches ST1 logic exactly"""
-        # Get station state
-        busy = 1 if self._busy() else 0
-        # Fault is latched until reset
-        fault = 1 if self._fault_latched else 0
-        # Ready = not busy AND not fault AND not start_latched (idle)
-        ready = 1 if (not busy and not fault and not self._start_latched) else 0
+    def outputs(self, total_sim_time_s: float):
+        """Get station outputs INCLUDING KPIs for Week 2"""
+        busy = 1 if self.station.is_busy() else 0
+        fault = 1 if self.station.is_fault() else 0
+        strain_relief_ok = self.station.get_strain_relief_ok()
+        continuity_ok = self.station.get_continuity_ok()
+        
+        # Ready = not busy AND not fault (independent of start latch)
+        ready = 1 if (not busy and not fault) else 0
+        
         # Done pulse for exactly ONE iteration after completion
-        done = 1 if self._done_pulse else 0
-        # Clear done pulse after reading (one-shot)
-        if self._done_pulse:
-            self._done_pulse = False
-        return ready, busy, fault, done, self._cycle_time_ms, self._strain_relief_ok, self._continuity_ok
-
-    # NEW: KPI getters for Week 2
-    def get_utilization(self, total_sim_time_s: float) -> float:
-        """Calculate station utilization (busy time / total time)"""
-        if total_sim_time_s <= 0:
-            return 0.0
-        return (self.total_busy_time_s / total_sim_time_s) * 100.0
-
-    def get_availability(self, total_sim_time_s: float) -> float:
-        """Calculate station availability (uptime / total time)"""
-        if total_sim_time_s <= 0:
-            return 0.0
-        uptime = total_sim_time_s - self.total_downtime_s
-        return (uptime / total_sim_time_s) * 100.0
+        done = 1 if self.station.get_done_pulse() else 0
+        
+        # Real cycle time
+        cycle_time_ms = self.station.get_cycle_time_ms()
+        
+        # Calculate utilization/availability for logging
+        utilization = self.station.get_utilization(total_sim_time_s)
+        availability = self.station.get_availability(total_sim_time_s)
+        
+        # Log KPIs every 10 cycles for visibility
+        if self.station.completed_cycles > 0 and self.station.completed_cycles % 10 == 0:
+            energy_per_unit = self.station.get_energy_per_unit_kwh()
+            print(f"  📊 ST3 KPIs (cycle #{self.station.completed_cycles}): "
+                  f"utilization={utilization:.1f}%, availability={availability:.1f}%, "
+                  f"energy={self.station.get_energy_kwh():.4f}kWh, energy/unit={energy_per_unit:.4f}kWh/unit, "
+                  f"failures={self.station.get_failure_count()}, downtime={self.station.get_total_downtime_s():.1f}s, "
+                  f"strain_success={self.station.get_strain_success_rate():.1f}%, "
+                  f"continuity_success={self.station.get_continuity_success_rate():.1f}%")
+        
+        return ready, busy, fault, done, cycle_time_ms, strain_relief_ok, continuity_ok
 
     def export_kpis(self, total_sim_time_s: float) -> dict:
-        """Export structured KPIs for optimizer (Week 2 deliverable)"""
-        utilization = self.get_utilization(total_sim_time_s)
-        availability = self.get_availability(total_sim_time_s)
+        """Export structured KPIs for optimizer (Week 2 deliverable + ENERGY)"""
+        energy_per_unit = self.station.get_energy_per_unit_kwh()
         
         return {
             "station": "S3",
-            "completed_cycles": self.completed_cycles,
-            "total_downtime_s": self.total_downtime_s,
-            "failure_count": self.failure_count,
-            "utilization_pct": utilization,
-            "availability_pct": availability,
-            "strain_relief_success_rate": (self.total_strain_ok / max(1, self.completed_cycles)) * 100.0,
-            "continuity_success_rate": (self.total_continuity_ok / max(1, self.completed_cycles)) * 100.0,
+            "completed_cycles": self.station.completed_cycles,
+            "total_downtime_s": self.station.get_total_downtime_s(),
+            "failure_count": self.station.get_failure_count(),
+            "utilization_pct": self.station.get_utilization(total_sim_time_s),
+            "availability_pct": self.station.get_availability(total_sim_time_s),
+            "avg_cycle_time_ms": self.station.get_avg_cycle_time_ms(),
+            "strain_relief_success_rate": self.station.get_strain_success_rate(),
+            "continuity_success_rate": self.station.get_continuity_success_rate(),
+            # ENERGY METRICS (Siemens requirement)
+            "energy_kwh": self.station.get_energy_kwh(),
+            "energy_per_unit_kwh": energy_per_unit,
+            "power_rating_w": self.config["power_rating_w"],
             "config": {
                 "cycle_time_s": self.config["cycle_time_s"],
                 "failure_rate": self.config["failure_rate"],
                 "mttr_s": self.config["mttr_s"],
-                "buffer_capacity": self.config["buffer_capacity"]
+                "power_rating_w": self.config["power_rating_w"]
             }
         }
 # End of user custom code region. Please don't edit beyond this point.
@@ -395,9 +570,9 @@ class ST3_ElectronicsWiring:
         self.mySignals = MySignals()
         # Start of user custom code region. Please apply edits only within these regions:  Constructor
         self._sim = None
-        self._prev_done = 0  # For tracking done transitions like ST1
+        self._prev_done = 0
         self.total_completed = 0
-        self._sim_start_time_ns = 0  # For KPI calculation at end
+        self._sim_start_time_ns = 0
         print("ST3: Initializing...")
         # End of user custom code region. Please don't edit beyond this point.
 
@@ -450,9 +625,9 @@ class ST3_ElectronicsWiring:
                     dt_s = float(self.simulationStep) / 1e9 if self.simulationStep else 0.0
                     self._sim.step(dt_s)
                     
-                    # Get outputs from SimPy
-                    (ready, busy, fault, done, cycle_time_ms,
-                     strain_relief_ok, continuity_ok) = self._sim.outputs()
+                    # Get outputs from SimPy (pass total sim time for KPI calculation)
+                    total_sim_time_s = (vsiCommonPythonApi.getSimulationTimeInNs() - self._sim_start_time_ns) / 1e9
+                    ready, busy, fault, done, cycle_time_ms, strain_relief_ok, continuity_ok = self._sim.outputs(total_sim_time_s)
                     
                     # Copy SimPy outputs into VSI signals
                     self.mySignals.ready = int(ready)
@@ -463,23 +638,13 @@ class ST3_ElectronicsWiring:
                     self.mySignals.strain_relief_ok = int(strain_relief_ok)
                     self.mySignals.continuity_ok = int(continuity_ok)
                     
-                    # Track completions (non-fault completions)
-                    if done and not self._prev_done and not fault:
+                    # Track completions
+                    if done and not self._prev_done:
                         self.total_completed += 1
-                        print(f"ST3: Cycle completed! cycle_time={cycle_time_ms}ms, "
-                              f"total={self.total_completed}")
+                        print(f"ST3: Cycle completed! cycle_time={cycle_time_ms}ms, total={self.total_completed}")
                     
-                    # Update previous done state like ST1
+                    # Update previous done state
                     self._prev_done = int(self.mySignals.done)
-                    
-                    # Log KPIs every 10 cycles for visibility
-                    if self._sim.completed_cycles > 0 and self._sim.completed_cycles % 10 == 0:
-                        total_sim_time_s = (vsiCommonPythonApi.getSimulationTimeInNs() - self._sim_start_time_ns) / 1e9
-                        utilization = self._sim.get_utilization(total_sim_time_s)
-                        availability = self._sim.get_availability(total_sim_time_s)
-                        print(f"  📊 ST3 KPIs (cycle #{self._sim.completed_cycles}): "
-                              f"utilization={utilization:.1f}%, availability={availability:.1f}%, "
-                              f"failures={self._sim.failure_count}, downtime={self._sim.total_downtime_s:.1f}s")
                 # End of user custom code region. Please don't edit beyond this point.
                 #Send ethernet packet to PLC_LineCoordinator
                 self.sendEthernetPacketToPLC_LineCoordinator()
@@ -515,8 +680,7 @@ class ST3_ElectronicsWiring:
                 print(self.mySignals.continuity_ok)
                 print(f"  Internal: total_completed={self.total_completed}")
                 if self._sim is not None:
-                    print(f"  SimState: start_latched={self._sim._start_latched}, "
-                          f"env.now={self._sim.env.now:.3f}s")
+                    print(f"  SimState: start_latched={self._sim._start_latched}, fault={self.mySignals.fault}")
                 print("\n")
                 self.updateInternalVariables()
                 if(vsiCommonPythonApi.isStopRequested()):
@@ -541,10 +705,11 @@ class ST3_ElectronicsWiring:
                 with open(kpi_file, 'w') as f:
                     json.dump(kpis, f, indent=2)
                 print(f"\n✅ ST3 KPIs exported to {kpi_file}")
-                print(f"   Throughput: {(kpis['completed_cycles'] / total_sim_time_s) * 3600:.1f} units/hour")
+                print(f"   Throughput: {kpis['completed_cycles'] / total_sim_time_s * 3600:.1f} units/hour")
+                print(f"   Energy: {kpis['energy_kwh']:.4f} kWh total")
+                print(f"   Energy per unit: {kpis['energy_per_unit_kwh']:.4f} kWh/unit")
                 print(f"   Utilization: {kpis['utilization_pct']:.1f}%")
                 print(f"   Availability: {kpis['availability_pct']:.1f}%")
-                print(f"   Failures: {kpis['failure_count']}")
                 print(f"   Strain relief success: {kpis['strain_relief_success_rate']:.1f}%")
                 print(f"   Continuity success: {kpis['continuity_success_rate']:.1f}%")
             
