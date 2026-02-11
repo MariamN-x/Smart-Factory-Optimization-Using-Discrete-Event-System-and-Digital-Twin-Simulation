@@ -191,7 +191,7 @@ DASHBOARD_HTML = """
                 
                 <div class="action-buttons">
                     <button class="btn-primary" id="run-simulation-btn" onclick="runSimulation()">
-                        <i>▶️</i> Run Simulation (1 hour production)
+                        <i>▶️</i> Run Simulation (2 minutes production)
                     </button>
                     <button class="btn-warning" id="save-scenario-btn" onclick="saveScenario()">
                         <i>💾</i> Save as Named Scenario
