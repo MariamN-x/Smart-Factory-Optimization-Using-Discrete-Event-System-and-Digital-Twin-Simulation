@@ -56,6 +56,7 @@ class FixedFrameCoreHandler:
         self._failure_rate = config.get("failure_rate", 0.0)      # Probability of failure per cycle
         self._mttr_s = config.get("mttr_s", 0.0)                   # Mean Time To Repair (seconds)
         self._buffer_capacity = config.get("buffer_capacity", 2)   # For consistency (handled by PLC)
+        self._power_rating_w = config.get("power_rating_w", 2200)  # Power consumption in Watts (NEW for energy tracking)
         self._cycle_time_jitter = 0.15  # Keep existing jitter behavior
         
         # State variables
@@ -84,8 +85,11 @@ class FixedFrameCoreHandler:
         self.last_busy_start_s = 0.0     # For tracking current busy period
         self.failure_count = 0           # Total failures occurred
         
+        # ENERGY TRACKING (NEW for Siemens requirement)
+        self.energy_kwh = 0.0            # Total energy consumed in kWh
+        
         print(f"  FixedFrameCoreHandler INITIALIZED with config:")
-        print(f"    nominal_cycle_time_s={self._nominal_cycle_time_s}, failure_rate={self._failure_rate}, mttr_s={self._mttr_s}")
+        print(f"    nominal_cycle_time_s={self._nominal_cycle_time_s}, failure_rate={self._failure_rate}, mttr_s={self._mttr_s}, power_rating_w={self._power_rating_w}W")
 
     def reset(self):
         if self._cycle_proc is not None:
@@ -101,38 +105,41 @@ class FixedFrameCoreHandler:
         self._total_cycles = 0
         self._cycle_time_sum_s = 0.0
         self._cycle_time_avg_s = 0.0
-        self._last_cycle_time_ms = int(self._nominal_cycle_time_s * 1000)
         self.total_downtime_s = 0.0
         self.total_busy_time_s = 0.0
         self.last_busy_start_s = 0.0
         self.failure_count = 0
+        self.energy_kwh = 0.0  # Reset energy counter
 
     def start_cycle(self, recipe_id: int):
         """Starts a cycle; returns False if already busy."""
         if self._busy:
             return False
-        
         # Recipe-based timing (preserve existing behavior)
         base_time = 14.0 if recipe_id == 1 else self._nominal_cycle_time_s
         jitter = 1.0 + random.uniform(-self._cycle_time_jitter, self._cycle_time_jitter)
         self._current_cycle_time_s = max(2.0, base_time * jitter)
-        
         self.state = "RUNNING"
         self._busy = True
         self._done_latched = False
         self._ready = False
         self._fault = False
         self._cycle_start_s = self.env.now
-        self.last_busy_start_s = self.env.now  # Start tracking busy time
-        
+        self.last_busy_start_s = self.env.now  # Start tracking busy time + energy
         self._cycle_proc = self.env.process(self._run_cycle())
         print(f"  FixedFrameCoreHandler: Starting cycle at env.now={self.env.now:.3f}s, expected={self._current_cycle_time_s:.3f}s")
         return True
 
     def _run_cycle(self):
         try:
-            # STEP 1: Simulate normal processing time
-            yield self.env.timeout(self._current_cycle_time_s)
+            # STEP 1: Simulate normal processing time (ENERGY CONSUMED DURING OPERATION)
+            processing_time = self._current_cycle_time_s
+            yield self.env.timeout(processing_time)
+            
+            # Accumulate energy for processing time (W × seconds → kWh)
+            energy_ws = self._power_rating_w * processing_time
+            self.energy_kwh += energy_ws / 3.6e6  # Convert W·s to kWh
+            print(f"  ⚡ ENERGY: Consumed {energy_ws/1000:.2f} kJ ({energy_ws/3.6e6:.4f} kWh) during processing")
             
             # STEP 2: Calculate actual cycle time & update averages
             actual_time_s = self.env.now - self._cycle_start_s
@@ -148,7 +155,7 @@ class FixedFrameCoreHandler:
             
             # STEP 3: Check for failure AFTER processing completes (realistic failure model)
             if random.random() < self._failure_rate:
-                # Failure occurred - simulate downtime
+                # Failure occurred - simulate downtime (NO ENERGY CONSUMED DURING MTTR)
                 self.failure_count += 1
                 failure_start = self.env.now
                 print(f"  ⚠️  FAILURE at {failure_start:.3f}s (cycle #{self._total_cycles})")
@@ -157,7 +164,7 @@ class FixedFrameCoreHandler:
                 self._fault = True
                 self._busy = False
                 
-                # Simulate repair time (MTTR)
+                # Simulate repair time (MTTR) - NO ENERGY CONSUMED during repair (station powered down)
                 yield self.env.timeout(self._mttr_s)
                 
                 # Repair complete
@@ -169,7 +176,6 @@ class FixedFrameCoreHandler:
                 # Exit fault state
                 self._fault = False
                 self.state = "IDLE"
-                
                 # DO NOT update production counters - part is lost during failure
                 return
             
@@ -200,13 +206,17 @@ class FixedFrameCoreHandler:
             self._done_latched = False
             self._fault = False
             
-            # Accumulate partial busy time on interrupt
+            # Accumulate partial busy time + energy on interrupt
             if self.last_busy_start_s > 0:
-                self.total_busy_time_s += (self.env.now - self.last_busy_start_s)
-                self.last_busy_start_s = 0.0
-            
+                partial_time = self.env.now - self.last_busy_start_s
+                self.total_busy_time_s += partial_time
+                # Partial energy consumption
+                energy_ws = self._power_rating_w * partial_time
+                self.energy_kwh += energy_ws / 3.6e6
+                print(f"  ⚡ ENERGY: Partial consumption {energy_ws/3.6e6:.4f} kWh due to interrupt")
+            self.last_busy_start_s = 0.0
+        finally:
             self._cycle_proc = None
-            self.state = "IDLE"
 
     def stop_cycle(self):
         if self._cycle_proc:
@@ -215,13 +225,17 @@ class FixedFrameCoreHandler:
         self._busy = False
         self._done_latched = False
         self._fault = False
-        
-        # Accumulate partial busy time on stop
+        # Accumulate partial busy time + energy on stop
         if self.last_busy_start_s > 0:
-            self.total_busy_time_s += (self.env.now - self.last_busy_start_s)
+            partial_time = self.env.now - self.last_busy_start_s
+            self.total_busy_time_s += partial_time
+            # Partial energy consumption
+            energy_ws = self._power_rating_w * partial_time
+            self.energy_kwh += energy_ws / 3.6e6
+            print(f"  ⚡ ENERGY: Stop command - partial consumption {energy_ws/3.6e6:.4f} kWh")
             self.last_busy_start_s = 0.0
 
-    # NEW: KPI getters for Week 2
+    # NEW: KPI getters for Week 2 + ENERGY
     def get_utilization(self, total_sim_time_s: float) -> float:
         """Calculate station utilization (busy time / total time)"""
         if total_sim_time_s <= 0:
@@ -241,14 +255,24 @@ class FixedFrameCoreHandler:
     def get_failure_count(self) -> int:
         return self.failure_count
 
+    # NEW: Energy getters (Siemens requirement)
+    def get_energy_kwh(self) -> float:
+        """Get total energy consumed in kWh"""
+        return self.energy_kwh
+
+    def get_energy_per_unit_kwh(self) -> float:
+        """Get energy consumed per completed unit (kWh/unit)"""
+        if self._completed > 0:
+            return self.energy_kwh / self._completed
+        return 0.0
 
 class ST2_FixedSimRuntime:
     def __init__(self):
         # Load config ONCE at simulation start (VSI constraint: no runtime changes)
         self.config = self._load_config()
         print(f"ST2_FixedSimRuntime: Loaded config from line_config.json -> cycle_time={self.config['cycle_time_s']}s, "
-              f"failure_rate={self.config['failure_rate']}, mttr={self.config['mttr_s']}s")
-        
+              f"failure_rate={self.config['failure_rate']}, mttr={self.config['mttr_s']}s, "
+              f"power={self.config['power_rating_w']}W")
         self.env = simpy.Environment()
         self.handler = FixedFrameCoreHandler(self.env, self.config)
         
@@ -267,7 +291,8 @@ class ST2_FixedSimRuntime:
             "cycle_time_s": 12.0,
             "failure_rate": 0.0,
             "mttr_s": 0.0,
-            "buffer_capacity": 2
+            "buffer_capacity": 2,
+            "power_rating_w": 2200  # Default power rating for S2 (frame assembly with heavy robots)
         }
         
         if os.path.exists(config_path):
@@ -276,7 +301,12 @@ class ST2_FixedSimRuntime:
                     full_config = json.load(f)
                     # Extract S2-specific config
                     if "stations" in full_config and "S2" in full_config["stations"]:
-                        return full_config["stations"]["S2"]
+                        cfg = full_config["stations"]["S2"]
+                        # Ensure power_rating_w exists (backwards compatibility)
+                        if "power_rating_w" not in cfg:
+                            cfg["power_rating_w"] = default_config["power_rating_w"]
+                            print(f"  ⚠️  ST2: power_rating_w not in config - using default {default_config['power_rating_w']}W")
+                        return cfg
                     else:
                         print(f"  ⚠️  WARNING: line_config.json missing 'stations.S2' section - using defaults")
                         return default_config
@@ -350,10 +380,8 @@ class ST2_FixedSimRuntime:
     def get_outputs(self):
         # Ready = not busy AND not fault AND run_latched is False (idle)
         ready_signal = 1 if (not self.handler._busy and not self.handler._fault and not self._run_latched) else 0
-        
         # Done is latched until PLC clears cmd_start
         done_signal = 1 if self.handler._done_latched else 0
-        
         out = (
             ready_signal,
             1 if self.handler._busy else 0,
@@ -368,9 +396,10 @@ class ST2_FixedSimRuntime:
         return out
 
     def export_kpis(self, total_sim_time_s: float) -> dict:
-        """Export structured KPIs for optimizer (Week 2 deliverable)"""
+        """Export structured KPIs for optimizer (Week 2 deliverable + ENERGY)"""
         utilization = self.handler.get_utilization(total_sim_time_s)
         availability = self.handler.get_availability(total_sim_time_s)
+        energy_per_unit = self.handler.get_energy_per_unit_kwh()
         
         return {
             "station": "S2",
@@ -383,13 +412,18 @@ class ST2_FixedSimRuntime:
             "utilization_pct": utilization,
             "availability_pct": availability,
             "avg_cycle_time_s": self.handler._cycle_time_avg_s,
+            # ENERGY METRICS (Siemens requirement)
+            "energy_kwh": self.handler.get_energy_kwh(),
+            "energy_per_unit_kwh": energy_per_unit,
+            "power_rating_w": self.config["power_rating_w"],
             "config": {
                 "cycle_time_s": self.config["cycle_time_s"],
                 "failure_rate": self.config["failure_rate"],
                 "mttr_s": self.config["mttr_s"],
-                "buffer_capacity": self.config["buffer_capacity"]
+                "power_rating_w": self.config["power_rating_w"]
             }
         }
+
 # End of user custom code region. Please don't edit beyond this point.
 
 class ST2_FrameCoreAssembly:
@@ -469,10 +503,20 @@ class ST2_FrameCoreAssembly:
                     self._sim.step(dt_s)
                     
                     # Get outputs from SimPy
-                    (self.mySignals.ready, self.mySignals.busy, self.mySignals.fault,
-                     self.mySignals.done, self.mySignals.cycle_time_ms, self.mySignals.completed,
-                     self.mySignals.scrapped, self.mySignals.reworks,
-                     self.mySignals.cycle_time_avg_s) = self._sim.get_outputs()
+                    (ready, busy, fault, done, cycle_time_ms,
+                     completed, scrapped, reworks,
+                     cycle_time_avg_s) = self._sim.get_outputs()
+                    
+                    # Copy SimPy outputs into VSI signals
+                    self.mySignals.ready = int(ready)
+                    self.mySignals.busy = int(busy)
+                    self.mySignals.fault = int(fault)
+                    self.mySignals.done = int(done)
+                    self.mySignals.cycle_time_ms = int(cycle_time_ms)
+                    self.mySignals.completed = int(completed)
+                    self.mySignals.scrapped = int(scrapped)
+                    self.mySignals.reworks = int(reworks)
+                    self.mySignals.cycle_time_avg_s = cycle_time_avg_s
                     
                     # Update previous states
                     self._prev_cmd_start = int(self.mySignals.cmd_start)
@@ -484,10 +528,11 @@ class ST2_FrameCoreAssembly:
                         total_sim_time_s = (vsiCommonPythonApi.getSimulationTimeInNs() - self._sim_start_time_ns) / 1e9
                         utilization = self._sim.handler.get_utilization(total_sim_time_s)
                         availability = self._sim.handler.get_availability(total_sim_time_s)
+                        energy_per_unit = self._sim.handler.get_energy_per_unit_kwh()
                         print(f"  📊 ST2 KPIs (cycle #{self._sim.handler._total_cycles}): "
                               f"utilization={utilization:.1f}%, availability={availability:.1f}%, "
-                              f"failures={self._sim.handler.get_failure_count()}, "
-                              f"downtime={self._sim.handler.get_total_downtime_s():.1f}s")
+                              f"energy={self._sim.handler.get_energy_kwh():.4f}kWh, energy/unit={energy_per_unit:.4f}kWh/unit, "
+                              f"failures={self._sim.handler.get_failure_count()}, downtime={self._sim.handler.get_total_downtime_s():.1f}s")
                 # End of user custom code region. Please don't edit beyond this point.
                 #Send ethernet packet to PLC_LineCoordinator
                 self.sendEthernetPacketToPLC_LineCoordinator()
@@ -553,6 +598,8 @@ class ST2_FrameCoreAssembly:
                     json.dump(kpis, f, indent=2)
                 print(f"\n✅ ST2 KPIs exported to {kpi_file}")
                 print(f"   Throughput: {(kpis['completed'] / total_sim_time_s) * 3600:.1f} units/hour")
+                print(f"   Energy: {kpis['energy_kwh']:.4f} kWh total")
+                print(f"   Energy per unit: {kpis['energy_per_unit_kwh']:.4f} kWh/unit")
                 print(f"   Utilization: {kpis['utilization_pct']:.1f}%")
                 print(f"   Availability: {kpis['availability_pct']:.1f}%")
                 print(f"   Failures: {kpis['failure_count']}")
