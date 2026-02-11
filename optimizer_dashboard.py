@@ -4,7 +4,7 @@ Siemens Digital Twin Optimizer Dashboard
 - Edit scenarios via UI sliders
 - One-click simulation runs
 - Real-time bottleneck analysis & energy metrics
-- Export-ready reports for Siemens proposal
+- Export-ready reports for Validation
 """
 import os
 import json
@@ -61,7 +61,7 @@ DASHBOARD_HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏭 Siemens Digital Twin Optimizer</title>
+    <title>🏭 Smart Factory Digital Twin Optimizer</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         :root { --primary: #0066b3; --success: #28a745; --warning: #ffc107; --danger: #dc3545; }
@@ -133,7 +133,7 @@ DASHBOARD_HTML = """
 </head>
 <body>
     <header>
-        <h1>🏭 Siemens Digital Twin Optimizer</h1>
+        <h1>🏭 Smart Factory Digital Twin Optimizer</h1>
         <div class="subtitle">Parameterized Simulation • Bottleneck Analysis • Energy Optimization</div>
     </header>
 
@@ -256,7 +256,7 @@ DASHBOARD_HTML = """
         <div id="report-tab" class="tab-content">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title">📑 Siemens Optimization Report</div>
+                    <div class="card-title">📑 Smart Factory Optimization Report</div>
                     <button class="btn-success" onclick="exportReport()">
                         <i>📤</i> Export Report (PDF/JSON)
                     </button>
@@ -313,7 +313,7 @@ DASHBOARD_HTML = """
     </div>
 
     <footer>
-        <p>Siemens Digital Twin Optimizer • Week 3 Deliverable • Production Line: 3D Printer Assembly</p>
+        <p>Smart Factory Digital Twin Optimizer • Week 3 Deliverable • Production Line: 3D Printer Assembly</p>
         <p>Optimization Engine v1.0 • Energy Tracking Compliant with ISO 50001</p>
     </footer>
 
@@ -878,7 +878,7 @@ def load_scenario(name):
 def export_report():
     """Generate and export optimization report"""
     # Generate PDF report (simplified - in real app would use reportlab or similar)
-    report_content = f"""Siemens Digital Twin Optimization Report
+    report_content = f"""Smart Factory Digital Twin Optimization Report
     ========================================
     Date: {time.strftime('%Y-%m-%d %H:%M:%S')}
     Production Line: 3D Printer Assembly (6 Stations)
@@ -906,8 +906,6 @@ def export_report():
     ✅ Bottleneck identification via utilization analysis
     ✅ Quantifiable optimization with ROI calculation
     
-    This report satisfies all Siemens digital twin requirements for 
-    production line optimization and energy efficiency analysis.
     """
     
     # Return as downloadable text file (real app would generate PDF)
@@ -924,7 +922,7 @@ def export_report():
 
 if __name__ == '__main__':
     print("\n" + "="*70)
-    print(" SIEMENS DIGITAL TWIN OPTIMIZER DASHBOARD")
+    print(" SMART FACTORY DIGITAL TWIN OPTIMIZER DASHBOARD")
     print("="*70)
     print("\n✅ Dashboard started successfully!")
     print("\n👉 Open in your browser: http://localhost:8050")
@@ -932,7 +930,7 @@ if __name__ == '__main__':
     print("   • Edit S4 bottleneck parameters via sliders")
     print("   • One-click simulation runs (vsisim integration)")
     print("   • Real-time bottleneck analysis & energy metrics")
-    print("   • Export-ready reports for Siemens proposal validation")
+    print("   • Export-ready reports for validation")
     print("\n⚠️  Requirements:")
     print("   • VSI must be installed with vsisim in your PATH")
     print("   • Python packages: flask (pip install flask)")
