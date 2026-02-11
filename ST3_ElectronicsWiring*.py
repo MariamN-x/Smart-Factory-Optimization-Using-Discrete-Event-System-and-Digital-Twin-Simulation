@@ -275,20 +275,14 @@ class ST3_SimRuntime:
             
             # Determine final status
             if not strain_ok or not cont_ok:
-                print(f"  ST3_SimRuntime._cycle: FINAL QUALITY FAIL - setting fault (strain_ok={strain_ok}, cont_ok={cont_ok})")
-                self._fault_latched = True
+                print(f"  ST3_SimRuntime._cycle: Quality fail - part scrapped (not system fault)")
+                # self._fault_latched = True
                 self._done_pulse = False  # No done pulse on fault
             else:
-                print(f"  ST3_SimRuntime._cycle: SUCCESS at env.now={end_time:.3f}s, "
-                      f"cycle_time={self._cycle_time_ms}ms")
+                print(f"  ST3_SimRuntime._cycle: SUCCESS at env.now={end_time:.3f}s")
                 self._strain_relief_ok = 1 if strain_ok else 0
                 self._continuity_ok = 1 if cont_ok else 0
                 self._done_pulse = True
-                self.completed_cycles += 1
-                if strain_ok:
-                    self.total_strain_ok += 1
-                if cont_ok:
-                    self.total_continuity_ok += 1
             
             # Accumulate busy time for successful/quality-failed cycles
             if self.last_busy_start_s > 0:
