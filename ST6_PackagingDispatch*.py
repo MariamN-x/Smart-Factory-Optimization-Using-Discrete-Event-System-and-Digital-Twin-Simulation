@@ -45,50 +45,58 @@ import random
 import simpy
 
 # -----------------------------
-# Station 6: Packaging + Dispatch (Parameterized SimPy core)
+# Station 6: Packaging + Dispatch (Parameterized SimPy core with ENERGY TRACKING)
 # -----------------------------
-class _ST6SimModel:
-    def __init__(self, random_seed: int = 6, config: dict = None):
-        random.seed(int(random_seed))
-        self.env = simpy.Environment()
+class FixedPackagingStation:
+    """
+    Parameterized station for packaging/dispatch with config-driven cycle time, failures, and KPI tracking.
+    Includes energy consumption tracking like other stations.
+    """
+    def __init__(self, env: simpy.Environment, config: dict):
+        self.env = env
+        self.config = config  # Store config for entire simulation run
         
-        # Load config parameters ONCE at init (VSI constraint: no runtime changes)
-        self.config = config or {
-            "cycle_time_s": 6.7,   # Base cycle time (sum of all steps without refills/repairs)
-            "failure_rate": 0.0,   # Probability of catastrophic failure per cycle
-            "mttr_s": 0.0,         # Mean Time To Repair for catastrophic failures
-            "buffer_capacity": 2
-        }
+        # Load parameters ONCE at init (VSI constraint: no runtime changes)
+        self._nominal_cycle_time_s = config.get("cycle_time_s", 6.7)
+        self._failure_rate = config.get("failure_rate", 0.0)
+        self._mttr_s = config.get("mttr_s", 0.0)
+        self._buffer_capacity = config.get("buffer_capacity", 2)
+        self._power_rating_w = config.get("power_rating_w", 2000)  # Moderate power for packaging
         
-        # State
-        self.busy = False
-        self.fault_latched = False
-        self._unit_done = False
-        self._unit_decision = None  # True=success, False=catastrophic failure
+        # State variables
+        self.state = "IDLE"
+        self._cycle_proc = None
+        self._busy = False
+        self._fault = False
+        self._done_pulse = False
+        
+        # Cycle timing
+        self._cycle_start_s = 0
+        self._cycle_end_s = 0
+        self._actual_cycle_time_ms = 0
+        self._cycle_count = 0
+        self._cycle_time_sum_ms = 0
         
         # Stocks (preserve existing material handling)
         self.carton_stock = 12
         self.tape_stock = 12
         self.label_stock = 12
         
-        # KPIs (preserve existing counters)
-        self.packages_completed_total = 0
-        self.arm_cycles_total = 0
-        self.total_repairs_count = 0
+        # KPI tracking
+        self.packages_completed = 0
+        self.arm_cycles = 0
+        self.total_repairs = 0
         self.operational_time_s = 0.0
         self.downtime_s = 0.0
         self.availability = 0.0
+        self.total_downtime_s = 0.0
+        self.total_busy_time_s = 0.0
+        self.last_busy_start_s = 0.0
+        self.failure_count = 0
+        self.completed_cycles = 0
         
-        # NEW: KPI tracking for Week 2
-        self.total_downtime_s = 0.0          # Accumulated downtime from catastrophic failures
-        self.total_busy_time_s = 0.0         # Accumulated productive time (excluding MTTR)
-        self.last_busy_start_s = 0.0         # For tracking current busy period
-        self.failure_count = 0               # Total catastrophic failures occurred
-        self.completed_cycles = 0            # Successful cycles (excluding catastrophic failures)
-        
-        # Last cycle timing
-        self.last_cycle_time_s = 0.0
-        self._active_proc = None
+        # ENERGY TRACKING (Siemens requirement)
+        self.energy_kwh = 0.0
         
         # Base timing constants (seconds) - used for proportional scaling
         self._T_CARTON_ERECT_S = 1.0
@@ -100,24 +108,209 @@ class _ST6SimModel:
         
         # Scale factor based on config cycle time (base = 6.7s)
         base_cycle = 6.7
-        self._scale = max(0.1, self.config["cycle_time_s"] / base_cycle)
+        self._scale = max(0.1, self._nominal_cycle_time_s / base_cycle)
         
-        print(f"  _ST6SimModel INITIALIZED with config:")
-        print(f"    cycle_time_s={self.config['cycle_time_s']} (scale={self._scale:.2f}), "
-              f"failure_rate={self.config['failure_rate']}, mttr_s={self.config['mttr_s']}")
+        print(f"  FixedPackagingStation INITIALIZED with config:")
+        print(f"    cycle_time_s={self._nominal_cycle_time_s} (scale={self._scale:.2f}), "
+              f"failure_rate={self._failure_rate}, mttr_s={self._mttr_s}, "
+              f"power_rating_w={self._power_rating_w}W")
+
+    def start_cycle(self, start_time_s: float):
+        """Start a new packaging cycle - ONLY called on cmd_start rising edge"""
+        if self._cycle_proc is not None or self._busy:
+            print(f"  WARNING: FixedPackagingStation.start_cycle called but already busy!")
+            return False
+        print(f"  FixedPackagingStation: Starting job at env.now={self.env.now:.3f}s")
+        self.state = "RUNNING"
+        self._busy = True
+        self._done_pulse = False
+        self._cycle_start_s = start_time_s
+        self._actual_cycle_time_ms = 0
+        # Track busy time start for utilization + energy KPIs
+        self.last_busy_start_s = self.env.now
+        self._cycle_proc = self.env.process(self._packaging_cycle())
+        return True
+
+    def _packaging_cycle(self):
+        """Run a single packaging cycle with probabilistic failure simulation + ENERGY TRACKING"""
+        try:
+            t0 = self.env.now
+            total_energy_time = 0.0
+            
+            # Check / refill materials (preserve existing logic)
+            if self.carton_stock <= 0:
+                refill_time = 4.0
+                yield self.env.timeout(refill_time)
+                self.carton_stock = 25
+                self.downtime_s += refill_time  # Refill is downtime
+            if self.tape_stock <= 0:
+                refill_time = 3.0
+                yield self.env.timeout(refill_time)
+                self.tape_stock = 25
+                self.downtime_s += refill_time
+            if self.label_stock <= 0:
+                refill_time = 3.5
+                yield self.env.timeout(refill_time)
+                self.label_stock = 25
+                self.downtime_s += refill_time
+            
+            # Step 1: carton erect (scaled)
+            step_time = self._T_CARTON_ERECT_S * self._scale
+            yield self.env.timeout(step_time)
+            self.carton_stock -= 1
+            self.operational_time_s += step_time
+            total_energy_time += step_time
+            
+            # Step 2: robot pick+place (scaled)
+            step_time = self._T_ROBOT_PICKPLACE_S * self._scale
+            yield self.env.timeout(step_time)
+            self.arm_cycles += 1
+            self.operational_time_s += step_time
+            total_energy_time += step_time
+            
+            # Step 3: flap fold (scaled)
+            step_time = self._T_FLAP_FOLD_S * self._scale
+            yield self.env.timeout(step_time)
+            self.operational_time_s += step_time
+            total_energy_time += step_time
+            
+            # Step 4: tape seal (scaled)
+            if self.tape_stock <= 0:
+                refill_time = 3.0
+                yield self.env.timeout(refill_time)
+                self.tape_stock = 25
+                self.downtime_s += refill_time
+            step_time = self._T_TAPE_SEAL_S * self._scale
+            yield self.env.timeout(step_time)
+            self.tape_stock -= 1
+            self.operational_time_s += step_time
+            total_energy_time += step_time
+            
+            # Step 5: label apply (scaled)
+            if self.label_stock <= 0:
+                refill_time = 3.5
+                yield self.env.timeout(refill_time)
+                self.label_stock = 25
+                self.downtime_s += refill_time
+            step_time = self._T_LABEL_APPLY_S * self._scale
+            yield self.env.timeout(step_time)
+            self.label_stock -= 1
+            self.operational_time_s += step_time
+            total_energy_time += step_time
+            
+            # Step 6: outfeed (scaled)
+            step_time = self._T_OUTFEED_S * self._scale
+            yield self.env.timeout(step_time)
+            self.operational_time_s += step_time
+            total_energy_time += step_time
+            
+            # Accumulate energy for processing time (W × seconds → kWh)
+            energy_ws = self._power_rating_w * total_energy_time
+            self.energy_kwh += energy_ws / 3.6e6  # Convert W·s to kWh
+            
+            # Update availability calculation
+            self._update_availability()
+            
+            # STEP 7: Check for catastrophic failure AFTER all steps complete
+            if random.random() < self._failure_rate:
+                # Catastrophic failure occurred
+                self.failure_count += 1
+                failure_start = self.env.now
+                print(f"  ⚠️  CATASTROPHIC FAILURE at {failure_start:.3f}s (cycle #{self._cycle_count+1})")
+                
+                # Enter fault state
+                self._fault = True
+                self._busy = False
+                
+                # Accumulate busy time BEFORE failure
+                self.total_busy_time_s += (failure_start - self.last_busy_start_s)
+                
+                # Simulate repair time (MTTR) - NO ENERGY CONSUMED during repair
+                yield self.env.timeout(self._mttr_s)
+                
+                # Repair complete
+                repair_end = self.env.now
+                downtime = repair_end - failure_start
+                self.total_downtime_s += downtime
+                self.downtime_s += downtime
+                print(f"  ✅ REPAIR complete at {repair_end:.3f}s (downtime={downtime:.2f}s)")
+                
+                # Exit fault state
+                self._fault = False
+                self.state = "IDLE"
+                return
+            
+            # SUCCESS: Package completed successfully
+            self._cycle_end_s = self.env.now
+            actual_time_s = self._cycle_end_s - self._cycle_start_s
+            self._actual_cycle_time_ms = int(actual_time_s * 1000)
+            
+            # Update counters
+            self._cycle_count += 1
+            self._cycle_time_sum_ms += self._actual_cycle_time_ms
+            self.packages_completed += 1
+            self.completed_cycles += 1
+            
+            # Accumulate busy time for successful cycle
+            self.total_busy_time_s += (self.env.now - self.last_busy_start_s)
+            
+            print(f"  FixedPackagingStation: Package completed at env.now={self.env.now:.3f}s, "
+                  f"actual_time={self._actual_cycle_time_ms}ms, total={self.packages_completed}")
+            
+            self._busy = False
+            self._done_pulse = True
+            self.state = "COMPLETE"
+            
+        except simpy.Interrupt:
+            print("  FixedPackagingStation: Cycle interrupted by stop command")
+            self._busy = False
+            self._done_pulse = False
+            self.state = "IDLE"
+            # Accumulate partial busy time + energy
+            if self.last_busy_start_s > 0:
+                partial_time = self.env.now - self.last_busy_start_s
+                self.total_busy_time_s += partial_time
+                # Partial energy consumption
+                energy_ws = self._power_rating_w * partial_time
+                self.energy_kwh += energy_ws / 3.6e6
+            self.last_busy_start_s = 0.0
+        finally:
+            self._cycle_proc = None
+
+    def stop_cycle(self):
+        """Stop any running job"""
+        if self._cycle_proc is not None:
+            self._cycle_proc.interrupt()
+        self._busy = False
+        self._done_pulse = False
+        self.state = "IDLE"
+        # Accumulate partial busy time + energy on stop
+        if self.last_busy_start_s > 0:
+            partial_time = self.env.now - self.last_busy_start_s
+            self.total_busy_time_s += partial_time
+            # Partial energy consumption
+            energy_ws = self._power_rating_w * partial_time
+            self.energy_kwh += energy_ws / 3.6e6
+            self.last_busy_start_s = 0.0
 
     def reset(self):
-        self.env = simpy.Environment()
-        self.busy = False
-        self.fault_latched = False
-        self._unit_done = False
-        self._unit_decision = None
+        """Full reset - reloads config parameters (for new simulation run)"""
+        print("  FixedPackagingStation: FULL RESET")
+        self.stop_cycle()
+        self.state = "IDLE"
+        self._busy = False
+        self._fault = False
+        self._done_pulse = False
+        self._cycle_proc = None
+        self._actual_cycle_time_ms = int(self._nominal_cycle_time_s * 1000)
+        self._cycle_count = 0
+        self._cycle_time_sum_ms = 0
         self.carton_stock = 12
         self.tape_stock = 12
         self.label_stock = 12
-        self.packages_completed_total = 0
-        self.arm_cycles_total = 0
-        self.total_repairs_count = 0
+        self.packages_completed = 0
+        self.arm_cycles = 0
+        self.total_repairs = 0
         self.operational_time_s = 0.0
         self.downtime_s = 0.0
         self.availability = 0.0
@@ -126,186 +319,285 @@ class _ST6SimModel:
         self.last_busy_start_s = 0.0
         self.failure_count = 0
         self.completed_cycles = 0
-        self.last_cycle_time_s = 0.0
-        self._active_proc = None
+        self.energy_kwh = 0.0
 
-    def step(self, dt_s: float):
-        if dt_s <= 0:
-            return
-        target = self.env.now + float(dt_s)
-        self.env.run(until=target)
-        # Check if process completed during this step
-        if self._active_proc and not self._active_proc.is_alive and self.busy:
-            self.busy = False
-            self._unit_done = True
+    def is_busy(self):
+        return self._busy
 
-    def get_done_pulse(self) -> bool:
-        """Return True if a unit just completed, then clear the flag"""
-        if self._unit_done:
-            self._unit_done = False
-            return True
-        return False
+    def is_fault(self):
+        return self._fault
 
-    def start_unit(self, batch_id: int, recipe_id: int) -> bool:
-        if self.fault_latched or self.busy:
-            return False
-        self.busy = True
-        self._unit_done = False
-        self._unit_decision = None
-        self.last_busy_start_s = self.env.now  # Start tracking busy time
-        self._active_proc = self.env.process(self._pack_one_unit(batch_id, recipe_id))
-        return True
-    
-    # NEW: KPI getters for Week 2
+    def get_done_pulse(self):
+        return self._done_pulse
+
+    def clear_done_pulse(self):
+        """Clear done pulse after it's been read"""
+        was_set = self._done_pulse
+        self._done_pulse = False
+        return was_set
+
+    def get_cycle_time_ms(self):
+        return self._actual_cycle_time_ms if self._actual_cycle_time_ms > 0 else int(self._nominal_cycle_time_s * 1000)
+
+    def get_avg_cycle_time_ms(self):
+        if self._cycle_count > 0:
+            return int(self._cycle_time_sum_ms / self._cycle_count)
+        return int(self._nominal_cycle_time_s * 1000)
+
+    def has_active_proc(self):
+        return self._cycle_proc is not None
+
+    def _update_availability(self):
+        """Update availability percentage"""
+        total = self.operational_time_s + self.downtime_s
+        if total > 0:
+            self.availability = (self.operational_time_s / total) * 100.0
+        else:
+            self.availability = 0.0
+
+    # KPI getters
     def get_utilization(self, total_sim_time_s: float) -> float:
-        """Calculate station utilization (busy time / total time)"""
         if total_sim_time_s <= 0:
             return 0.0
         return (self.total_busy_time_s / total_sim_time_s) * 100.0
 
-    def get_availability(self, total_sim_time_s: float) -> float:
-        """Calculate station availability (uptime / total time)"""
+    def get_availability_kpi(self, total_sim_time_s: float) -> float:
         if total_sim_time_s <= 0:
             return 0.0
         uptime = total_sim_time_s - self.total_downtime_s
         return (uptime / total_sim_time_s) * 100.0
 
-    # -------- helpers (preserve existing logic) --------
-    def _update_availability(self):
-        total = self.operational_time_s + self.downtime_s
-        if total > 0:
-            self.availability = (self.operational_time_s / total * 100.0)
+    def get_total_downtime_s(self) -> float:
+        return self.total_downtime_s
+
+    def get_failure_count(self) -> int:
+        return self.failure_count
+
+    # ENERGY getters (Siemens requirement)
+    def get_energy_kwh(self) -> float:
+        """Get total energy consumed in kWh"""
+        return self.energy_kwh
+
+    def get_energy_per_unit_kwh(self) -> float:
+        """Get energy consumed per completed unit (kWh/unit)"""
+        if self.packages_completed > 0:
+            return self.energy_kwh / self.packages_completed
+        return 0.0
+
+# VSI <-> SimPy Wrapper with CONFIG LOADING
+class ST6_SimRuntime:
+    def __init__(self):
+        # Load config ONCE at simulation start
+        self.config = self._load_config()
+        print(f"ST6_SimRuntime: Loaded config from line_config.json -> cycle_time={self.config['cycle_time_s']}s, "
+              f"failure_rate={self.config['failure_rate']}, mttr={self.config['mttr_s']}s, "
+              f"power={self.config['power_rating_w']}W")
+        
+        self.env = simpy.Environment()
+        self.station = FixedPackagingStation(self.env, self.config)
+        
+        # Handshake state
+        self._start_latched = False
+        self._prev_cmd_start = 0
+        self._prev_cmd_stop = 0
+        self._prev_cmd_reset = 0
+        
+        # Context from PLC
+        self.batch_id = 0
+        self.recipe_id = 0
+        
+        # Debug tracking
+        self._last_start_edge = False
+        self._last_step_dt = 0.0
+
+    def _load_config(self) -> dict:
+        """Load station parameters from external JSON config"""
+        config_path = "line_config.json"
+        default_config = {
+            "cycle_time_s": 6.7,
+            "failure_rate": 0.0,
+            "mttr_s": 0.0,
+            "buffer_capacity": 2,
+            "power_rating_w": 2000  # Default for S6 (packaging station)
+        }
+        
+        if os.path.exists(config_path):
+            try:
+                with open(config_path, 'r') as f:
+                    full_config = json.load(f)
+                    # Extract S6-specific config
+                    if "stations" in full_config and "S6" in full_config["stations"]:
+                        cfg = full_config["stations"]["S6"]
+                        # Ensure power_rating_w exists (backwards compatibility)
+                        if "power_rating_w" not in cfg:
+                            cfg["power_rating_w"] = default_config["power_rating_w"]
+                            print(f"  ⚠️  ST6: power_rating_w not in config - using default {default_config['power_rating_w']}W")
+                        return cfg
+                    else:
+                        print(f"  ⚠️  WARNING: line_config.json missing 'stations.S6' section - using defaults")
+                        return default_config
+            except Exception as e:
+                print(f"  ⚠️  WARNING: Error loading {config_path}: {e} - using defaults")
+                return default_config
         else:
-            self.availability = 0.0
+            print(f"  ⚠️  WARNING: {config_path} not found - using default parameters")
+            return default_config
 
-    def _downtime(self, seconds: float):
-        seconds = max(0.0, float(seconds))
-        self.downtime_s += seconds
-        self._update_availability()
-        return self.env.timeout(seconds)
+    def reset(self):
+        """Full reset - reloads config for new simulation run"""
+        print("  ST6_SimRuntime: FULL RESET (reloading config)")
+        self.config = self._load_config()  # Reload config for new run
+        self.env = simpy.Environment()
+        self.station = FixedPackagingStation(self.env, self.config)
+        self._start_latched = False
+        self._prev_cmd_start = 0
+        self._prev_cmd_stop = 0
+        self._prev_cmd_reset = 0
+        print("  ST6_SimRuntime: Reset complete - ready for new simulation")
 
-    def _operate(self, seconds: float):
-        seconds = max(0.0, float(seconds))
-        self.operational_time_s += seconds
-        self._update_availability()
-        return self.env.timeout(seconds)
+    def set_context(self, batch_id: int, recipe_id: int):
+        self.batch_id = int(batch_id)
+        self.recipe_id = int(recipe_id)
 
-    def _maybe_fault(self, p: float) -> bool:
-        if random.random() < float(p):
-            return True
-        return False
+    def update_handshake(self, cmd_start: int, cmd_stop: int, cmd_reset: int):
+        """Process PLC commands and update internal state"""
+        # Reset has highest priority
+        if cmd_reset and not self._prev_cmd_reset:
+            print("  ST6_SimRuntime: RESET command (rising edge)")
+            self.reset()
+            self._prev_cmd_reset = 1
+            return
+        self._prev_cmd_reset = int(cmd_reset)
+        
+        # Rising edge detection for start
+        start_edge = (cmd_start == 1 and self._prev_cmd_start == 0)
+        self._last_start_edge = start_edge
+        
+        # Stop command (rising edge) - immediate stop
+        if cmd_stop and not self._prev_cmd_stop:
+            print("  ST6_SimRuntime: STOP command (rising edge)")
+            self._start_latched = False
+            self.station.stop_cycle()
+            self._prev_cmd_stop = int(cmd_stop)
+        
+        # Start logic: ONLY on rising edge AND station idle AND no fault
+        if start_edge:
+            if not self.station.is_busy() and not self.station.is_fault():
+                print(f"  ST6_SimRuntime: START rising edge, station idle - starting cycle")
+                self._start_latched = True
+                self.station.start_cycle(self.env.now)
+            else:
+                fault_status = "FAULT" if self.station.is_fault() else "BUSY"
+                print(f"  ST6_SimRuntime: START rising edge but station {fault_status} - ignoring")
+        
+        # Keep start_latched during entire cycle
+        self._prev_cmd_start = int(cmd_start)
+        
+        # Safety check: if station is busy but start_latched is False, fix it
+        if self.station.is_busy() and not self._start_latched:
+            print("  ⚠️  ERROR: ST6_SimRuntime: station busy but start_latched=False! Fixing...")
+            self._start_latched = True
+        
+        # Safety check: if station has active process but busy flag is False, fix it
+        if self.station.has_active_proc() and not self.station.is_busy():
+            print("  ⚠️  ERROR: ST6_SimRuntime: active process but busy=False! Fixing...")
+            self.station._busy = True
 
-    def _refill(self, kind: str):
-        # simple refill delay (operator refills) - preserve existing logic
-        if kind == "carton":
-            yield self._downtime(4.0)
-            self.carton_stock = 25
-        elif kind == "tape":
-            yield self._downtime(3.0)
-            self.tape_stock = 25
-        elif kind == "label":
-            yield self._downtime(3.5)
-            self.label_stock = 25
-
-    def _repair(self, seconds: float = 5.0):
-        self.total_repairs_count += 1
-        yield self._downtime(seconds)
-
-    # -------- main process (enhanced with catastrophic failure) --------
-    def _pack_one_unit(self, batch_id: int, recipe_id: int):
-        t0 = self.env.now
+    def step(self, dt_s: float):
+        """Advance simulation ONLY when necessary"""
+        self._last_step_dt = dt_s
         
-        # Check / refill materials (preserve existing logic)
-        if self.carton_stock <= 0:
-            yield from self._refill("carton")
-        if self.tape_stock <= 0:
-            yield from self._refill("tape")
-        if self.label_stock <= 0:
-            yield from self._refill("label")
+        # Step SimPy ONLY if busy OR in fault state OR start_latched
+        should_step = self.station.is_busy() or self.station.is_fault() or self._start_latched
+        print(f"  ST6_SimRuntime step: env.now={self.env.now:.3f}s, dt_s={dt_s:.6f}s, "
+              f"start_latched={self._start_latched}, busy={self.station.is_busy()}, "
+              f"fault={self.station.is_fault()}, should_step={should_step}")
         
-        # Step 1: carton erect (scaled)
-        if self._maybe_fault(0.010):
-            yield from self._repair(5.0)
-        yield self._operate(self._T_CARTON_ERECT_S * self._scale)
-        self.carton_stock -= 1
-        
-        # Step 2: robot pick+place (scaled)
-        if self._maybe_fault(0.015):
-            yield from self._repair(6.0)
-        yield self._operate(self._T_ROBOT_PICKPLACE_S * self._scale)
-        self.arm_cycles_total += 1
-        
-        # Step 3: flap fold (scaled)
-        if self._maybe_fault(0.008):
-            yield from self._repair(4.5)
-        yield self._operate(self._T_FLAP_FOLD_S * self._scale)
-        
-        # Step 4: tape seal (scaled)
-        if self.tape_stock <= 0:
-            yield from self._refill("tape")
-        if self._maybe_fault(0.010):
-            yield from self._repair(5.5)
-        yield self._operate(self._T_TAPE_SEAL_S * self._scale)
-        self.tape_stock -= 1
-        
-        # Step 5: label apply (scaled)
-        if self.label_stock <= 0:
-            yield from self._refill("label")
-        if self._maybe_fault(0.010):
-            yield from self._repair(5.0)
-        yield self._operate(self._T_LABEL_APPLY_S * self._scale)
-        self.label_stock -= 1
-        
-        # Step 6: outfeed (scaled)
-        if self._maybe_fault(0.005):
-            yield from self._repair(4.0)
-        yield self._operate(self._T_OUTFEED_S * self._scale)
-        
-        # STEP 7: Check for CATASTROPHIC failure AFTER all steps complete (Week 2 deliverable)
-        # Represents jam, system crash, or critical fault that loses the entire package
-        if random.random() < self.config["failure_rate"]:
-            # Catastrophic failure occurred - simulate downtime
-            self.failure_count += 1
-            failure_start = self.env.now
-            
-            # Accumulate busy time BEFORE failure (all steps completed successfully)
-            if self.last_busy_start_s > 0:
-                self.total_busy_time_s += (failure_start - self.last_busy_start_s)
-                self.last_busy_start_s = 0.0
-            
-            # Enter fault state
-            self.fault_latched = True
-            self.busy = False
-            
-            # Simulate repair time (MTTR)
-            yield self._downtime(self.config["mttr_s"])
-            
-            # Repair complete - DO NOT increment package count (part lost)
-            repair_end = self.env.now
-            downtime = repair_end - failure_start
-            self.total_downtime_s += downtime  # Track catastrophic downtime separately
-            print(f"  ⚠️  ST6 CATASTROPHIC FAILURE at {failure_start:.3f}s - package lost (downtime={downtime:.2f}s)")
-            
-            # Exit fault state (reset happens externally via PLC)
-            self.fault_latched = False
-            self._unit_decision = False
-            self.last_cycle_time_s = float(self.env.now - t0)
+        # DO NOT step if stop command active and not in cycle/repair
+        if self._prev_cmd_stop and not (self.station.is_busy() or self.station.is_fault()):
+            print(f"  ST6_SimRuntime: NOT stepping - stop command active and idle")
             return
         
-        # SUCCESS: Package completed successfully
-        self.packages_completed_total += 1
-        self.completed_cycles += 1
-        self.last_cycle_time_s = float(self.env.now - t0)
+        # Only step if we should step
+        if should_step and dt_s > 0:
+            target_time = self.env.now + float(dt_s)
+            self.env.run(until=target_time)
+            print(f"  ST6_SimRuntime: Stepped to env.now={self.env.now:.3f}s")
         
-        # Accumulate busy time for successful cycle
-        if self.last_busy_start_s > 0:
-            self.total_busy_time_s += (self.env.now - self.last_busy_start_s)
-            self.last_busy_start_s = 0.0
-        
-        self._unit_decision = True
-        # Process will end here, busy flag will be cleared in step() when process dies
+        # Check for cycle completion and clear start_latched
+        if self.station.get_done_pulse():
+            print("  ST6_SimRuntime: Cycle completed, clearing start_latched")
+            self._start_latched = False
 
-# VSI <-> SimPy Wrapper with CONFIG LOADING (Week 2)
+    def outputs(self, total_sim_time_s: float):
+        """Get station outputs INCLUDING KPIs"""
+        busy = 1 if self.station.is_busy() else 0
+        fault = 1 if self.station.is_fault() else 0
+        packages_completed = self.station.packages_completed
+        arm_cycles = self.station.arm_cycles
+        total_repairs = self.station.total_repairs
+        operational_time_s = self.station.operational_time_s
+        downtime_s = self.station.downtime_s
+        
+        # Update station availability
+        self.station._update_availability()
+        availability = self.station.availability
+        
+        # Ready = not busy AND not fault (independent of start latch)
+        ready = 1 if (not busy and not fault) else 0
+        
+        # Done pulse for exactly ONE iteration after completion
+        done = 1 if self.station.get_done_pulse() else 0
+        
+        # Real cycle time
+        cycle_time_ms = self.station.get_cycle_time_ms()
+        
+        # Calculate utilization/availability for logging
+        utilization = self.station.get_utilization(total_sim_time_s)
+        availability_kpi = self.station.get_availability_kpi(total_sim_time_s)
+        
+        # Log KPIs every 10 cycles for visibility
+        if self.station.completed_cycles > 0 and self.station.completed_cycles % 10 == 0:
+            energy_per_unit = self.station.get_energy_per_unit_kwh()
+            print(f"  📊 ST6 KPIs (cycle #{self.station.completed_cycles}): "
+                  f"utilization={utilization:.1f}%, availability={availability_kpi:.1f}%, "
+                  f"energy={self.station.get_energy_kwh():.4f}kWh, energy/unit={energy_per_unit:.4f}kWh/unit, "
+                  f"failures={self.station.get_failure_count()}, downtime={self.station.get_total_downtime_s():.1f}s, "
+                  f"packages={packages_completed}, arm_cycles={arm_cycles}")
+        
+        return ready, busy, fault, done, cycle_time_ms, packages_completed, arm_cycles, total_repairs, operational_time_s, downtime_s, availability
+
+    def export_kpis(self, total_sim_time_s: float) -> dict:
+        """Export structured KPIs for optimizer (with ENERGY metrics)"""
+        energy_per_unit = self.station.get_energy_per_unit_kwh()
+        
+        return {
+            "station": "S6",
+            "packages_completed": self.station.packages_completed,
+            "arm_cycles": self.station.arm_cycles,
+            "total_repairs": self.station.total_repairs,
+            "completed_cycles": self.station.completed_cycles,
+            "catastrophic_failures": self.station.get_failure_count(),
+            "total_downtime_s": self.station.get_total_downtime_s(),
+            "operational_time_s": self.station.operational_time_s,
+            "downtime_s": self.station.downtime_s,
+            "station_availability_pct": self.station.availability,
+            "utilization_pct": self.station.get_utilization(total_sim_time_s),
+            "availability_pct": self.station.get_availability_kpi(total_sim_time_s),
+            "avg_cycle_time_ms": self.station.get_avg_cycle_time_ms(),
+            # ENERGY METRICS (Siemens requirement)
+            "energy_kwh": self.station.get_energy_kwh(),
+            "energy_per_unit_kwh": energy_per_unit,
+            "power_rating_w": self.config["power_rating_w"],
+            "config": {
+                "cycle_time_s": self.config["cycle_time_s"],
+                "failure_rate": self.config["failure_rate"],
+                "mttr_s": self.config["mttr_s"],
+                "power_rating_w": self.config["power_rating_w"]
+            }
+        }
+# End of user custom code region. Please don't edit beyond this point.
+
 class ST6_PackagingDispatch:
     def __init__(self, args):
         self.componentId = 6
@@ -324,52 +616,12 @@ class ST6_PackagingDispatch:
         self.expectedNumberOfBytes = 0
         self.mySignals = MySignals()
         # Start of user custom code region. Please apply edits only within these regions:  Constructor
-        # SimPy station model (will be initialized in reset)
-        self._st6 = None
-        # Handshake state variables (like ST1 pattern)
-        self._prev_cmd_start = 0
-        self._prev_cmd_reset = 0
-        self._prev_cmd_stop = 0
-        # Runtime state
-        self._start_latched = False
-        self._done_pulse_remaining = 0
-        # Timing
-        self._sim_dt_s = 0.1
-        # Station initialization
-        self._initialized = False
-        # Current batch/recipe
-        self._current_batch_id = 0
-        self._current_recipe_id = 0
-        self._sim_start_time_ns = 0  # For KPI calculation at end
+        self._sim = None
+        self._prev_done = 0
+        self.total_completed = 0
+        self._sim_start_time_ns = 0
+        print("ST6: Initializing...")
         # End of user custom code region. Please don't edit beyond this point.
-
-    def _load_config(self) -> dict:
-        """Load station parameters from external JSON config (Week 2 deliverable)"""
-        config_path = "line_config.json"
-        default_config = {
-            "cycle_time_s": 6.7,
-            "failure_rate": 0.0,
-            "mttr_s": 0.0,
-            "buffer_capacity": 2
-        }
-        
-        if os.path.exists(config_path):
-            try:
-                with open(config_path, 'r') as f:
-                    full_config = json.load(f)
-                    # Extract S6-specific config
-                    if "stations" in full_config and "S6" in full_config["stations"]:
-                        return full_config["stations"]["S6"]
-                    else:
-                        print(f"  ⚠️  WARNING: line_config.json missing 'stations.S6' section - using defaults")
-                        return default_config
-            except Exception as e:
-                print(f"  ⚠️  WARNING: Error loading {config_path}: {e} - using defaults")
-                return default_config
-        else:
-            print(f"  ⚠️  WARNING: {config_path} not found - using default parameters")
-            # Create default config file for user convenience (only done by ST1)
-            return default_config
 
     def mainThread(self):
         dSession = vsiCommonPythonApi.connectToServer(self.localHost, self.domain, self.portNum, self.componentId)
@@ -378,28 +630,9 @@ class ST6_PackagingDispatch:
             vsiCommonPythonApi.waitForReset()
             # Start of user custom code region. Please apply edits only within these regions:  After Reset
             self._sim_start_time_ns = vsiCommonPythonApi.getSimulationTimeInNs()
-            config = self._load_config()
-            self._st6 = _ST6SimModel(random_seed=6, config=config)
-            self._prev_cmd_start = 0
-            self._prev_cmd_reset = 0
-            self._prev_cmd_stop = 0
-            self._start_latched = False
-            self._done_pulse_remaining = 0
-            self._initialized = True
-            self._current_batch_id = 0
-            self._current_recipe_id = 0
-            # Initialize outputs
-            self.mySignals.ready = 0
-            self.mySignals.busy = 0
-            self.mySignals.fault = 0
-            self.mySignals.done = 0
-            self.mySignals.cycle_time_ms = 0
-            self.mySignals.packages_completed = 0
-            self.mySignals.arm_cycles = 0
-            self.mySignals.total_repairs = 0
-            self.mySignals.operational_time_s = 0
-            self.mySignals.downtime_s = 0
-            self.mySignals.availability = 0
+            self._sim = ST6_SimRuntime()
+            self._prev_done = 0
+            self.total_completed = 0
             print("ST6: Parameterized SimPy runtime initialized with config from line_config.json")
             # End of user custom code region. Please don't edit beyond this point.
             self.updateInternalVariables()
@@ -421,119 +654,48 @@ class ST6_PackagingDispatch:
                 if(receivedData[3] != 0):
                     self.decapsulateReceivedData(receivedData)
                 # Start of user custom code region. Please apply edits only within these regions:  Before sending the packet
-                # --- update dt from VSI ---
-                try:
-                    self._sim_dt_s = max(0.001, float(self.simulationStep) / 1e9)
-                except Exception:
-                    self._sim_dt_s = 0.1
-                
-                # --- Get current command states ---
-                cmd_start = 1 if self.mySignals.cmd_start else 0
-                cmd_stop = 1 if self.mySignals.cmd_stop else 0
-                cmd_reset = 1 if self.mySignals.cmd_reset else 0
-                
-                # --- Detect edges ---
-                start_edge = (cmd_start == 1 and self._prev_cmd_start == 0)
-                reset_edge = (cmd_reset == 1 and self._prev_cmd_reset == 0)
-                
-                # --- RESET handling (rising edge only) ---
-                if reset_edge:
-                    print("ST6: RESET rising edge detected")
-                    # Reload config for new simulation run
-                    config = self._load_config()
-                    self._st6 = _ST6SimModel(random_seed=6, config=config)
-                    # Clear all latches and outputs
-                    self._start_latched = False
-                    self._done_pulse_remaining = 0
-                    self._initialized = True  # Station is now initialized
-                    self.mySignals.ready = 1  # Ready after reset
-                    self.mySignals.busy = 0
-                    self.mySignals.fault = 0
-                    self.mySignals.done = 0
-                    self.mySignals.cycle_time_ms = 0
-                    self.mySignals.packages_completed = 0
-                    self.mySignals.arm_cycles = 0
-                    self.mySignals.total_repairs = 0
-                    self.mySignals.operational_time_s = 0
-                    self.mySignals.downtime_s = 0
-                    self.mySignals.availability = 0
-                
-                # --- START handling (one-shot pulse) ---
-                if start_edge and not cmd_stop and not cmd_reset and self._initialized:
-                    # Check if station is ready to start
-                    if (not self._st6.busy and not self._st6.fault_latched and
-                        not self._start_latched and self._done_pulse_remaining == 0):
-                        print(f"ST6: START edge latched (batch={self.mySignals.batch_id}, recipe={self.mySignals.recipe_id})")
-                        success = self._st6.start_unit(self.mySignals.batch_id, self.mySignals.recipe_id)
-                        if success:
-                            self._start_latched = True
-                            self.mySignals.ready = 0
-                            self.mySignals.busy = 1
-                            self._current_batch_id = self.mySignals.batch_id
-                            self._current_recipe_id = self.mySignals.recipe_id
-                
-                # --- STEP SimPy model (CRITICAL: step based on latched/busy state, NOT cmd_start) ---
-                # Step if start_latched OR busy OR done_pulse_remaining>0
-                should_step = (self._start_latched or self._st6.busy or self._done_pulse_remaining > 0) and self._initialized and not cmd_reset
-                # Stop command pauses stepping
-                if cmd_stop and not cmd_reset:
-                    should_step = False
-                    self.mySignals.ready = 0
-                
-                if should_step:
-                    # Debug log when stepping without cmd_start
-                    if cmd_start == 0 and (self._start_latched or self._st6.busy):
-                        print("ST6: stepping (latched/busy) cmd_start=0")
-                    self._st6.step(self._sim_dt_s)
-                
-                # --- CYCLE COMPLETION handling ---
-                if self._st6.get_done_pulse():
-                    print("ST6: Cycle complete -> emitting DONE pulse")
-                    # Update KPI counters from model (preserve existing counters)
-                    self.mySignals.packages_completed = int(self._st6.packages_completed_total)
-                    self.mySignals.arm_cycles = int(self._st6.arm_cycles_total)
-                    self.mySignals.total_repairs = int(self._st6.total_repairs_count)
-                    self.mySignals.operational_time_s = float(self._st6.operational_time_s)
-                    self.mySignals.downtime_s = float(self._st6.downtime_s)
-                    # Calculate availability (prevent NaN)
-                    total = self._st6.operational_time_s + self._st6.downtime_s
-                    if total > 0:
-                        self.mySignals.availability = float(self._st6.operational_time_s / total * 100.0)
-                    else:
-                        self.mySignals.availability = 0.0
-                    # Update cycle time
-                    self.mySignals.cycle_time_ms = int(self._st6.last_cycle_time_s * 1000.0)
-                    # Set done pulse
-                    self._done_pulse_remaining = 1
-                    self._start_latched = False
-                    self.mySignals.busy = 0
-                    self.mySignals.ready = 1
-                
-                # --- DONE pulse output (one-shot) ---
-                self.mySignals.done = 1 if self._done_pulse_remaining > 0 else 0
-                if self._done_pulse_remaining > 0:
-                    self._done_pulse_remaining -= 1
-                
-                # --- Update status outputs ---
-                # Busy and fault directly from model (but override if done pulse is active)
-                self.mySignals.busy = 1 if (self._st6.busy or self._start_latched) else 0
-                self.mySignals.fault = 1 if self._st6.fault_latched else 0
-                # READY logic: not busy, not start_latched, no done pulse active, not resetting
-                # Note: ready already set appropriately above
-                
-                # Save previous states for edge detection
-                self._prev_cmd_start = cmd_start
-                self._prev_cmd_stop = cmd_stop
-                self._prev_cmd_reset = cmd_reset
-                
-                # Log KPIs every 10 cycles for visibility
-                if self._st6.completed_cycles > 0 and self._st6.completed_cycles % 10 == 0:
+                # Process handshake and simulation stepping
+                if self._sim is not None:
+                    # Update context
+                    self._sim.set_context(self.mySignals.batch_id, self.mySignals.recipe_id)
+                    
+                    # Process PLC commands and update handshake state
+                    self._sim.update_handshake(
+                        self.mySignals.cmd_start,
+                        self.mySignals.cmd_stop,
+                        self.mySignals.cmd_reset
+                    )
+                    
+                    # Advance simulation time ONLY when appropriate
+                    dt_s = float(self.simulationStep) / 1e9 if self.simulationStep else 0.0
+                    self._sim.step(dt_s)
+                    
+                    # Get outputs from SimPy (pass total sim time for KPI calculation)
                     total_sim_time_s = (vsiCommonPythonApi.getSimulationTimeInNs() - self._sim_start_time_ns) / 1e9
-                    utilization = self._st6.get_utilization(total_sim_time_s)
-                    availability = self._st6.get_availability(total_sim_time_s)
-                    print(f"  📊 ST6 KPIs (cycle #{self._st6.completed_cycles}): "
-                          f"utilization={utilization:.1f}%, availability={availability:.1f}%, "
-                          f"catastrophic_failures={self._st6.failure_count}, downtime={self._st6.total_downtime_s:.1f}s")
+                    (ready, busy, fault, done, cycle_time_ms, packages_completed, 
+                     arm_cycles, total_repairs, operational_time_s, downtime_s, 
+                     availability) = self._sim.outputs(total_sim_time_s)
+                    
+                    # Copy SimPy outputs into VSI signals
+                    self.mySignals.ready = int(ready)
+                    self.mySignals.busy = int(busy)
+                    self.mySignals.fault = int(fault)
+                    self.mySignals.done = int(done)
+                    self.mySignals.cycle_time_ms = int(cycle_time_ms)
+                    self.mySignals.packages_completed = int(packages_completed)
+                    self.mySignals.arm_cycles = int(arm_cycles)
+                    self.mySignals.total_repairs = int(total_repairs)
+                    self.mySignals.operational_time_s = float(operational_time_s)
+                    self.mySignals.downtime_s = float(downtime_s)
+                    self.mySignals.availability = float(availability)
+                    
+                    # Track completions
+                    if done and not self._prev_done:
+                        self.total_completed += 1
+                        print(f"ST6: Package completed! cycle_time={cycle_time_ms}ms, total={self.total_completed}")
+                    
+                    # Update previous done state
+                    self._prev_done = int(self.mySignals.done)
                 # End of user custom code region. Please don't edit beyond this point.
                 #Send ethernet packet to PLC_LineCoordinator
                 self.sendEthernetPacketToPLC_LineCoordinator()
@@ -577,6 +739,9 @@ class ST6_PackagingDispatch:
                 print(self.mySignals.downtime_s)
                 print("\tavailability =", end = " ")
                 print(self.mySignals.availability)
+                print(f"  Internal: total_completed={self.total_completed}")
+                if self._sim is not None:
+                    print(f"  SimState: start_latched={self._sim._start_latched}, fault={self.mySignals.fault}")
                 print("\n")
                 self.updateInternalVariables()
                 if(vsiCommonPythonApi.isStopRequested()):
@@ -590,28 +755,10 @@ class ST6_PackagingDispatch:
                     break
                 vsiCommonPythonApi.advanceSimulation(nextExpectedTime - vsiCommonPythonApi.getSimulationTimeInNs())
             
-            # SIMULATION COMPLETE - Export KPIs to file (Week 2 deliverable)
-            if self._st6 is not None:
+            # SIMULATION COMPLETE - Export KPIs to file
+            if self._sim is not None:
                 total_sim_time_s = (vsiCommonPythonApi.getSimulationTimeInNs() - self._sim_start_time_ns) / 1e9
-                kpis = {
-                    "station": "S6",
-                    "packages_completed": self._st6.packages_completed_total,
-                    "arm_cycles": self._st6.arm_cycles_total,
-                    "total_repairs": self._st6.total_repairs_count,
-                    "completed_cycles": self._st6.completed_cycles,
-                    "catastrophic_failures": self._st6.failure_count,
-                    "total_downtime_s": self._st6.total_downtime_s,
-                    "operational_time_s": self._st6.operational_time_s,
-                    "downtime_s": self._st6.downtime_s,
-                    "utilization_pct": self._st6.get_utilization(total_sim_time_s),
-                    "availability_pct": self._st6.get_availability(total_sim_time_s),
-                    "config": {
-                        "cycle_time_s": self._st6.config["cycle_time_s"],
-                        "failure_rate": self._st6.config["failure_rate"],
-                        "mttr_s": self._st6.config["mttr_s"],
-                        "buffer_capacity": self._st6.config["buffer_capacity"]
-                    }
-                }
+                kpis = self._sim.export_kpis(total_sim_time_s)
                 kpis["simulation_duration_s"] = total_sim_time_s
                 
                 # Write to station-specific KPI file
@@ -619,7 +766,9 @@ class ST6_PackagingDispatch:
                 with open(kpi_file, 'w') as f:
                     json.dump(kpis, f, indent=2)
                 print(f"\n✅ ST6 KPIs exported to {kpi_file}")
-                print(f"   Throughput: {(kpis['packages_completed'] / total_sim_time_s) * 3600:.1f} units/hour")
+                print(f"   Throughput: {kpis['packages_completed'] / total_sim_time_s * 3600:.1f} units/hour")
+                print(f"   Energy: {kpis['energy_kwh']:.4f} kWh total")
+                print(f"   Energy per unit: {kpis['energy_per_unit_kwh']:.4f} kWh/unit")
                 print(f"   Utilization: {kpis['utilization_pct']:.1f}%")
                 print(f"   Availability: {kpis['availability_pct']:.1f}%")
                 print(f"   Catastrophic failures: {kpis['catastrophic_failures']}")
