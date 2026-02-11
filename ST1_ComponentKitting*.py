@@ -54,6 +54,7 @@ class FixedKittingStation:
         self._failure_rate = config.get("failure_rate", 0.0)      # Probability of failure per cycle
         self._mttr_s = config.get("mttr_s", 0.0)                   # Mean Time To Repair (seconds)
         self._buffer_capacity = config.get("buffer_capacity", 2)   # Not used in S1 but kept for consistency
+        self._power_rating_w = config.get("power_rating_w", 1500)  # Power consumption in Watts (NEW for energy tracking)
         
         # State variables
         self.state = "IDLE"
@@ -76,38 +77,42 @@ class FixedKittingStation:
         self.last_busy_start_s = 0.0     # For tracking current busy period
         self.failure_count = 0           # Total failures occurred
         
+        # ENERGY TRACKING (NEW for Siemens requirement)
+        self.energy_kwh = 0.0            # Total energy consumed in kWh
+        
         print(f"  FixedKittingStation INITIALIZED with config:")
-        print(f"    cycle_time_s={self._nominal_cycle_time_s}, failure_rate={self._failure_rate}, mttr_s={self._mttr_s}")
+        print(f"    cycle_time_s={self._nominal_cycle_time_s}, failure_rate={self._failure_rate}, mttr_s={self._mttr_s}, power_rating_w={self._power_rating_w}W")
 
     def start_cycle(self, start_time_s: float):
         """Start a new kitting cycle - ONLY called on cmd_start rising edge"""
         if self._cycle_proc is not None or self._busy:
             print(f"  WARNING: FixedKittingStation.start_cycle called but already busy!")
             return False
-        
         print(f"  FixedKittingStation: Starting job at env.now={self.env.now:.3f}s (cycle_time={self._nominal_cycle_time_s}s)")
         self.state = "RUNNING"
         self._busy = True
         self._done_pulse = False
         self._cycle_start_s = start_time_s
         self._actual_cycle_time_ms = 0
-        
-        # Track busy time start for utilization KPI
+        # Track busy time start for utilization + energy KPIs
         self.last_busy_start_s = self.env.now
-        
         self._cycle_proc = self.env.process(self._kit_cycle())
         return True
 
     def _kit_cycle(self):
-        """Run a single kitting cycle with probabilistic failure simulation"""
+        """Run a single kitting cycle with probabilistic failure simulation + ENERGY TRACKING"""
         try:
-            # STEP 1: Simulate normal processing time
+            # STEP 1: Simulate normal processing time (ENERGY CONSUMED DURING OPERATION)
             processing_time = self._nominal_cycle_time_s
             yield self.env.timeout(processing_time)
             
+            # Accumulate energy for processing time (W × seconds → kWh)
+            energy_ws = self._power_rating_w * processing_time
+            self.energy_kwh += energy_ws / 3.6e6  # Convert W·s to kWh
+            
             # STEP 2: Check for failure AFTER processing completes (realistic failure model)
             if random.random() < self._failure_rate:
-                # Failure occurred - simulate downtime
+                # Failure occurred - simulate downtime (NO ENERGY CONSUMED DURING MTTR - station powered down)
                 self.failure_count += 1
                 failure_start = self.env.now
                 print(f"  ⚠️  FAILURE at {failure_start:.3f}s (cycle #{self._cycle_count+1})")
@@ -116,10 +121,10 @@ class FixedKittingStation:
                 self._fault = True
                 self._busy = False  # Station stops being busy during repair
                 
-                # Accumulate busy time BEFORE failure
+                # Accumulate busy time BEFORE failure (for utilization)
                 self.total_busy_time_s += (failure_start - self.last_busy_start_s)
                 
-                # Simulate repair time (MTTR)
+                # Simulate repair time (MTTR) - NO ENERGY CONSUMED during repair (station powered down)
                 yield self.env.timeout(self._mttr_s)
                 
                 # Repair complete
@@ -131,7 +136,6 @@ class FixedKittingStation:
                 # Exit fault state
                 self._fault = False
                 self.state = "IDLE"
-                
                 # DO NOT complete the cycle - part is lost/scraped
                 # Next start command will begin a NEW cycle
                 return
@@ -151,7 +155,6 @@ class FixedKittingStation:
             
             print(f"  FixedKittingStation: Job completed at env.now={self.env.now:.3f}s, "
                   f"actual_time={self._actual_cycle_time_ms}ms, total_completed={self.completed_cycles}")
-            
             self._busy = False
             self._done_pulse = True  # Pulse for one iteration
             self.state = "COMPLETE"
@@ -162,11 +165,14 @@ class FixedKittingStation:
             self._busy = False
             self._done_pulse = False
             self.state = "IDLE"
-            
-            # Accumulate partial busy time
+            # Accumulate partial busy time + energy
             if self.last_busy_start_s > 0:
-                self.total_busy_time_s += (self.env.now - self.last_busy_start_s)
-                self.last_busy_start_s = 0.0
+                partial_time = self.env.now - self.last_busy_start_s
+                self.total_busy_time_s += partial_time
+                # Partial energy consumption
+                energy_ws = self._power_rating_w * partial_time
+                self.energy_kwh += energy_ws / 3.6e6
+            self.last_busy_start_s = 0.0
         finally:
             self._cycle_proc = None
 
@@ -174,14 +180,17 @@ class FixedKittingStation:
         """Stop any running job"""
         if self._cycle_proc is not None:
             self._cycle_proc.interrupt()
-            self._busy = False
-            self._done_pulse = False
-            self.state = "IDLE"
-            
-            # Accumulate partial busy time on stop
-            if self.last_busy_start_s > 0:
-                self.total_busy_time_s += (self.env.now - self.last_busy_start_s)
-                self.last_busy_start_s = 0.0
+        self._busy = False
+        self._done_pulse = False
+        self.state = "IDLE"
+        # Accumulate partial busy time + energy on stop
+        if self.last_busy_start_s > 0:
+            partial_time = self.env.now - self.last_busy_start_s
+            self.total_busy_time_s += partial_time
+            # Partial energy consumption
+            energy_ws = self._power_rating_w * partial_time
+            self.energy_kwh += energy_ws / 3.6e6
+            self.last_busy_start_s = 0.0
 
     def reset(self):
         """Full reset - reloads config parameters (for new simulation run)"""
@@ -200,6 +209,7 @@ class FixedKittingStation:
         self.total_busy_time_s = 0.0
         self.last_busy_start_s = 0.0
         self.failure_count = 0
+        self.energy_kwh = 0.0  # Reset energy counter
 
     def is_busy(self):
         return self._busy
@@ -247,6 +257,16 @@ class FixedKittingStation:
     def get_failure_count(self) -> int:
         return self.failure_count
 
+    # NEW: Energy getters (Siemens requirement)
+    def get_energy_kwh(self) -> float:
+        """Get total energy consumed in kWh"""
+        return self.energy_kwh
+
+    def get_energy_per_unit_kwh(self) -> float:
+        """Get energy consumed per completed unit (kWh/unit)"""
+        if self.completed_cycles > 0:
+            return self.energy_kwh / self.completed_cycles
+        return 0.0
 
 # VSI <-> SimPy Wrapper with CONFIG LOADING (Week 1)
 class ST1_SimRuntime:
@@ -254,8 +274,8 @@ class ST1_SimRuntime:
         # Load config ONCE at simulation start (VSI constraint: no runtime changes)
         self.config = self._load_config()
         print(f"ST1_SimRuntime: Loaded config from line_config.json -> cycle_time={self.config['cycle_time_s']}s, "
-              f"failure_rate={self.config['failure_rate']}, mttr={self.config['mttr_s']}s")
-        
+              f"failure_rate={self.config['failure_rate']}, mttr={self.config['mttr_s']}s, "
+              f"power={self.config['power_rating_w']}W")
         self.env = simpy.Environment()
         self.station = FixedKittingStation(self.env, self.config)
         
@@ -280,7 +300,8 @@ class ST1_SimRuntime:
             "cycle_time_s": 9.597,
             "failure_rate": 0.0,
             "mttr_s": 0.0,
-            "buffer_capacity": 2
+            "buffer_capacity": 2,
+            "power_rating_w": 1500  # Default power rating for S1 (component kitting with robotic arms)
         }
         
         if os.path.exists(config_path):
@@ -289,7 +310,12 @@ class ST1_SimRuntime:
                     full_config = json.load(f)
                     # Extract S1-specific config
                     if "stations" in full_config and "S1" in full_config["stations"]:
-                        return full_config["stations"]["S1"]
+                        cfg = full_config["stations"]["S1"]
+                        # Ensure power_rating_w exists (backwards compatibility)
+                        if "power_rating_w" not in cfg:
+                            cfg["power_rating_w"] = default_config["power_rating_w"]
+                            print(f"  ⚠️  ST1: power_rating_w not in config - using default {default_config['power_rating_w']}W")
+                        return cfg
                     else:
                         print(f"  ⚠️  WARNING: line_config.json missing 'stations.S1' section - using defaults")
                         return default_config
@@ -307,12 +333,12 @@ class ST1_SimRuntime:
         default_full_config = {
             "simulation_time_s": 3600,
             "stations": {
-                "S1": {"cycle_time_s": 9.597, "failure_rate": 0.02, "mttr_s": 30, "buffer_capacity": 2},
-                "S2": {"cycle_time_s": 12.3, "failure_rate": 0.05, "mttr_s": 45, "buffer_capacity": 2},
-                "S3": {"cycle_time_s": 8.7, "failure_rate": 0.03, "mttr_s": 25, "buffer_capacity": 2},
-                "S4": {"cycle_time_s": 15.2, "failure_rate": 0.08, "mttr_s": 60, "buffer_capacity": 2},
-                "S5": {"cycle_time_s": 6.4, "failure_rate": 0.01, "mttr_s": 15, "buffer_capacity": 2},
-                "S6": {"cycle_time_s": 10.1, "failure_rate": 0.04, "mttr_s": 35, "buffer_capacity": 2}
+                "S1": {"cycle_time_s": 9.597, "failure_rate": 0.02, "mttr_s": 30, "buffer_capacity": 2, "power_rating_w": 1500},
+                "S2": {"cycle_time_s": 12.3, "failure_rate": 0.05, "mttr_s": 45, "buffer_capacity": 2, "power_rating_w": 2200},
+                "S3": {"cycle_time_s": 8.7, "failure_rate": 0.03, "mttr_s": 25, "buffer_capacity": 2, "power_rating_w": 1800},
+                "S4": {"cycle_time_s": 15.2, "failure_rate": 0.08, "mttr_s": 60, "buffer_capacity": 2, "power_rating_w": 3500},
+                "S5": {"cycle_time_s": 6.4, "failure_rate": 0.01, "mttr_s": 15, "buffer_capacity": 2, "power_rating_w": 800},
+                "S6": {"cycle_time_s": 10.1, "failure_rate": 0.04, "mttr_s": 35, "buffer_capacity": 2, "power_rating_w": 2000}
             },
             "buffers": {
                 "S1_to_S2": 2,
@@ -325,7 +351,7 @@ class ST1_SimRuntime:
         try:
             with open("line_config.json", 'w') as f:
                 json.dump(default_full_config, f, indent=2)
-            print("  ✅ Created default line_config.json - edit to change station parameters")
+            print("  ✅ Created default line_config.json with power ratings for energy tracking")
         except Exception as e:
             print(f"  ⚠️  Could not create default config: {e}")
 
@@ -354,18 +380,18 @@ class ST1_SimRuntime:
             self._prev_cmd_reset = 1
             return
         self._prev_cmd_reset = int(cmd_reset)
-
+        
         # Rising edge detection for start
         start_edge = (cmd_start == 1 and self._prev_cmd_start == 0)
         self._last_start_edge = start_edge
-
+        
         # Stop command (rising edge) - immediate stop
         if cmd_stop and not self._prev_cmd_stop:
             print("  ST1_SimRuntime: STOP command (rising edge)")
             self._start_latched = False
             self.station.stop_cycle()
             self._prev_cmd_stop = int(cmd_stop)
-
+        
         # Start logic: ONLY on rising edge AND station idle AND no fault
         if start_edge:
             if not self.station.is_busy() and not self.station.is_fault():
@@ -375,16 +401,16 @@ class ST1_SimRuntime:
             else:
                 fault_status = "FAULT" if self.station.is_fault() else "BUSY"
                 print(f"  ST1_SimRuntime: START rising edge but station {fault_status} - ignoring")
-
+        
         # *** CRITICAL: DO NOT clear start_latched when cmd_start drops ***
         # PLC pulses start, but we keep start_latched=True for entire cycle
         self._prev_cmd_start = int(cmd_start)
-
+        
         # Safety check: if station is busy but start_latched is False, fix it
         if self.station.is_busy() and not self._start_latched:
             print("  ⚠️  ERROR: ST1_SimRuntime: station busy but start_latched=False! Fixing...")
             self._start_latched = True
-
+        
         # Safety check: if station has active process but busy flag is False, fix it
         if self.station.has_active_proc() and not self.station.is_busy():
             print("  ⚠️  ERROR: ST1_SimRuntime: active process but busy=False! Fixing...")
@@ -399,18 +425,18 @@ class ST1_SimRuntime:
         print(f"  ST1_SimRuntime step: env.now={self.env.now:.3f}s, dt_s={dt_s:.6f}s, "
               f"start_latched={self._start_latched}, busy={self.station.is_busy()}, "
               f"fault={self.station.is_fault()}, should_step={should_step}")
-
+        
         # DO NOT step if stop command active and not in cycle/repair
         if self._prev_cmd_stop and not (self.station.is_busy() or self.station.is_fault()):
             print(f"  ST1_SimRuntime: NOT stepping - stop command active and idle")
             return
-
+        
         # Only step if we should step
         if should_step and dt_s > 0:
             target_time = self.env.now + float(dt_s)
             self.env.run(until=target_time)
             print(f"  ST1_SimRuntime: Stepped to env.now={self.env.now:.3f}s")
-
+        
         # Check for cycle completion and clear start_latched
         if self.station.get_done_pulse():
             print("  ST1_SimRuntime: Cycle completed, clearing start_latched")
@@ -438,14 +464,18 @@ class ST1_SimRuntime:
         
         # Log KPIs every 10 cycles for visibility
         if self.station.completed_cycles > 0 and self.station.completed_cycles % 10 == 0:
+            energy_per_unit = self.station.get_energy_per_unit_kwh()
             print(f"  📊 ST1 KPIs (cycle #{self.station.completed_cycles}): "
                   f"utilization={utilization:.1f}%, availability={availability:.1f}%, "
+                  f"energy={self.station.get_energy_kwh():.4f}kWh, energy/unit={energy_per_unit:.4f}kWh/unit, "
                   f"failures={self.station.get_failure_count()}, downtime={self.station.get_total_downtime_s():.1f}s")
         
         return ready, busy, fault, done, cycle_time_ms, inventory_ok, any_arm_failed
 
     def export_kpis(self, total_sim_time_s: float) -> dict:
-        """Export structured KPIs for optimizer (Week 1 deliverable)"""
+        """Export structured KPIs for optimizer (Week 1 deliverable + ENERGY)"""
+        energy_per_unit = self.station.get_energy_per_unit_kwh()
+        
         return {
             "station": "S1",
             "completed_cycles": self.station.completed_cycles,
@@ -454,12 +484,18 @@ class ST1_SimRuntime:
             "utilization_pct": self.station.get_utilization(total_sim_time_s),
             "availability_pct": self.station.get_availability(total_sim_time_s),
             "avg_cycle_time_ms": self.station.get_avg_cycle_time_ms(),
+            # ENERGY METRICS (Siemens requirement)
+            "energy_kwh": self.station.get_energy_kwh(),
+            "energy_per_unit_kwh": energy_per_unit,
+            "power_rating_w": self.config["power_rating_w"],
             "config": {
                 "cycle_time_s": self.config["cycle_time_s"],
                 "failure_rate": self.config["failure_rate"],
-                "mttr_s": self.config["mttr_s"]
+                "mttr_s": self.config["mttr_s"],
+                "power_rating_w": self.config["power_rating_w"]
             }
         }
+
 # End of user custom code region. Please don't edit beyond this point.
 
 class ST1_ComponentKitting:
@@ -616,9 +652,10 @@ class ST1_ComponentKitting:
                     json.dump(kpis, f, indent=2)
                 print(f"\n✅ ST1 KPIs exported to {kpi_file}")
                 print(f"   Throughput: {kpis['completed_cycles'] / total_sim_time_s * 3600:.1f} units/hour")
+                print(f"   Energy: {kpis['energy_kwh']:.4f} kWh total")
+                print(f"   Energy per unit: {kpis['energy_per_unit_kwh']:.4f} kWh/unit")
                 print(f"   Utilization: {kpis['utilization_pct']:.1f}%")
                 print(f"   Availability: {kpis['availability_pct']:.1f}%")
-                print(f"   Failures: {kpis['failure_count']}")
             
             if(vsiCommonPythonApi.getSimulationTimeInNs() < self.totalSimulationTime):
                 vsiEthernetPythonGateway.terminate()
