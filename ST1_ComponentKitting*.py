@@ -7,6 +7,9 @@ import math
 import json
 import os
 import random
+import time
+from datetime import datetime, timedelta
+
 PythonGateways = 'pythonGateways/'
 sys.path.append(PythonGateways)
 import VsiCommonPythonApi as vsiCommonPythonApi
@@ -37,31 +40,101 @@ PLC_LineCoordinatorSocketPortNumber0 = 6001
 ST1_ComponentKitting0 = 0
 
 # Start of user custom code region. Please apply edits only within these regions:  Global Variables & Definitions
-# --- Station 1 (Component Kitting) PARAMETERIZED model ---
+# --- Station 1 (Component Kitting) ENHANCED PARAMETERIZED model ---
 import simpy
 
 class FixedKittingStation:
     """
-    Parameterized station with config-driven cycle time, failures, and KPI tracking.
+    Enhanced parameterized station with FULL integration of:
+    - Human Resources (efficiency, skills, breaks, shifts)
+    - Maintenance Strategies (reactive/preventive/predictive)
+    - Quality Metrics (defects, rework, yield)
+    - Energy Management (consumption, cost, CO2)
+    - Shift Scheduling (availability windows)
+    
     All parameters loaded ONCE at init/reset - NO runtime changes (VSI constraint).
     """
-    def __init__(self, env: simpy.Environment, config: dict):
+    def __init__(self, env: simpy.Environment, config: dict, human_resources: dict, 
+                 maintenance: dict, shift_schedule: dict, quality: dict, energy_mgmt: dict):
         self.env = env
-        self.config = config  # Store config for entire simulation run
+        self.config = config
+        self.human_resources = human_resources
+        self.maintenance = maintenance
+        self.shift_schedule = shift_schedule
+        self.quality = quality
+        self.energy_mgmt = energy_mgmt
         
-        # Load parameters ONCE at init (VSI constraint: no runtime changes)
+        # === BASE PARAMETERS (from stations.S1) ===
         self._nominal_cycle_time_s = config.get("cycle_time_s", 9.597)
-        self._failure_rate = config.get("failure_rate", 0.0)      # Probability of failure per cycle
-        self._mttr_s = config.get("mttr_s", 0.0)                   # Mean Time To Repair (seconds)
-        self._buffer_capacity = config.get("buffer_capacity", 2)   # Not used in S1 but kept for consistency
-        self._power_rating_w = config.get("power_rating_w", 1500)  # Power consumption in Watts (NEW for energy tracking)
+        self._base_failure_rate = config.get("failure_rate", 0.02)
+        self._base_mttr_s = config.get("mttr_s", 30.0)
+        self._power_rating_w = config.get("power_rating_w", 1500)
         
-        # State variables
+        # === HUMAN RESOURCES EFFECTIVE PARAMETERS ===
+        self._operator_efficiency = human_resources.get("operator_efficiency_factor", 95) / 100.0
+        self._advanced_skill_pct = human_resources.get("advanced_skill_pct", 30) / 100.0
+        self._cross_training_pct = human_resources.get("cross_training_pct", 20) / 100.0
+        self._break_time_min_per_hour = human_resources.get("break_time_min_per_hour", 5)
+        self._shift_changeover_min = human_resources.get("shift_changeover_min", 10)
+        
+        # Calculate effective cycle time (operator efficiency)
+        self._effective_cycle_time_s = self._nominal_cycle_time_s / self._operator_efficiency
+        
+        # Calculate skill-based MTTR reduction factor
+        # Advanced skills reduce MTTR by up to 25%, cross-training by up to 15%
+        self._skill_mttr_reduction = (self._advanced_skill_pct * 0.25) + (self._cross_training_pct * 0.15)
+        self._effective_mttr_s = self._base_mttr_s * (1.0 - self._skill_mttr_reduction)
+        
+        # === MAINTENANCE STRATEGY EFFECTIVE PARAMETERS ===
+        self._maintenance_strategy = maintenance.get("strategy", "predictive")
+        self._preventive_interval_h = maintenance.get("preventive_interval_h", 160)
+        self._preventive_duration_min = maintenance.get("preventive_duration_min", 45)
+        self._predictive_enabled = maintenance.get("predictive_enabled", True)
+        self._predictive_mttr_reduction_pct = maintenance.get("predictive_mttr_reduction_pct", 25) / 100.0
+        self._predictive_failure_reduction_pct = maintenance.get("predictive_failure_reduction_pct", 30) / 100.0
+        self._condition_monitoring = maintenance.get("condition_monitoring", True)
+        
+        # Apply predictive maintenance benefits if enabled
+        if self._predictive_enabled and self._condition_monitoring:
+            self._effective_failure_rate = self._base_failure_rate * (1.0 - self._predictive_failure_reduction_pct)
+            self._effective_mttr_s *= (1.0 - self._predictive_mttr_reduction_pct)
+        else:
+            self._effective_failure_rate = self._base_failure_rate
+        
+        # === QUALITY PARAMETERS ===
+        self._defect_rate_pct = quality.get("defect_rate_pct", 0.5) / 100.0
+        self._rework_time_s = quality.get("rework_time_s", 180)
+        self._inspection_enabled = quality.get("inspection_enabled", True)
+        self._first_pass_yield_target = quality.get("first_pass_yield_target", 98.5) / 100.0
+        
+        # === SHIFT SCHEDULE PARAMETERS ===
+        self._shifts_per_day = shift_schedule.get("shifts_per_day", 1)
+        self._shift_duration_h = shift_schedule.get("shift_duration_h", 8)
+        self._working_days_per_week = shift_schedule.get("working_days_per_week", 5)
+        self._overtime_enabled = shift_schedule.get("overtime_enabled", False)
+        self._breaks_per_shift = shift_schedule.get("breaks_per_shift", 2)
+        self._break_duration_min = shift_schedule.get("break_duration_min", 15)
+        self._lunch_break_min = shift_schedule.get("lunch_break_min", 30)
+        
+        # Calculate total shift time in seconds (excluding breaks)
+        self._shift_breaks_total_min = (self._breaks_per_shift * self._break_duration_min) + self._lunch_break_min
+        self._effective_shift_duration_s = (self._shift_duration_h * 3600) - (self._shift_breaks_total_min * 60)
+        
+        # === ENERGY MANAGEMENT ===
+        self._off_peak_enabled = energy_mgmt.get("off_peak_enabled", False)
+        self._peak_tariff = energy_mgmt.get("peak_tariff", 0.18)
+        self._off_peak_tariff = energy_mgmt.get("off_peak_tariff", 0.08)
+        self._co2_factor = energy_mgmt.get("co2_factor_kg_per_kwh", 0.4)
+        
+        # === STATE VARIABLES ===
         self.state = "IDLE"
         self._cycle_proc = None
         self._busy = False
         self._fault = False
         self._done_pulse = False
+        self._in_break = False
+        self._in_maintenance = False
+        self._in_shift_change = False
         
         # Cycle timing
         self._cycle_start_s = 0
@@ -70,98 +143,270 @@ class FixedKittingStation:
         self._cycle_count = 0
         self._cycle_time_sum_ms = 0
         
-        # KPI tracking (NEW for Week 1)
+        # KPI tracking
         self.completed_cycles = 0
-        self.total_downtime_s = 0.0      # Accumulated downtime from failures
-        self.total_busy_time_s = 0.0     # Accumulated productive time
-        self.last_busy_start_s = 0.0     # For tracking current busy period
-        self.failure_count = 0           # Total failures occurred
+        self.total_downtime_s = 0.0
+        self.total_busy_time_s = 0.0
+        self.last_busy_start_s = 0.0
+        self.failure_count = 0
+        self.preventive_maintenance_count = 0
+        self.rework_count = 0
+        self.defect_count = 0
+        self.scheduled_downtime_s = 0.0  # Breaks + PM + shift changes
+        self.unscheduled_downtime_s = 0.0  # Failures
         
-        # ENERGY TRACKING (NEW for Siemens requirement)
-        self.energy_kwh = 0.0            # Total energy consumed in kWh
+        # ENERGY TRACKING
+        self.energy_kwh = 0.0
+        self.energy_cost_usd = 0.0
         
-        print(f"  FixedKittingStation INITIALIZED with config:")
-        print(f"    cycle_time_s={self._nominal_cycle_time_s}, failure_rate={self._failure_rate}, mttr_s={self._mttr_s}, power_rating_w={self._power_rating_w}W")
+        # Schedule recurring events
+        self._schedule_breaks()
+        self._schedule_preventive_maintenance()
+        self._schedule_shift_boundaries()
+        
+        print(f"  FixedKittingStation INITIALIZED with FULL CONFIGURATION:")
+        print(f"    Cycle Time: {self._nominal_cycle_time_s:.3f}s (effective: {self._effective_cycle_time_s:.3f}s with {self._operator_efficiency*100:.1f}% efficiency)")
+        print(f"    Failure Rate: {self._base_failure_rate:.3f} → {self._effective_failure_rate:.3f} (predictive: {'ON' if self._predictive_enabled else 'OFF'})")
+        print(f"    MTTR: {self._base_mttr_s:.1f}s → {self._effective_mttr_s:.1f}s (skills: {self._skill_mttr_reduction*100:.1f}% reduction)")
+        print(f"    Power: {self._power_rating_w}W | Defect Rate: {self._defect_rate_pct*100:.2f}% | Rework Time: {self._rework_time_s}s")
+        print(f"    Shifts: {self._shifts_per_day}x{self._shift_duration_h}h ({self._effective_shift_duration_s/3600:.1f}h productive)")
+        print(f"    Energy: ${self._peak_tariff:.2f}/kWh peak | ${self._off_peak_tariff:.2f}/kWh off-peak | CO2: {self._co2_factor}kg/kWh")
+
+    def _schedule_breaks(self):
+        """Schedule hourly breaks and shift breaks"""
+        # Hourly micro-breaks (5 min per hour)
+        def hourly_break():
+            while True:
+                yield self.env.timeout(3600)  # Every hour
+                if not self._in_break and not self._in_maintenance and not self._fault:
+                    print(f"  ☕ BREAK scheduled at {self.env.now:.1f}s (hourly {self._break_time_min_per_hour} min break)")
+                    self._in_break = True
+                    break_duration_s = self._break_time_min_per_hour * 60
+                    self.scheduled_downtime_s += break_duration_s
+                    yield self.env.timeout(break_duration_s)
+                    self._in_break = False
+        
+        # Shift breaks (lunch + short breaks)
+        def shift_breaks():
+            # First break after 2 hours
+            yield self.env.timeout(2 * 3600)
+            if not self._in_break and not self._in_maintenance and not self._fault:
+                print(f"  🥪 LUNCH BREAK scheduled at {self.env.now:.1f}s ({self._lunch_break_min} min)")
+                self._in_break = True
+                self.scheduled_downtime_s += self._lunch_break_min * 60
+                yield self.env.timeout(self._lunch_break_min * 60)
+                self._in_break = False
+            
+            # Short breaks after lunch
+            for i in range(self._breaks_per_shift):
+                yield self.env.timeout(2 * 3600)  # Every 2 hours after lunch
+                if not self._in_break and not self._in_maintenance and not self._fault:
+                    print(f"  ⏸️  SHORT BREAK #{i+1} at {self.env.now:.1f}s ({self._break_duration_min} min)")
+                    self._in_break = True
+                    self.scheduled_downtime_s += self._break_duration_min * 60
+                    yield self.env.timeout(self._break_duration_min * 60)
+                    self._in_break = False
+        
+        self.env.process(hourly_break())
+        self.env.process(shift_breaks())
+
+    def _schedule_preventive_maintenance(self):
+        """Schedule preventive maintenance at configured intervals"""
+        def pm_cycle():
+            while True:
+                # Convert hours to seconds
+                interval_s = self._preventive_interval_h * 3600
+                yield self.env.timeout(interval_s)
+                
+                # Only perform PM if station is idle and not in fault
+                if not self._busy and not self._fault and not self._in_maintenance:
+                    print(f"  🔧 PREVENTIVE MAINTENANCE scheduled at {self.env.now:.1f}s (duration: {self._preventive_duration_min} min)")
+                    self._in_maintenance = True
+                    pm_duration_s = self._preventive_duration_min * 60
+                    self.scheduled_downtime_s += pm_duration_s
+                    self.preventive_maintenance_count += 1
+                    yield self.env.timeout(pm_duration_s)
+                    self._in_maintenance = False
+                    print(f"  ✅ PM completed at {self.env.now:.1f}s")
+        
+        # Only schedule PM if strategy is preventive or predictive
+        if self._maintenance_strategy in ["preventive", "predictive"]:
+            self.env.process(pm_cycle())
+        else:
+            print("  ⚠️  Preventive maintenance DISABLED (reactive strategy)")
+
+    def _schedule_shift_boundaries(self):
+        """Schedule shift start/end and changeovers"""
+        def shift_cycle():
+            shift_duration_s = self._shift_duration_h * 3600
+            day_duration_s = 24 * 3600
+            
+            while True:
+                # Process each shift in the day
+                for shift_num in range(self._shifts_per_day):
+                    # Shift start - wait until shift begins
+                    time_into_day = (self.env.now % day_duration_s)
+                    next_shift_start = (shift_num * shift_duration_s)
+                    
+                    if time_into_day > next_shift_start:
+                        # Next shift is tomorrow
+                        wait_time = day_duration_s - time_into_day + next_shift_start
+                    else:
+                        wait_time = next_shift_start - time_into_day
+                    
+                    if wait_time > 0:
+                        yield self.env.timeout(wait_time)
+                    
+                    print(f"  🌅 SHIFT {shift_num+1} START at {self.env.now:.1f}s (duration: {self._shift_duration_h}h)")
+                    
+                    # Shift duration (excluding breaks which are scheduled separately)
+                    yield self.env.timeout(shift_duration_s)
+                    
+                    # Shift changeover downtime
+                    if shift_num < self._shifts_per_day - 1:  # Not last shift of day
+                        print(f"  🔄 SHIFT CHANGEOVER at {self.env.now:.1f}s ({self._shift_changeover_min} min downtime)")
+                        self._in_shift_change = True
+                        self.scheduled_downtime_s += self._shift_changeover_min * 60
+                        yield self.env.timeout(self._shift_changeover_min * 60)
+                        self._in_shift_change = False
+                
+                # End of day - wait until next day
+                time_into_day = self.env.now % day_duration_s
+                wait_until_next_day = day_duration_s - time_into_day
+                if wait_until_next_day > 0:
+                    print(f"  🌙 END OF DAY at {self.env.now:.1f}s - waiting {wait_until_next_day/3600:.1f}h for next day")
+                    yield self.env.timeout(wait_until_next_day)
+        
+        self.env.process(shift_cycle())
+
+    def _is_operational(self):
+        """Check if station can operate (not in break/maintenance/shift change/fault)"""
+        return (not self._in_break and 
+                not self._in_maintenance and 
+                not self._in_shift_change and 
+                not self._fault and
+                self._is_within_shift_hours())
+
+    def _is_within_shift_hours(self):
+        """Check if current simulation time is within operational shift hours"""
+        # For simplicity, assume 1 shift per day starting at 0s
+        # In real implementation, this would use calendar/time-of-day logic
+        time_into_day = self.env.now % (24 * 3600)
+        shift_end_s = self._shifts_per_day * self._shift_duration_h * 3600
+        
+        # Account for breaks within shift duration
+        operational_window_s = shift_end_s - (self._shift_breaks_total_min * 60)
+        
+        return time_into_day < operational_window_s
 
     def start_cycle(self, start_time_s: float):
         """Start a new kitting cycle - ONLY called on cmd_start rising edge"""
         if self._cycle_proc is not None or self._busy:
-            print(f"  WARNING: FixedKittingStation.start_cycle called but already busy!")
+            print(f"  ⚠️  WARNING: start_cycle called but already busy (state={self.state})")
             return False
-        print(f"  FixedKittingStation: Starting job at env.now={self.env.now:.3f}s (cycle_time={self._nominal_cycle_time_s}s)")
+        
+        if not self._is_operational():
+            reason = ("BREAK" if self._in_break else 
+                     "MAINTENANCE" if self._in_maintenance else 
+                     "SHIFT CHANGE" if self._in_shift_change else 
+                     "FAULT" if self._fault else 
+                     "OFF-SHIFT")
+            print(f"  ⚠️  CANNOT START: Station not operational ({reason}) at env.now={self.env.now:.3f}s")
+            return False
+        
+        print(f"  🚀 STARTING cycle at env.now={self.env.now:.3f}s (effective cycle time={self._effective_cycle_time_s:.3f}s)")
         self.state = "RUNNING"
         self._busy = True
         self._done_pulse = False
         self._cycle_start_s = start_time_s
         self._actual_cycle_time_ms = 0
-        # Track busy time start for utilization + energy KPIs
         self.last_busy_start_s = self.env.now
         self._cycle_proc = self.env.process(self._kit_cycle())
         return True
 
     def _kit_cycle(self):
-        """Run a single kitting cycle with probabilistic failure simulation + ENERGY TRACKING"""
+        """Run a single kitting cycle with full integration of HR, maintenance, quality, and energy"""
         try:
-            # STEP 1: Simulate normal processing time (ENERGY CONSUMED DURING OPERATION)
-            processing_time = self._nominal_cycle_time_s
+            # STEP 1: Simulate normal processing time with energy consumption
+            processing_time = self._effective_cycle_time_s
             yield self.env.timeout(processing_time)
             
             # Accumulate energy for processing time (W × seconds → kWh)
             energy_ws = self._power_rating_w * processing_time
-            self.energy_kwh += energy_ws / 3.6e6  # Convert W·s to kWh
+            self.energy_kwh += energy_ws / 3.6e6
             
-            # STEP 2: Check for failure AFTER processing completes (realistic failure model)
-            if random.random() < self._failure_rate:
-                # Failure occurred - simulate downtime (NO ENERGY CONSUMED DURING MTTR - station powered down)
+            # Accumulate energy cost based on time-of-day tariff
+            # Simplified: assume 70% peak hours, 30% off-peak for now
+            tariff = self._off_peak_tariff if self._off_peak_enabled and (self.env.now % 3600) > 2520 else self._peak_tariff
+            self.energy_cost_usd += (energy_ws / 3.6e6) * tariff
+            
+            # STEP 2: Check for failure AFTER processing completes
+            if random.random() < self._effective_failure_rate:
+                # Failure occurred
                 self.failure_count += 1
                 failure_start = self.env.now
                 print(f"  ⚠️  FAILURE at {failure_start:.3f}s (cycle #{self._cycle_count+1})")
-                
-                # Enter fault state
                 self._fault = True
-                self._busy = False  # Station stops being busy during repair
-                
-                # Accumulate busy time BEFORE failure (for utilization)
+                self._busy = False
                 self.total_busy_time_s += (failure_start - self.last_busy_start_s)
+                self.unscheduled_downtime_s += self._effective_mttr_s
                 
-                # Simulate repair time (MTTR) - NO ENERGY CONSUMED during repair (station powered down)
-                yield self.env.timeout(self._mttr_s)
+                # NO energy consumed during repair (station powered down)
+                yield self.env.timeout(self._effective_mttr_s)
                 
-                # Repair complete
                 repair_end = self.env.now
                 downtime = repair_end - failure_start
                 self.total_downtime_s += downtime
-                print(f"  ✅ REPAIR complete at {repair_end:.3f}s (downtime={downtime:.2f}s)")
-                
-                # Exit fault state
+                print(f"  ✅ REPAIR complete at {repair_end:.3f}s (downtime={downtime:.2f}s, MTTR={self._effective_mttr_s:.1f}s)")
                 self._fault = False
                 self.state = "IDLE"
-                # DO NOT complete the cycle - part is lost/scraped
-                # Next start command will begin a NEW cycle
-                return
+                return  # Part lost - next start begins new cycle
             
-            # STEP 3: Cycle completed successfully (no failure)
+            # STEP 3: Cycle completed successfully - check for defects
             self._cycle_end_s = self.env.now
             actual_time_s = self._cycle_end_s - self._cycle_start_s
             self._actual_cycle_time_ms = int(actual_time_s * 1000)
-            
-            # Update running averages
             self._cycle_count += 1
             self._cycle_time_sum_ms += self._actual_cycle_time_ms
-            self.completed_cycles += 1
-            
-            # Accumulate busy time for utilization KPI
             self.total_busy_time_s += (self.env.now - self.last_busy_start_s)
             
-            print(f"  FixedKittingStation: Job completed at env.now={self.env.now:.3f}s, "
-                  f"actual_time={self._actual_cycle_time_ms}ms, total_completed={self.completed_cycles}")
+            # Apply quality inspection (if enabled)
+            is_defective = False
+            if self._inspection_enabled and random.random() < self._defect_rate_pct:
+                is_defective = True
+                self.defect_count += 1
+                print(f"  ❌ DEFECT detected in cycle #{self._cycle_count} (defect rate={self._defect_rate_pct*100:.2f}%)")
+                
+                # Rework logic: 70% chance of successful rework, 30% scrap
+                if random.random() < 0.7:  # Successful rework
+                    print(f"  🔧 REWORKING defective part (time: {self._rework_time_s}s)")
+                    self.rework_count += 1
+                    yield self.env.timeout(self._rework_time_s)
+                    
+                    # Energy for rework
+                    rework_energy_ws = self._power_rating_w * self._rework_time_s
+                    self.energy_kwh += rework_energy_ws / 3.6e6
+                    self.energy_cost_usd += (rework_energy_ws / 3.6e6) * tariff
+                    
+                    print(f"  ✅ REWORK successful - part accepted")
+                else:  # Scrap
+                    print(f"  🗑️  PART SCRAPPED - not counted in throughput")
+                    self.state = "IDLE"
+                    self._busy = False
+                    return
+            
+            # STEP 4: Count as completed cycle (either first-pass or successful rework)
+            self.completed_cycles += 1
+            print(f"  ✅ CYCLE COMPLETED at env.now={self.env.now:.3f}s | Total completed: {self.completed_cycles} | "
+                  f"First-pass yield: {(self.completed_cycles - self.rework_count) / max(self.completed_cycles, 1) * 100:.1f}%")
+            
             self._busy = False
-            self._done_pulse = True  # Pulse for one iteration
+            self._done_pulse = True
             self.state = "COMPLETE"
             
         except simpy.Interrupt:
             # Cycle was stopped by PLC command
-            print("  FixedKittingStation: Cycle interrupted by stop command")
+            print("  ⏹️  Cycle interrupted by STOP command")
             self._busy = False
             self._done_pulse = False
             self.state = "IDLE"
@@ -169,9 +414,9 @@ class FixedKittingStation:
             if self.last_busy_start_s > 0:
                 partial_time = self.env.now - self.last_busy_start_s
                 self.total_busy_time_s += partial_time
-                # Partial energy consumption
                 energy_ws = self._power_rating_w * partial_time
                 self.energy_kwh += energy_ws / 3.6e6
+                self.energy_cost_usd += (energy_ws / 3.6e6) * tariff
             self.last_busy_start_s = 0.0
         finally:
             self._cycle_proc = None
@@ -183,25 +428,22 @@ class FixedKittingStation:
         self._busy = False
         self._done_pulse = False
         self.state = "IDLE"
-        # Accumulate partial busy time + energy on stop
-        if self.last_busy_start_s > 0:
-            partial_time = self.env.now - self.last_busy_start_s
-            self.total_busy_time_s += partial_time
-            # Partial energy consumption
-            energy_ws = self._power_rating_w * partial_time
-            self.energy_kwh += energy_ws / 3.6e6
-            self.last_busy_start_s = 0.0
+        # Accumulate partial busy time + energy on stop (handled in interrupt)
 
     def reset(self):
         """Full reset - reloads config parameters (for new simulation run)"""
-        print("  FixedKittingStation: FULL RESET")
+        print("  ♻️  FULL RESET - reloading all configuration parameters")
         self.stop_cycle()
         self.state = "IDLE"
         self._busy = False
         self._fault = False
         self._done_pulse = False
         self._cycle_proc = None
-        self._actual_cycle_time_ms = int(self._nominal_cycle_time_s * 1000)
+        self._in_break = False
+        self._in_maintenance = False
+        self._in_shift_change = False
+        
+        self._actual_cycle_time_ms = int(self._effective_cycle_time_s * 1000)
         self._cycle_count = 0
         self._cycle_time_sum_ms = 0
         self.completed_cycles = 0
@@ -209,127 +451,157 @@ class FixedKittingStation:
         self.total_busy_time_s = 0.0
         self.last_busy_start_s = 0.0
         self.failure_count = 0
-        self.energy_kwh = 0.0  # Reset energy counter
+        self.preventive_maintenance_count = 0
+        self.rework_count = 0
+        self.defect_count = 0
+        self.scheduled_downtime_s = 0.0
+        self.unscheduled_downtime_s = 0.0
+        self.energy_kwh = 0.0
+        self.energy_cost_usd = 0.0
+        
+        # Reschedule recurring events
+        self._schedule_breaks()
+        self._schedule_preventive_maintenance()
+        self._schedule_shift_boundaries()
+        print("  ✅ Reset complete - station ready for new simulation")
 
+    # === STATE GETTERS ===
     def is_busy(self):
         return self._busy
-
+    
     def is_fault(self):
         return self._fault
-
+    
     def get_done_pulse(self):
         return self._done_pulse
-
+    
     def clear_done_pulse(self):
-        """Clear done pulse after it's been read"""
         was_set = self._done_pulse
         self._done_pulse = False
         return was_set
-
+    
     def get_cycle_time_ms(self):
-        return self._actual_cycle_time_ms if self._actual_cycle_time_ms > 0 else int(self._nominal_cycle_time_s * 1000)
-
+        return self._actual_cycle_time_ms if self._actual_cycle_time_ms > 0 else int(self._effective_cycle_time_s * 1000)
+    
     def get_avg_cycle_time_ms(self):
         if self._cycle_count > 0:
             return int(self._cycle_time_sum_ms / self._cycle_count)
-        return int(self._nominal_cycle_time_s * 1000)
-
+        return int(self._effective_cycle_time_s * 1000)
+    
     def has_active_proc(self):
         return self._cycle_proc is not None
 
-    # NEW: KPI getters for Week 1
+    # === KPI GETTERS ===
     def get_utilization(self, total_sim_time_s: float) -> float:
-        """Calculate station utilization (busy time / total time)"""
+        """Utilization = busy time / total time (including breaks/downtime)"""
         if total_sim_time_s <= 0:
             return 0.0
         return (self.total_busy_time_s / total_sim_time_s) * 100.0
-
+    
     def get_availability(self, total_sim_time_s: float) -> float:
-        """Calculate station availability (uptime / total time)"""
+        """Availability = (total time - downtime) / total time"""
         if total_sim_time_s <= 0:
             return 0.0
         uptime = total_sim_time_s - self.total_downtime_s
         return (uptime / total_sim_time_s) * 100.0
-
+    
+    def get_oee(self, total_sim_time_s: float) -> float:
+        """OEE = Availability × Performance × Quality"""
+        if total_sim_time_s <= 0 or self.completed_cycles == 0:
+            return 0.0
+        
+        # Availability: (Total Time - Downtime) / Total Time
+        availability = self.get_availability(total_sim_time_s) / 100.0
+        
+        # Performance: (Ideal Cycle Time × Total Count) / Operating Time
+        ideal_cycle_time_s = self._nominal_cycle_time_s  # Base cycle time without efficiency factor
+        operating_time_s = total_sim_time_s - self.total_downtime_s - self.scheduled_downtime_s
+        if operating_time_s <= 0:
+            performance = 0.0
+        else:
+            performance = (ideal_cycle_time_s * self.completed_cycles) / operating_time_s
+        
+        # Quality: Good Count / Total Count
+        # Good count = completed cycles - rework count (assuming rework parts are eventually good)
+        # For simplicity, assume all reworked parts become good
+        quality = 1.0  # All completed cycles are good after rework
+        
+        return availability * performance * quality * 100.0
+    
+    def get_first_pass_yield(self) -> float:
+        """First Pass Yield = (Good units without rework) / Total units"""
+        if self.completed_cycles == 0:
+            return 0.0
+        good_without_rework = self.completed_cycles - self.rework_count
+        return (good_without_rework / self.completed_cycles) * 100.0
+    
     def get_total_downtime_s(self) -> float:
-        return self.total_downtime_s
-
+        return self.total_downtime_s + self.scheduled_downtime_s
+    
     def get_failure_count(self) -> int:
         return self.failure_count
-
-    # NEW: Energy getters (Siemens requirement)
+    
+    # === ENERGY GETTERS ===
     def get_energy_kwh(self) -> float:
-        """Get total energy consumed in kWh"""
         return self.energy_kwh
-
+    
     def get_energy_per_unit_kwh(self) -> float:
-        """Get energy consumed per completed unit (kWh/unit)"""
         if self.completed_cycles > 0:
             return self.energy_kwh / self.completed_cycles
         return 0.0
+    
+    def get_energy_cost_usd(self) -> float:
+        return self.energy_cost_usd
+    
+    def get_co2_emissions_kg(self) -> float:
+        return self.energy_kwh * self._co2_factor
 
-# VSI <-> SimPy Wrapper with CONFIG LOADING (Week 1)
+# VSI <-> SimPy Wrapper with FULL CONFIG LOADING
 class ST1_SimRuntime:
     def __init__(self):
-        # Load config ONCE at simulation start (VSI constraint: no runtime changes)
-        self.config = self._load_config()
-        print(f"ST1_SimRuntime: Loaded config from line_config.json -> cycle_time={self.config['cycle_time_s']}s, "
-              f"failure_rate={self.config['failure_rate']}, mttr={self.config['mttr_s']}s, "
-              f"power={self.config['power_rating_w']}W")
+        # Load FULL configuration from line_config.json
+        self.full_config = self._load_full_config()
+        
+        # Extract sections
+        self.station_config = self.full_config.get("stations", {}).get("S1", {})
+        self.human_resources = self.full_config.get("human_resources", {})
+        self.maintenance = self.full_config.get("maintenance", {})
+        self.shift_schedule = self.full_config.get("shift_schedule", {})
+        self.quality = self.full_config.get("quality", {})
+        self.energy_mgmt = self.full_config.get("energy_management", {})
+        
+        print(f"ST1_SimRuntime: Loaded FULL configuration from line_config.json")
+        print(f"  Station S1: cycle={self.station_config.get('cycle_time_s', 9.597)}s, failure={self.station_config.get('failure_rate', 0.02)}")
+        print(f"  HR: efficiency={self.human_resources.get('operator_efficiency_factor', 95)}%, advanced={self.human_resources.get('advanced_skill_pct', 30)}%")
+        print(f"  Maintenance: strategy={self.maintenance.get('strategy', 'predictive')}, predictive={'ENABLED' if self.maintenance.get('predictive_enabled', True) else 'DISABLED'}")
+        print(f"  Quality: defect_rate={self.quality.get('defect_rate_pct', 0.5)}%, rework={self.quality.get('rework_time_s', 180)}s")
+        print(f"  Shifts: {self.shift_schedule.get('shifts_per_day', 1)} shifts × {self.shift_schedule.get('shift_duration_h', 8)}h")
+        print(f"  Energy: peak=${self.energy_mgmt.get('peak_tariff', 0.18)}/kWh, CO2={self.energy_mgmt.get('co2_factor_kg_per_kwh', 0.4)}kg/kWh")
+        
         self.env = simpy.Environment()
-        self.station = FixedKittingStation(self.env, self.config)
+        self.station = FixedKittingStation(
+            self.env, 
+            self.station_config,
+            self.human_resources,
+            self.maintenance,
+            self.shift_schedule,
+            self.quality,
+            self.energy_mgmt
+        )
         
         # Handshake state
         self._start_latched = False
         self._prev_cmd_start = 0
         self._prev_cmd_stop = 0
         self._prev_cmd_reset = 0
-        
-        # Context from PLC
         self.batch_id = 0
         self.recipe_id = 0
-        
-        # Debug tracking
         self._last_start_edge = False
         self._last_step_dt = 0.0
 
-    def _load_config(self) -> dict:
-        """Load station parameters from external JSON config (Week 1 deliverable)"""
+    def _load_full_config(self) -> dict:
+        """Load COMPLETE configuration from line_config.json with all sections"""
         config_path = "line_config.json"
-        default_config = {
-            "cycle_time_s": 9.597,
-            "failure_rate": 0.0,
-            "mttr_s": 0.0,
-            "buffer_capacity": 2,
-            "power_rating_w": 1500  # Default power rating for S1 (component kitting with robotic arms)
-        }
-        
-        if os.path.exists(config_path):
-            try:
-                with open(config_path, 'r') as f:
-                    full_config = json.load(f)
-                    # Extract S1-specific config
-                    if "stations" in full_config and "S1" in full_config["stations"]:
-                        cfg = full_config["stations"]["S1"]
-                        # Ensure power_rating_w exists (backwards compatibility)
-                        if "power_rating_w" not in cfg:
-                            cfg["power_rating_w"] = default_config["power_rating_w"]
-                            print(f"  ⚠️  ST1: power_rating_w not in config - using default {default_config['power_rating_w']}W")
-                        return cfg
-                    else:
-                        print(f"  ⚠️  WARNING: line_config.json missing 'stations.S1' section - using defaults")
-                        return default_config
-            except Exception as e:
-                print(f"  ⚠️  WARNING: Error loading {config_path}: {e} - using defaults")
-                return default_config
-        else:
-            print(f"  ⚠️  WARNING: {config_path} not found - using default parameters")
-            # Create default config file for user convenience
-            self._create_default_config()
-            return default_config
-
-    def _create_default_config(self):
-        """Create default line_config.json if missing (user convenience)"""
         default_full_config = {
             "simulation_time_s": 3600,
             "stations": {
@@ -346,153 +618,369 @@ class ST1_SimRuntime:
                 "S3_to_S4": 2,
                 "S4_to_S5": 2,
                 "S5_to_S6": 2
+            },
+            "human_resources": {
+                "operators_per_shift": 4,
+                "maintenance_technicians": 2,
+                "operator_efficiency_factor": 95,
+                "advanced_skill_pct": 30,
+                "cross_training_pct": 20,
+                "break_time_min_per_hour": 5,
+                "shift_changeover_min": 10
+            },
+            "shift_schedule": {
+                "shifts_per_day": 1,
+                "shift_duration_h": 8,
+                "working_days_per_week": 5,
+                "overtime_enabled": False,
+                "breaks_per_shift": 2,
+                "break_duration_min": 15,
+                "lunch_break_min": 30
+            },
+            "maintenance": {
+                "strategy": "predictive",
+                "preventive_interval_h": 160,
+                "preventive_duration_min": 45,
+                "predictive_enabled": True,
+                "predictive_mttr_reduction_pct": 25,
+                "predictive_failure_reduction_pct": 30,
+                "condition_monitoring": True,
+                "iot_sensors": True,
+                "maintenance_log_enabled": True,
+                "maintenance_cost_per_hour": 120,
+                "oee_target_pct": 85,
+                "mttr_target_min": 30,
+                "mtbf_target_h": 200
+            },
+            "energy_management": {
+                "off_peak_enabled": False,
+                "peak_tariff": 0.18,
+                "off_peak_tariff": 0.08,
+                "co2_factor_kg_per_kwh": 0.4,
+                "energy_monitoring_enabled": True,
+                "iso50001_compliant": True
+            },
+            "quality": {
+                "defect_rate_pct": 0.5,
+                "rework_time_s": 180,
+                "inspection_enabled": True,
+                "first_pass_yield_target": 98.5
+            }
+        }
+        
+        if os.path.exists(config_path):
+            try:
+                with open(config_path, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"  ⚠️  WARNING: Error loading {config_path}: {e} - using defaults")
+                return default_full_config
+        else:
+            print(f"  ⚠️  WARNING: {config_path} not found - using default parameters")
+            self._create_default_config()
+            return default_full_config
+
+    def _create_default_config(self):
+        """Create default line_config.json with ALL sections if missing"""
+        default_full_config = {
+            "simulation_metadata": {
+                "name": "3D Printer Manufacturing Line",
+                "version": "3.0",
+                "last_modified": datetime.now().isoformat(),
+                "stations": 6,
+                "simulation_time_h": 8,
+                "simulation_time_s": 28800
+            },
+            "stations": {
+                "S1": {"cycle_time_s": 9.597, "failure_rate": 0.02, "mttr_s": 30, "mtbf_h": 50, "power_rating_w": 1500, 
+                       "setup_time_s": 120, "requires_operator": True, "operators_required": 1, "criticality": "medium",
+                       "equipment": "Collaborative Robot Arms (Cobots)", "quantity": "3-5 units"},
+                "S2": {"cycle_time_s": 12.3, "failure_rate": 0.05, "mttr_s": 45, "mtbf_h": 20, "power_rating_w": 2200,
+                       "setup_time_s": 180, "requires_operator": True, "operators_required": 1, "criticality": "critical",
+                       "equipment": "Automated Bearing Press / Linear Rail Alignment Tool", "quantity": "1 unit"},
+                "S3": {"cycle_time_s": 8.7, "failure_rate": 0.03, "mttr_s": 25, "mtbf_h": 33.3, "power_rating_w": 1800,
+                       "setup_time_s": 90, "requires_operator": True, "operators_required": 1, "criticality": "high",
+                       "equipment": "Smart Torque Drivers / Nutrunners", "quantity": "6-10 units"},
+                "S4": {"cycle_time_s": 15.2, "failure_rate": 0.08, "mttr_s": 60, "mtbf_h": 12.5, "power_rating_w": 3500,
+                       "setup_time_s": 240, "requires_operator": False, "operators_required": 0, "criticality": "bottleneck_candidate",
+                       "equipment": "Gantry Run-in and Measurement Fixture", "quantity": "2 units", "energy_profile": "high"},
+                "S5": {"cycle_time_s": 6.4, "failure_rate": 0.01, "mttr_s": 15, "mtbf_h": 100, "power_rating_w": 800,
+                       "setup_time_s": 300, "requires_operator": True, "operators_required": 1, "criticality": "high",
+                       "equipment": "Machine Vision System (Camera + Software)", "quantity": "1 unit"},
+                "S6": {"cycle_time_s": 10.1, "failure_rate": 0.04, "mttr_s": 35, "mtbf_h": 25, "power_rating_w": 2000,
+                       "setup_time_s": 150, "requires_operator": True, "operators_required": 2, "criticality": "medium",
+                       "equipment": "Automated Box Sealer / Taping Machine", "quantity": "1 unit"}
+            },
+            "buffers": {
+                "S1_to_S2": 5,
+                "S2_to_S3": 5,
+                "S3_to_S4": 5,
+                "S4_to_S5": 5,
+                "S5_to_S6": 5
+            },
+            "human_resources": {
+                "operators_per_shift": 4,
+                "technicians_on_call": 2,
+                "maintenance_technicians": 2,
+                "skill_level_pct": {"basic": 60, "advanced": 30, "expert": 10},
+                "advanced_skill_pct": 30,
+                "operator_efficiency_factor": 95,
+                "training_level": "intermediate",
+                "cross_training_pct": 20,
+                "break_time_min_per_hour": 5,
+                "shift_changeover_min": 10
+            },
+            "shift_schedule": {
+                "shifts_per_day": 1,
+                "shift_duration_h": 8,
+                "breaks_per_shift": 2,
+                "break_duration_min": 15,
+                "lunch_break_min": 30,
+                "working_days_per_week": 5,
+                "overtime_enabled": False,
+                "overtime_hours": 2
+            },
+            "maintenance": {
+                "strategy": "predictive",
+                "preventive_interval_h": 160,
+                "preventive_duration_min": 45,
+                "predictive_enabled": True,
+                "predictive_mttr_reduction_pct": 25,
+                "predictive_failure_reduction_pct": 30,
+                "condition_monitoring": True,
+                "iot_sensors": True,
+                "maintenance_log_enabled": True,
+                "maintenance_cost_per_hour": 120,
+                "oee_target_pct": 85,
+                "mttr_target_min": 30,
+                "mtbf_target_h": 200
+            },
+            "energy_management": {
+                "off_peak_enabled": False,
+                "off_peak_tariff": 0.08,
+                "peak_tariff": 0.18,
+                "peak_hours": ["08:00-12:00", "17:00-20:00"],
+                "energy_saving_mode": False,
+                "iso50001_compliant": True,
+                "co2_factor_kg_per_kwh": 0.4,
+                "energy_monitoring_enabled": True
+            },
+            "quality": {
+                "defect_rate_pct": 0.5,
+                "rework_time_s": 180,
+                "inspection_enabled": True,
+                "first_pass_yield_target": 98.5
             }
         }
         try:
             with open("line_config.json", 'w') as f:
                 json.dump(default_full_config, f, indent=2)
-            print("  ✅ Created default line_config.json with power ratings for energy tracking")
+            print("  ✅ Created comprehensive default line_config.json with ALL parameters")
         except Exception as e:
             print(f"  ⚠️  Could not create default config: {e}")
 
     def reset(self):
-        """Full reset - reloads config for new simulation run"""
-        print("  ST1_SimRuntime: FULL RESET (reloading config)")
-        self.config = self._load_config()  # Reload config for new run
+        """Full reset - reloads ALL configuration sections"""
+        print("  ♻️  ST1_SimRuntime: FULL RESET (reloading ALL configuration sections)")
+        self.full_config = self._load_full_config()
+        self.station_config = self.full_config.get("stations", {}).get("S1", {})
+        self.human_resources = self.full_config.get("human_resources", {})
+        self.maintenance = self.full_config.get("maintenance", {})
+        self.shift_schedule = self.full_config.get("shift_schedule", {})
+        self.quality = self.full_config.get("quality", {})
+        self.energy_mgmt = self.full_config.get("energy_management", {})
+        
         self.env = simpy.Environment()
-        self.station = FixedKittingStation(self.env, self.config)
+        self.station = FixedKittingStation(
+            self.env,
+            self.station_config,
+            self.human_resources,
+            self.maintenance,
+            self.shift_schedule,
+            self.quality,
+            self.energy_mgmt
+        )
         self._start_latched = False
         self._prev_cmd_start = 0
         self._prev_cmd_stop = 0
         self._prev_cmd_reset = 0
-        print("  ST1_SimRuntime: Reset complete - ready for new simulation")
+        print("  ✅ ST1_SimRuntime: Reset complete - ready for new simulation")
 
     def set_context(self, batch_id: int, recipe_id: int):
         self.batch_id = int(batch_id)
         self.recipe_id = int(recipe_id)
 
     def update_handshake(self, cmd_start: int, cmd_stop: int, cmd_reset: int):
-        """Process PLC commands and update internal state"""
+        """Process PLC commands with full operational state awareness"""
         # Reset has highest priority
         if cmd_reset and not self._prev_cmd_reset:
-            print("  ST1_SimRuntime: RESET command (rising edge)")
+            print("  🔄 ST1_SimRuntime: RESET command (rising edge)")
             self.reset()
             self._prev_cmd_reset = 1
             return
         self._prev_cmd_reset = int(cmd_reset)
-        
+
         # Rising edge detection for start
         start_edge = (cmd_start == 1 and self._prev_cmd_start == 0)
         self._last_start_edge = start_edge
-        
+
         # Stop command (rising edge) - immediate stop
         if cmd_stop and not self._prev_cmd_stop:
-            print("  ST1_SimRuntime: STOP command (rising edge)")
+            print("  ⏹️  ST1_SimRuntime: STOP command (rising edge)")
             self._start_latched = False
             self.station.stop_cycle()
             self._prev_cmd_stop = int(cmd_stop)
-        
-        # Start logic: ONLY on rising edge AND station idle AND no fault
+
+        # Start logic: ONLY on rising edge AND station operational
         if start_edge:
-            if not self.station.is_busy() and not self.station.is_fault():
-                print(f"  ST1_SimRuntime: START rising edge, station idle - starting cycle (cycle_time={self.config['cycle_time_s']}s)")
+            if self.station._is_operational():
+                print(f"  ▶️  ST1_SimRuntime: START rising edge - starting cycle")
                 self._start_latched = True
                 self.station.start_cycle(self.env.now)
             else:
-                fault_status = "FAULT" if self.station.is_fault() else "BUSY"
-                print(f"  ST1_SimRuntime: START rising edge but station {fault_status} - ignoring")
-        
-        # *** CRITICAL: DO NOT clear start_latched when cmd_start drops ***
-        # PLC pulses start, but we keep start_latched=True for entire cycle
+                reasons = []
+                if self.station._in_break: reasons.append("BREAK")
+                if self.station._in_maintenance: reasons.append("MAINTENANCE")
+                if self.station._in_shift_change: reasons.append("SHIFT CHANGE")
+                if self.station._fault: reasons.append("FAULT")
+                if not self.station._is_within_shift_hours(): reasons.append("OFF-SHIFT")
+                print(f"  ⚠️  ST1_SimRuntime: START ignored - not operational ({'/'.join(reasons)})")
+
         self._prev_cmd_start = int(cmd_start)
-        
-        # Safety check: if station is busy but start_latched is False, fix it
+
+        # Safety checks
         if self.station.is_busy() and not self._start_latched:
-            print("  ⚠️  ERROR: ST1_SimRuntime: station busy but start_latched=False! Fixing...")
+            print("  ⚠️  FIXING: station busy but start_latched=False")
             self._start_latched = True
-        
-        # Safety check: if station has active process but busy flag is False, fix it
         if self.station.has_active_proc() and not self.station.is_busy():
-            print("  ⚠️  ERROR: ST1_SimRuntime: active process but busy=False! Fixing...")
+            print("  ⚠️  FIXING: active process but busy=False")
             self.station._busy = True
 
     def step(self, dt_s: float):
-        """Advance simulation ONLY when necessary"""
+        """Advance simulation with full operational constraints"""
         self._last_step_dt = dt_s
         
-        # Step SimPy ONLY if busy OR in fault state (repair in progress) OR start_latched
-        should_step = self.station.is_busy() or self.station.is_fault() or self._start_latched
-        print(f"  ST1_SimRuntime step: env.now={self.env.now:.3f}s, dt_s={dt_s:.6f}s, "
-              f"start_latched={self._start_latched}, busy={self.station.is_busy()}, "
-              f"fault={self.station.is_fault()}, should_step={should_step}")
+        # Only step if station is active (busy, in fault/repair, in maintenance, or start latched)
+        should_step = (self.station.is_busy() or 
+                      self.station.is_fault() or 
+                      self.station._in_maintenance or 
+                      self.station._in_break or
+                      self.station._in_shift_change or
+                      self._start_latched)
         
-        # DO NOT step if stop command active and not in cycle/repair
+        print(f"  ⏱️  ST1_SimRuntime step: env.now={self.env.now:.3f}s, dt_s={dt_s:.6f}s, "
+              f"operational={self.station._is_operational()}, should_step={should_step}")
+        
+        # Skip stepping during stop command when idle
         if self._prev_cmd_stop and not (self.station.is_busy() or self.station.is_fault()):
-            print(f"  ST1_SimRuntime: NOT stepping - stop command active and idle")
+            print(f"  ⏸️  ST1_SimRuntime: NOT stepping - stop command active and idle")
             return
         
-        # Only step if we should step
         if should_step and dt_s > 0:
             target_time = self.env.now + float(dt_s)
             self.env.run(until=target_time)
-            print(f"  ST1_SimRuntime: Stepped to env.now={self.env.now:.3f}s")
-        
-        # Check for cycle completion and clear start_latched
-        if self.station.get_done_pulse():
-            print("  ST1_SimRuntime: Cycle completed, clearing start_latched")
-            self._start_latched = False
+            print(f"  ▶️  ST1_SimRuntime: Stepped to env.now={self.env.now:.3f}s")
+            
+            # Check for cycle completion
+            if self.station.get_done_pulse():
+                print("  ✅ ST1_SimRuntime: Cycle completed, clearing start_latched")
+                self._start_latched = False
 
     def outputs(self, total_sim_time_s: float):
-        """Get station outputs INCLUDING KPIs for Week 1"""
+        """Get station outputs with comprehensive KPI awareness"""
         busy = 1 if self.station.is_busy() else 0
         fault = 1 if self.station.is_fault() else 0
         inventory_ok = 1
-        any_arm_failed = 0 if self.station.is_fault() else 1  # Arm fails during fault
+        any_arm_failed = 0 if self.station.is_fault() else 1
         
-        # Ready = not busy AND not fault (independent of start latch)
-        ready = 1 if (not busy and not fault) else 0
+        # Ready = not busy AND not fault AND operational (not in break/maintenance/shift change)
+        ready = 1 if (not busy and not fault and self.station._is_operational()) else 0
         
         # Done pulse for exactly ONE iteration after completion
         done = 1 if self.station.get_done_pulse() else 0
         
-        # Real cycle time (0 if cycle hasn't completed yet)
+        # Real cycle time
         cycle_time_ms = self.station.get_cycle_time_ms()
         
-        # NEW: Calculate utilization/availability for logging (not sent to PLC yet)
-        utilization = self.station.get_utilization(total_sim_time_s)
-        availability = self.station.get_availability(total_sim_time_s)
-        
-        # Log KPIs every 10 cycles for visibility
+        # Log comprehensive KPIs every 10 cycles
         if self.station.completed_cycles > 0 and self.station.completed_cycles % 10 == 0:
+            utilization = self.station.get_utilization(total_sim_time_s)
+            availability = self.station.get_availability(total_sim_time_s)
+            oee = self.station.get_oee(total_sim_time_s)
+            fpy = self.station.get_first_pass_yield()
             energy_per_unit = self.station.get_energy_per_unit_kwh()
-            print(f"  📊 ST1 KPIs (cycle #{self.station.completed_cycles}): "
-                  f"utilization={utilization:.1f}%, availability={availability:.1f}%, "
-                  f"energy={self.station.get_energy_kwh():.4f}kWh, energy/unit={energy_per_unit:.4f}kWh/unit, "
-                  f"failures={self.station.get_failure_count()}, downtime={self.station.get_total_downtime_s():.1f}s")
+            
+            print(f"  📊 ST1 COMPREHENSIVE KPIs (cycle #{self.station.completed_cycles}):")
+            print(f"     Utilization: {utilization:.1f}% | Availability: {availability:.1f}% | OEE: {oee:.1f}%")
+            print(f"     First-Pass Yield: {fpy:.1f}% | Defects: {self.station.defect_count} | Reworks: {self.station.rework_count}")
+            print(f"     Energy: {self.station.get_energy_kwh():.4f}kWh total | {energy_per_unit:.4f}kWh/unit | Cost: ${self.station.get_energy_cost_usd():.2f}")
+            print(f"     CO2: {self.station.get_co2_emissions_kg():.2f}kg | Failures: {self.station.failure_count} | PM Events: {self.station.preventive_maintenance_count}")
         
         return ready, busy, fault, done, cycle_time_ms, inventory_ok, any_arm_failed
 
     def export_kpis(self, total_sim_time_s: float) -> dict:
-        """Export structured KPIs for optimizer (Week 1 deliverable + ENERGY)"""
+        """Export FULL KPI set for optimizer dashboard integration"""
+        utilization = self.station.get_utilization(total_sim_time_s)
+        availability = self.station.get_availability(total_sim_time_s)
+        oee = self.station.get_oee(total_sim_time_s)
+        fpy = self.station.get_first_pass_yield()
         energy_per_unit = self.station.get_energy_per_unit_kwh()
+        
+        # Calculate throughput
+        throughput_units_per_hour = (self.station.completed_cycles / total_sim_time_s) * 3600 if total_sim_time_s > 0 else 0
+        
+        # MTBF calculation (Mean Time Between Failures)
+        mtbf_h = (total_sim_time_s / 3600) / max(self.station.failure_count, 1) if self.station.failure_count > 0 else 0
         
         return {
             "station": "S1",
+            "station_name": "Component Kitting & Pre-Assembly",
+            "simulation_duration_s": total_sim_time_s,
             "completed_cycles": self.station.completed_cycles,
-            "total_downtime_s": self.station.get_total_downtime_s(),
-            "failure_count": self.station.get_failure_count(),
-            "utilization_pct": self.station.get_utilization(total_sim_time_s),
-            "availability_pct": self.station.get_availability(total_sim_time_s),
+            "throughput_units_per_hour": round(throughput_units_per_hour, 2),
+            
+            # Downtime metrics
+            "total_downtime_s": round(self.station.get_total_downtime_s(), 2),
+            "scheduled_downtime_s": round(self.station.scheduled_downtime_s, 2),
+            "unscheduled_downtime_s": round(self.station.unscheduled_downtime_s, 2),
+            "failure_count": self.station.failure_count,
+            "preventive_maintenance_count": self.station.preventive_maintenance_count,
+            
+            # Quality metrics
+            "defect_count": self.station.defect_count,
+            "rework_count": self.station.rework_count,
+            "first_pass_yield_pct": round(fpy, 2),
+            "scrap_count": self.station.defect_count - self.station.rework_count,  # Simplified
+            
+            # Performance metrics
+            "utilization_pct": round(utilization, 2),
+            "availability_pct": round(availability, 2),
+            "oee_pct": round(oee, 2),
+            "mtbf_h": round(mtbf_h, 2),
+            "mttr_s": round(self.station._effective_mttr_s, 2),
             "avg_cycle_time_ms": self.station.get_avg_cycle_time_ms(),
-            # ENERGY METRICS (Siemens requirement)
-            "energy_kwh": self.station.get_energy_kwh(),
-            "energy_per_unit_kwh": energy_per_unit,
-            "power_rating_w": self.config["power_rating_w"],
-            "config": {
-                "cycle_time_s": self.config["cycle_time_s"],
-                "failure_rate": self.config["failure_rate"],
-                "mttr_s": self.config["mttr_s"],
-                "power_rating_w": self.config["power_rating_w"]
+            
+            # Energy metrics (Siemens ISO 50001 compliant)
+            "energy_kwh": round(self.station.get_energy_kwh(), 4),
+            "energy_per_unit_kwh": round(energy_per_unit, 4),
+            "energy_cost_usd": round(self.station.get_energy_cost_usd(), 2),
+            "co2_emissions_kg": round(self.station.get_co2_emissions_kg(), 2),
+            "power_rating_w": self.station_config.get("power_rating_w", 1500),
+            
+            # Configuration snapshot (for traceability)
+            "config_snapshot": {
+                "cycle_time_s": self.station_config.get("cycle_time_s", 9.597),
+                "failure_rate": self.station_config.get("failure_rate", 0.02),
+                "mttr_s": self.station_config.get("mttr_s", 30),
+                "power_rating_w": self.station_config.get("power_rating_w", 1500),
+                "operator_efficiency_factor": self.human_resources.get("operator_efficiency_factor", 95),
+                "advanced_skill_pct": self.human_resources.get("advanced_skill_pct", 30),
+                "cross_training_pct": self.human_resources.get("cross_training_pct", 20),
+                "maintenance_strategy": self.maintenance.get("strategy", "predictive"),
+                "predictive_enabled": self.maintenance.get("predictive_enabled", True),
+                "defect_rate_pct": self.quality.get("defect_rate_pct", 0.5),
+                "shifts_per_day": self.shift_schedule.get("shifts_per_day", 1),
+                "shift_duration_h": self.shift_schedule.get("shift_duration_h", 8)
             }
         }
 
@@ -515,11 +1003,12 @@ class ST1_ComponentKitting:
         self.receivedSrcPortNumber = 0
         self.expectedNumberOfBytes = 0
         self.mySignals = MySignals()
+        
         # Start of user custom code region. Please apply edits only within these regions:  Constructor
         self._sim = None
         self._prev_done = 0
         self.total_completed = 0
-        self._sim_start_time_ns = 0  # For KPI calculation
+        self._sim_start_time_ns = 0
         # End of user custom code region. Please don't edit beyond this point.
 
     def mainThread(self):
