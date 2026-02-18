@@ -509,6 +509,8 @@ class StatsStore:
         self.stats: Dict[Tuple[str, str], StationStats] = {}
         self.station_lines: Dict[Tuple[str, str], deque] = {}
         self.file_lines: Dict[str, deque] = {}
+        # Mark a file as stopped when the simulator process ends.
+        self.file_stopped: Dict[str, bool] = {}
 
     def _stq(self, file: str, station: str) -> deque:
         key = (file, station)
@@ -523,10 +525,16 @@ class StatsStore:
 
     def handle_raw_station(self, file: str, station: str, station_raw: str, station_num: Optional[int], line: str):
         self._stq(file, station).append(line)
+        # Any in-block line means this file is actively producing snapshots.
+        self.file_stopped[file] = False
         self.get(file, station, station_raw, station_num)
 
     def handle_raw_file(self, file: str, line: str):
         self._fq(file).append(line)
+        low = (line or "").lower()
+        # Typical termination footer emitted by `script` wrapper.
+        if "script done on" in low or "command_exit_code" in low:
+            self.file_stopped[file] = True
 
     def ensure_station_for_file(self, file: str):
         station, station_num, station_raw = infer_station_from_file(file)
@@ -553,6 +561,7 @@ class StatsStore:
     def handle_snapshot(self, snap: Snapshot):
         st = self.get(snap.source_file, snap.station,
                       snap.station_raw, snap.station_num)
+        self.file_stopped[snap.source_file] = False
 
         now = time.time()
         if st.first_wall_ts == 0:
@@ -653,6 +662,8 @@ class StatsStore:
 
             if fault_vals and any(x == 1 for x in fault_vals):
                 return "FAULT"
+            if self.file_stopped.get(st.file, False):
+                return "STOPPED"
             if stop_vals and all(x == 1 for x in stop_vals):
                 return "STOPPED"
             if busy_vals and any(x == 1 for x in busy_vals):
@@ -668,6 +679,8 @@ class StatsStore:
 
         if fault == 1:
             return "FAULT"
+        if self.file_stopped.get(st.file, False):
+            return "STOPPED"
         if cmd_stop == 1:
             return "STOPPED"
         if busy == 1:
