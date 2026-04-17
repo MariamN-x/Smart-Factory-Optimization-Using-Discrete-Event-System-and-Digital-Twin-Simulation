@@ -129,7 +129,8 @@ This project includes two dashboards.
 
 Used to monitor the production line during runtime from generated logs.
 
-![KPI Dashboard](https://github.com/user-attachments/assets/11686614-469e-41ab-a496-0d6d72c94765)
+<img width="1600" height="604" alt="kpi1" src="https://github.com/user-attachments/assets/6486928a-67ab-4c8d-aa8f-05e602c22f9d" />
+<img width="1580" height="639" alt="kpi2" src="https://github.com/user-attachments/assets/1dfe43ab-e532-4030-82b3-c105099c854f" />
 
 ---
 
