@@ -170,6 +170,7 @@ This helps find better system settings and improve the production process.
 
 ## vizuilization 
 <img width="1288" height="596" alt="vis" src="https://github.com/user-attachments/assets/016f1ca8-709b-4169-863d-3b9758909eb3" />
+
 <img width="1103" height="662" alt="st1" src="https://github.com/user-attachments/assets/3319523f-06cb-4e65-a1fb-1642f0519d73" />
 
 
