@@ -18,15 +18,16 @@ The system is built using:
 ---
 
 ## System Architecture
+Server-Client Based 
 
-### PLC Line Coordinator
+### PLC Line Coordinator SERVER
 - Controls the whole production line
 - Sends commands (start / stop / reset)
 - Receives station feedback
 - Manages execution order using **virtual buffers**
 - Uses **done-latch logic** to detect completion safely
 
-### Stations (ST1–ST6)
+### Stations (ST1–ST6) CLIENTS 
 - Each station represents a production step
 - Runs a simple state machine (ready / busy / done / fault)
 - Starts only when commanded by the PLC
