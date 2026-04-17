@@ -131,6 +131,7 @@ This project includes two dashboards.
 Used to monitor the production line during runtime from generated logs.
 
 <img width="1600" height="604" alt="kpi1" src="https://github.com/user-attachments/assets/6486928a-67ab-4c8d-aa8f-05e602c22f9d" />
+station 3 
 <img width="1580" height="639" alt="kpi2" src="https://github.com/user-attachments/assets/1dfe43ab-e532-4030-82b3-c105099c854f" />
 
 ---
@@ -170,10 +171,10 @@ This helps find better system settings and improve the production process.
 
 ## vizuilization 
 <img width="1288" height="596" alt="vis" src="https://github.com/user-attachments/assets/016f1ca8-709b-4169-863d-3b9758909eb3" />
-
+station 1
 <img width="1103" height="662" alt="st1" src="https://github.com/user-attachments/assets/3319523f-06cb-4e65-a1fb-1642f0519d73" />
 
-
+there are also visualizations for the rest of the stations
 ## Screenshots
 
 ![CLI](https://github.com/user-attachments/assets/feeb2d34-75fa-4c12-856e-a4de3688988e)
