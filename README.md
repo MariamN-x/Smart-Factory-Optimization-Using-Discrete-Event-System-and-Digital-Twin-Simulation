@@ -140,6 +140,10 @@ Used to monitor the production line during runtime from generated logs.
 Used to read and analyze production logs.  
 It calculates KPIs such as cycle time, defects, and performance, then compares results.  
 This helps find better system settings and improve the production process.
+#### Login 
+<img width="898" height="491" alt="login " src="https://github.com/user-attachments/assets/676e05bb-ed40-457a-b643-617a30d4514b" />
+
+
 
 #### Main View
 ![Optimization 1](https://github.com/user-attachments/assets/ead4909b-aa05-4be9-adda-4f773db05efc)
@@ -160,6 +164,14 @@ This helps find better system settings and improve the production process.
 ![Analysis 3](https://github.com/user-attachments/assets/0677a670-901c-46be-b963-b0899d798a5a)
 
 ---
+
+#### AI 
+<img width="1311" height="565" alt="AI" src="https://github.com/user-attachments/assets/6d1d8492-4c94-48ed-bf0e-d7fa277751b0" />
+
+## vizuilization 
+<img width="1288" height="596" alt="vis" src="https://github.com/user-attachments/assets/016f1ca8-709b-4169-863d-3b9758909eb3" />
+<img width="1103" height="662" alt="st1" src="https://github.com/user-attachments/assets/3319523f-06cb-4e65-a1fb-1642f0519d73" />
+
 
 ## Screenshots
 
