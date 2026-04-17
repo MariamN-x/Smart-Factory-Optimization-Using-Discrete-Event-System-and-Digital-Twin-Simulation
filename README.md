@@ -1,167 +1,183 @@
 # 3D Printer Production Line Digital Twin (PLC + ST1–ST6)
 
-This repository contains a **station-level digital twin** of a 3D-printer manufacturing line.
-It is controlled using **PLC-style handshakes** and a **pipeline execution model**.
-
-The simulation uses two key technologies:
-
-- **Innexis Virtual System Interconnect (VSI)** (closed source by Siemens)  
-  Used to run multiple Python components as separate “devices” and exchange packets (PLC ↔ stations).
-
-- **SimPy** (open-source Python library)  
-  Used inside each station to model cycle timing, delays, faults, and maintenance as discrete-event processes.
+This project implements a **digital twin of a 3D printer production line** using a PLC-controlled pipeline.  
+The system simulates real industrial behavior including station coordination, timing, faults, and performance monitoring.
 
 ---
 
+## Overview
 
-## What’s Inside
+The system is built using:
 
-- **PLC_LineCoordinator (Controller / Server)**
-  - Runs the main scan loop (PLC behavior)
-  - Sends commands to all stations (start/stop/reset + batch/recipe)
-  - Receives station feedback packets
-  - Maintains **virtual buffers** (WIP tokens) to enforce correct pipeline ordering
-  - Uses **done-latch** logic to safely detect short `done` pulses
+- **Innexis VSI (Virtual System Interconnect)**  
+  Used to run PLC and stations as separate components and handle communication.
 
-- **ST1–ST6 Stations (Clients)**
-  - Each station runs a small state machine (ready/busy/done/fault)
-  - Starts **only** when PLC sends a start command
-  - Internally modeled using SimPy generator processes
+- **SimPy**  
+  Used to simulate station behavior such as cycle time, delays, failures, and maintenance.
+
+---
+
+## System Architecture
+
+### PLC Line Coordinator
+- Controls the whole production line
+- Sends commands (start / stop / reset)
+- Receives station feedback
+- Manages execution order using **virtual buffers**
+- Uses **done-latch logic** to detect completion safely
+
+### Stations (ST1–ST6)
+- Each station represents a production step
+- Runs a simple state machine (ready / busy / done / fault)
+- Starts only when commanded by the PLC
+- Internally simulated using SimPy
 
 ---
 
 ## Stations Overview
 
-| Station | Role | PLC Port | Example Station Outputs |
-|---|---|---:|---|
-| ST1 | Component Kitting | 6001 | ready/busy/done/fault + cycle time |
-| ST2 | Frame Core Assembly | 6002 | counters (scrap/rework) + cycle time |
-| ST3 | Electronics Wiring | 6003 | wiring checks + cycle time |
-| ST4 | Calibration + Testing | 6004 | test pass/fail counters |
-| ST5 | Quality Inspection | 6005 | accept/reject decision + counters |
-| ST6 | Packaging + Dispatch | 6006 | packing/dispatch counters + downtime |
+| Station | Function | Port |
+|--------|---------|------|
+| ST1 | Component Kitting | 6001 |
+| ST2 | Frame Assembly | 6002 |
+| ST3 | Electronics Wiring | 6003 |
+| ST4 | Calibration & Testing | 6004 |
+| ST5 | Quality Inspection | 6005 |
+| ST6 | Packaging & Dispatch | 6006 |
 
 ---
 
-## How the Pipeline is Integrated
+## Pipeline Execution
 
-There are multiple ways to integrate a multi-station pipeline. This project follows the PLC approach and supports typical pipeline behavior (overlap between stations).
+The system uses a **controlled pipeline with parallel execution**:
 
-### A) Sequential (simple, lowest throughput)
-- PLC runs ST1, waits done, then ST2, then ST3… until ST6.
-- Easy, but it wastes time because stations do not overlap.
+- Stations can run simultaneously  
+- PLC ensures correct order using buffers  
+- Each station starts only when input is available  
 
-### B) True pipeline (overlap + ordering control)
-- Multiple stations can run at the same time.
-- PLC still enforces correct order using **virtual buffers** (WIP tokens).
-- Example: ST2 can start only if `buffer_S1_to_S2 > 0`.
-
-### C) Event-driven start (generator-based readiness)
-- Stations expose readiness/busy/done signals.
-- PLC reacts each scan based on signals and buffers.
-- This is how you get deterministic behavior without race conditions.
-
-### **This repository uses (B) + (C).**  
-Stations overlap, but only when the PLC allows it.
+This provides:
+- realistic production flow  
+- no missing or duplicated parts  
+- stable and deterministic execution  
 
 ---
 
-## Core Reliability Mechanisms
+## Key Concepts
 
-### 1) Generator-based station cycles (SimPy)
-Each station’s “cycle” is modeled as a **generator** like:
-
-- start is received → station becomes busy
-- `yield env.timeout(cycle_time)` → time passes in simulation
-- station sets done, updates counters, returns to ready
-
-This makes timing deterministic and easy to test.
-
-### 2) One-shot start + internal start latch
-- PLC sends `cmd_start=1` as a short pulse (often one scan).
-- Station latches it internally so it can finish the cycle even if start goes low next scan.
-
-Why it matters: it prevents “missed starts” and repeated cycles.
-
-### 3) Done pulse + PLC done-latch (edge-safe)
-- Stations typically raise `done=1` briefly.
-- PLC uses a **done-latch** per station to reliably detect completion even if the pulse is short.
-
-Why it matters: it prevents “PLC never saw done” bugs.
-
-### 4) Virtual buffers (WIP tokens)
-PLC keeps counters that represent parts moving through the line:
-
-- When ST1 completes: `buffer_S1_to_S2 += 1`
-- Before starting ST2: require `buffer_S1_to_S2 > 0`
-- When ST2 starts: `buffer_S1_to_S2 -= 1` and later `buffer_S2_to_S3 += 1`
-
-Why it matters:
-- prevents ST2 starting without input
-- prevents duplicated production
-- keeps the pipeline valid during parallel execution
+### 1. SimPy-Based Simulation
+Each station simulates:
+- cycle time  
+- delays  
+- failures  
+- maintenance  
 
 ---
 
-## Communication (VSI Role)
+### 2. Start Signal (Latch)
+- PLC sends a short start signal  
+- Station stores it internally  
+- Prevents missed or repeated starts  
 
-VSI is used to run the PLC and each station as separate components and exchange packets:
+---
 
-- **PLC → Station:** command packet (start/stop/reset + batch_id + recipe_id)
-- **Station → PLC:** feedback packet (ready/busy/done/fault + KPIs)
+### 3. Done Signal (Latch)
+- Stations send a short done pulse  
+- PLC captures it using a latch  
 
-So the separation is realistic:
-- distributed components
-- network delay/scan timing effects
-- packet decoding/encoding (pack/unpack)
+Prevents missing completion signals.
+
+---
+
+### 4. Virtual Buffers (WIP)
+Buffers represent parts moving between stations:
+
+- ST1 → ST2 → ST3 → ... → ST6  
+- Each station requires input from the previous one  
+
+Ensures correct pipeline behavior.
+
+---
+
+## Communication
+
+Handled using VSI packets:
+
+- **PLC → Station:** commands (start / stop / reset)  
+- **Station → PLC:** status + KPIs  
+
+This simulates a real distributed industrial system.
 
 ---
 
 ## Requirements
 
-### Python dependency
+Install dependency:
+
 ```bash
 pip install simpy
 ```
+
+---
+
 ## KPIs and Optimization
 
-This project includes two dashboards. Both are **external observers**:
+This project includes two dashboards.
 
-### KPI Dashboard 
-Used to monitor the line during runtime.from the logs 
-<img width="1327" height="540" alt="KPi edit (1)" src="https://github.com/user-attachments/assets/11686614-469e-41ab-a496-0d6d72c94765" />
+---
 
+### KPI Dashboard
 
+Used to monitor the production line during runtime from generated logs.
 
-### Optimization Dashboard (analysis)
-Used to analyze and compare production behavior using the same logs.
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/33a6e4f7-aff2-443a-baee-9fb1e31cb5ab" width="85%" />
-</p>
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/61f24945-47b5-4a30-b6cd-6dc73d98a1bc" width="49%" />
-  <img src="https://github.com/user-attachments/assets/b5b9168a-dab5-45ff-a6ff-b287c35d611d" width="49%" />
-</p>
+![KPI Dashboard](https://github.com/user-attachments/assets/11686614-469e-41ab-a496-0d6d72c94765)
 
+---
 
+### Optimization Dashboard and AI
 
+Used to read and analyze production logs.  
+It calculates KPIs such as cycle time, defects, and performance, then compares results.  
+This helps find better system settings and improve the production process.
 
-## screenshots
+#### Main View
+![Optimization 1](https://github.com/user-attachments/assets/ead4909b-aa05-4be9-adda-4f773db05efc)
+![Optimization 2](https://github.com/user-attachments/assets/91909f0a-b152-4f3a-92fa-bd96caafa593)
+
+#### Human Resources
+![HR](https://github.com/user-attachments/assets/cefff9e6-5305-45b0-8e9d-ab09436b5e83)
+
+#### Maintenance
+![Maintenance](https://github.com/user-attachments/assets/52a0e3fd-3c03-482b-a445-cd8d5335574b)
+
+#### Energy & Optimization
+![Energy](https://github.com/user-attachments/assets/c411c8a3-bd00-47bb-8151-f5926b7d6c8f)
+
+#### Analysis
+![Analysis 1](https://github.com/user-attachments/assets/e16a633b-83a9-469f-b122-a3e6a6a00b10)
+![Analysis 2](https://github.com/user-attachments/assets/1f050d51-ae40-4935-b5f4-885e3949548f)
+![Analysis 3](https://github.com/user-attachments/assets/0677a670-901c-46be-b963-b0899d798a5a)
+
+---
+
+## Screenshots
+
 ![CLI](https://github.com/user-attachments/assets/feeb2d34-75fa-4c12-856e-a4de3688988e)
+
+---
 
 ## Authors
 
-* Mina Adel
-* Mina Atef
-* George Sameh
-* Sama Salem
-* Mariam Nasr
-
-### Supervised by
-
-* Dr. Mohamed Abdelsalam
-* Dr. Mohamed Elithy
-* Dr. Mohamed El Hosseini
-* Dr. Alfred
+- Mina Adel  
+- Mina Atef  
+- George Sameh  
+- Sama Salem  
+- Mariam Nasr  
 
 ---
+
+## Supervised by
+
+- Dr. Mohamed Abdelsalam  (Siemins)
+- Dr. Mohamed Elithy      (Siemins)
+- Dr. Mohamed El Hosseini  
+- Dr. Nada (TA)
