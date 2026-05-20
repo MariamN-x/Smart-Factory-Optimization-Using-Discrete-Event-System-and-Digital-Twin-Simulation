@@ -1,0 +1,114 @@
+<!-- templates/login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Siemens 3D Printing Production</title>
+
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+<body>
+  <div class="container">
+    <div class="factory-section">
+      <div class="siemens-logo">SIEMENS</div>
+      <div class="factory-scene">
+        <div class="conveyor-belt"></div>
+
+        <div class="printer-base"></div>
+        <div class="printer-frame">
+          <div class="frame-vertical left"></div>
+          <div class="frame-vertical right"></div>
+          <div class="frame-horizontal"></div>
+          <div class="frame-bottom"></div>
+          <div class="print-bed">
+            <div class="print-progress"></div>
+          </div>
+          <div class="print-head">
+            <div class="print-nozzle"></div>
+            <div class="nozzle-tip"></div>
+          </div>
+          <div class="printed-object"></div>
+        </div>
+
+        <div class="robot-inspector">
+          <div class="robot-head-inspector">
+            <div class="robot-eye-inspector"></div>
+            <div class="robot-eye-inspector"></div>
+          </div>
+          <div class="robot-antenna-inspector">
+            <div class="antenna-light-inspector"></div>
+          </div>
+          <div class="robot-body-inspector"></div>
+          <div class="robot-arm-inspector left"><div class="arm-joint-inspector"></div></div>
+          <div class="robot-arm-inspector right"><div class="arm-joint-inspector"></div></div>
+          <div class="robot-leg-inspector left"><div class="leg-foot-inspector"></div></div>
+          <div class="robot-leg-inspector right"><div class="leg-foot-inspector"></div></div>
+        </div>
+      </div>
+
+      <h2 class="welcome-text">
+        Siemens 3D Printing Production
+        <span>Automated Manufacturing Excellence</span>
+      </h2>
+    </div>
+
+    <div class="login-section">
+      <h1>Production Control Access</h1>
+      <p class="subtitle">Sign in to manage your 3D printing operations and production line</p>
+
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="email">Operator Email</label>
+          <input type="email" id="email" placeholder="operator@siemens.com" required>
+        </div>
+
+        <div class="input-group">
+          <label for="password">Access Code</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+
+        <!-- hidden until server says 2fa_required -->
+        <div class="input-group" id="totpGroup" style="display:none;">
+          <label for="totp">2FA Code</label>
+          <input type="text" id="totp" inputmode="numeric" autocomplete="one-time-code" placeholder="123456">
+        </div>
+
+        <div class="forgot-password">
+          <a href="#" onclick="return false;">Forgot access code?</a>
+        </div>
+
+        <button type="submit" class="login-btn">Access Production System</button>
+      </form>
+
+      <div class="divider">or continue with</div>
+
+      <div class="sso-buttons">
+        <a class="sso-btn microsoft" href="/auth/oidc/microsoft" style="text-decoration:none;">
+          <span style="display:flex;gap:8px;align-items:center;justify-content:center;width:100%;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M3 3h7v7H3V3zm0 8h7v7H3V11zm8-8h7v7h-7V3zm0 8h7v7h-7V11z"/>
+            </svg>
+            Microsoft
+          </span>
+        </a>
+
+        <a class="sso-btn google" href="/auth/oidc/google" style="text-decoration:none;">
+          <span style="display:flex;gap:8px;align-items:center;justify-content:center;width:100%;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M19.6 10.23c0-.64-.06-1.26-.16-1.86H10v3.49h5.37c-.31 1.66-1.26 3.07-2.67 4.04v2.68h4.2c2.45-2.25 3.87-5.57 3.87-9.35 0-.59-.06-1.16-.16-1.73zM10 19.88c2.69 0 4.95-.89 6.64-2.41l-3.26-2.53c-.88.6-2.01.97-3.38.97-2.61 0-4.81-1.76-5.59-4.13H.98v2.71C2.61 17.24 6.1 19.88 10 19.88zm-7.57-5.33c-.2-1.06-.32-2.17-.32-3.32 0-1.15.13-2.26.33-3.32v-2.7H6.4c.74 2.32 2.9 4.03 5.6 4.03 1.34 0 2.48-.38 3.35-.97l3.22 2.5c-1.65 1.46-3.86 2.34-6.47 2.34-2.05 0-3.89-.68-5.39-1.81zM10 3.75c1.39 0 2.67.47 3.72 1.27l2.86-2.86C14.94.72 12.67 0 10 0 6.1 0 2.61 2.64.98 5.38l2.86 2.21c.79-2.37 2.98-4.13 5.59-4.13z"/>
+            </svg>
+            Google
+          </span>
+        </a>
+      </div>
+
+      <p class="copyright">© 2026 Siemens AG. All rights reserved.</p>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='login.js') }}"></script>
+</body>
+</html>
