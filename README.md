@@ -5,7 +5,7 @@ The system simulates real industrial behavior including station coordination, ti
 
 ---
 
-## Overview
+## System  Overview
 
 The system is built using:
 
@@ -14,6 +14,8 @@ The system is built using:
 
 - **SimPy**  
   Used to simulate station behavior such as cycle time, delays, failures, and maintenance.
+  
+<img width="1740" height="904" alt="ISAAA LAST ONE " src="https://github.com/user-attachments/assets/1349d38e-632f-452f-a35a-4aa76f47e4b8" />
 
 ---
 
