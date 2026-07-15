@@ -1,3 +1,5 @@
+https://cscgp.miuegypt.edu.eg/graduation-projects/graduation-projects-2025-2026/cys-gp-25-26/cys2604/
+
 # 3D Printer Production Line Digital Twin (PLC + ST1–ST6)
 
 This project implements a **digital twin of a 3D printer production line** using a PLC-controlled pipeline.  
