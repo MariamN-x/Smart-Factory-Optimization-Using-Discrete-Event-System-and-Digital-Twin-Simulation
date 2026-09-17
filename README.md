@@ -197,7 +197,7 @@ there are also visualizations for the rest of the stations
 
 ## Supervised by
 
-- Dr. Mohamed Abdelsalam  (Siemins)
-- Dr. Mohamed Elithy      (Siemins)
+- Dr. Mohamed Abdelsalam  (Siemens)
+- Dr. Mohamed Elithy      (Siemens)
 - Dr. Mohamed El Hosseini  
 - Dr. Nada (TA)
